@@ -7,6 +7,21 @@
 
  <script>
         // JavaScript code here
+
+function revealContent() {
+        var content = document.getElementById("personal-content");
+        if (content.style.display === "none") {
+            var password = prompt("Please enter the password:");
+            // Replace "password123" with your desired password
+            if (password === "KubsKavs") {
+                content.style.display = "block";
+            } else {
+                alert("Incorrect password. Try again.");
+            }
+        }
+    }
+     
+     
 document.addEventListener('DOMContentLoaded', function () {
     const navLinks = document.querySelectorAll('nav a');
     navLinks.forEach(link => {

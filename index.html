@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
     </script>
     
     
-    <style>
+       <style>
         /* Add your CSS styles here */
         body {
             font-family: Arial, sans-serif;
@@ -136,33 +136,130 @@ document.addEventListener('DOMContentLoaded', function () {
         .futsal-button {
             background-color: #66ccff; /* Blue */
         }
-/* For Futsal Stats Page  */
+    
+        /* For Futsal Stats Page  */
         .futsal-table {
-    width: 100%;
-    border-collapse: collapse;
-    border: 1px solid #ddd;
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #ddd;
+        }
+    
+        .futsal-table th, .futsal-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+    
+        .futsal-table th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+    
+        .futsal-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    
+        .futsal-table tbody tr:hover {
+            background-color: #f2f2f2;
+        }
+
+        /* CSS for responsive map container */
+.map-container {
+    position: relative;
+    overflow: hidden;
+    padding-top: 56.25%; /* Aspect ratio 16:9 for the map */
 }
 
-.futsal-table th, .futsal-table td {
-    padding: 10px;
-    border: 1px solid #ddd;
+.map-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* CSS for responsive footer */
+.footer {
+    background-color: #333;
+    color: white;
+    padding: 20px;
     text-align: center;
 }
 
-.futsal-table th {
-    background-color: #f2f2f2;
-    color: #333;
+.footer-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
-.futsal-table tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
+.footer-section {
+    flex: 1;
+    margin-bottom: 20px;
 }
 
-.futsal-table tbody tr:hover {
-    background-color: #f2f2f2;
+.footer-link {
+    color: white;
+    text-decoration: none;
+    margin-right: 10px;
 }
 
-        
+.footer-divider {
+    border-color: white;
+}
+
+.footer-text {
+    margin-top: 20px;
+}
+
+/* Media query for smaller screens */
+@media screen and (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .footer-section {
+        flex: none;
+        width: 100%;
+    }
+
+    .footer-link {
+        display: block;
+        margin-bottom: 10px;
+    }
+}
+    
+
+
+        /* Media query for tablets and small desktops */
+        @media (min-width: 768px) {
+            nav a {
+                margin: 0 15px;
+            }
+    
+            .content {
+                width: 70%;
+                margin: 0 auto;
+            }
+        }
+    
+        /* Media query for mobile devices */
+        @media (max-width: 767px) {
+            nav {
+                text-align: center;
+            }
+    
+            nav a {
+                float: none;
+                margin: 5px;
+            }
+    
+            .content {
+                padding: 10px;
+            }
+        }
     </style>
  
     
@@ -534,27 +631,28 @@ document.addEventListener('DOMContentLoaded', function () {
     
     
 
-    <footer style="background-color: #333; color: white; padding: 20px; text-align: center;">
-        <div style="display: flex; justify-content: space-between;">
-            <div>
+  <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
                 <h3>About Digitalization</h3>
                 <p>Empowering education through digital resources and technology.</p>
             </div>
-            <div>
+            <div class="footer-section">
                 <h3>Contact Information</h3>
                 <p>Address: Sundarharaicha, Morang, Nepal </p>
-                <p>Phone: <a href="tel:9802701683" style="color: white; text-decoration: none;">9802701683</a></p>
-                <p>Email: <a href="mailto:kuberjungthapa@gmail.com" style="color: white; text-decoration: none;">kuberjungthapa@gmail.com</a></p>
+                <p>Phone: <a href="tel:9802701683" class="footer-link">9802701683</a></p>
+                <p>Email: <a href="mailto:kuberjungthapa@gmail.com" class="footer-link">kuberjungthapa@gmail.com</a></p>
             </div>
-            <div>
+            <div class="footer-section">
                 <h3>Follow Us</h3>
-                <a href="#" style="color: white; text-decoration: none; margin-right: 10px;">Facebook</a>
-                <a href="#" style="color: white; text-decoration: none; margin-right: 10px;">Twitter</a>
-                <a href="#" style="color: white; text-decoration: none; margin-right: 10px;">Instagram</a>
+                <a href="#" class="footer-link">Facebook</a>
+                <a href="#" class="footer-link">Twitter</a>
+                <a href="#" class="footer-link">Instagram</a>
             </div>
         </div>
-        <hr style="border-color: white;">
-        <p>&copy; 2024 Lovely Angels English Boarding School</p>
+        <hr class="footer-divider">
+        <p class="footer-text">&copy; 2024 Lovely Angels English Boarding School</p>
+    </footer>
         <!-- Google Maps iframe -->
         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3566.6142992175533!2d87.33780347423674!3d26.62880717681753!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ef6e553ea4e21f%3A0x908c4f0d19804afd!2sLovely%20Angels%20English%20School!5e0!3m2!1sen!2snp!4v1713446865259!5m2!1sen!2snp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
    

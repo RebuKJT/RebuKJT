@@ -139,31 +139,36 @@ document.addEventListener('DOMContentLoaded', function () {
             background-color: #66ccff; /* Blue */
         }
     
-        /* For Futsal Stats Page  */
-        .futsal-table {
-            width: 100%;
-            border-collapse: collapse;
-            border: 1px solid #ddd;
-        }
-    
-        .futsal-table th, .futsal-table td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
-    
-        .futsal-table th {
-            background-color: #f2f2f2;
-            color: #333;
-        }
-    
-        .futsal-table tbody tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-    
-        .futsal-table tbody tr:hover {
-            background-color: #f2f2f2;
-        }
+       /* For Futsal Stats Page  */
+        .table-container {
+    overflow-x: auto;
+}
+
+.futsal-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+}
+
+.futsal-table th,
+.futsal-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.futsal-table th {
+    background-color: #f2f2f2;
+    color: #333;
+}
+
+.futsal-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.futsal-table tbody tr:hover {
+    background-color: #f2f2f2;
+}
 
         /* CSS for responsive map container */
 .map-container {
@@ -437,216 +442,245 @@ document.addEventListener('DOMContentLoaded', function () {
         <!-- Add resources for students here -->
         <p>Welcome, young minds!</p>
     </div>
-    <div id="futsal" class="content">
+   <div id="futsal" class="content">
         <h2>Futsal</h2>
 
         <h2 style="text-align: center; margin-top: 20px;">Futsal Statistics and Player Performance</h2>
 
         <!-- Insert the table for Futsal stats here -->
-        <table class="futsal-table">
-            <thead>
-                <tr>
-                    <th>S.N</th>
-                    <th>Name</th>
-                    <th>Matches Played</th>
-                    <th>Win</th>
-                    <th>Loss</th>
-                    <th>Draw</th>
-                    <th>Goal Scored</th>
-                    <th>Clean Sheets</th>
-                    <th>Assists</th>
-                    <th>Note</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Add rows for players here -->
-                <tr>
-                    <td>1</td>
-                    <td>Binod Sir</td>
-                    <!-- Add other stats here -->
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <!-- Repeat the above row structure for other players -->
+        <div class="table-container">
+            <table class="futsal-table">
+                <thead>
+                    <tr>
+                        <th>S.N</th>
+                        <th>Name</th>
+                        <th>Matches Played</th>
+                        <th>Win</th>
+                        <th>Loss</th>
+                        <th>Draw</th>
+                        <th>Goal Scored</th>
+                        <th>Clean Sheets</th>
+                        <th>Assists</th>
+                        <th>Note/Due/Status/Review</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Add rows for players here -->
+                    <tr>
+                        <td>1</td>
+                        <td>Binod Sir</td>
+                        <!-- Add other stats here -->
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <!-- Repeat the above row structure for other players -->
+        
+                    <tr>
+                        <td>2</td>
+                        <td>Baburam Sir</td>
+                        <!-- Add other stats here -->
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
     
-                <tr>
-                    <td>2</td>
-                    <td>Baburam Sir</td>
-                    <!-- Add other stats here -->
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-
-                <tr>
-                    <td>3</td>
-                    <td>Didesh Sir</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>4</td>
-                    <td>RebuKJT</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>5</td>
-                    <td>Sejal Sir</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-
-                 <!-- Add rows for players here -->
-                 <tr>
-                    <td>6</td>
-                    <td>Sangam Sir</td>
-                    <!-- Add other stats here -->
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <!-- Repeat the above row structure for other players -->
+                    <tr>
+                        <td>3</td>
+                        <td>Didesh Sir</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>RebuKJT</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>Sejal Sir</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
     
-                <tr>
-                    <td>7</td>
-                    <td>Sujit Sir</td>
-                    <!-- Add other stats here -->
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
+                     <!-- Add rows for players here -->
+                     <tr>
+                        <td>6</td>
+                        <td>Sangam Sir</td>
+                        <!-- Add other stats here -->
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <!-- Repeat the above row structure for other players -->
+        
+                    <tr>
+                        <td>7</td>
+                        <td>Diwakar Sir</td>
+                        <!-- Add other stats here -->
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+    
+                    <tr>
+                        <td>8</td>
+                        <td>Ishwor Basnet</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td>Rabin dai</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td>Chandra Sir</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+    
+                    <tr>
+                        <td>11</td>
+                        <td>Sujit Sir</td>
+                        <!-- Add other stats here -->
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+    
+                    <tr>
+                        <td>12</td>
+                        <td>Ashis Sir</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>13</td>
+                        <td>Prakash Sir</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>14</td>
+                        <td>Dipendra Sir</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>15</td>
+                        <td>Sabin Karki</td>
+                        <!-- Add other stats here -->
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
 
-                <tr>
-                    <td>8</td>
-                    <td>Ishwor Basnet</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>9</td>
-                    <td>Rabin dai</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>10</td>
-                    <td>Chandra Sir</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-
-                <tr>
-                    <td>11</td>
-                    <td>Sabin Karki</td>
-                    <!-- Add other stats here -->
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-
-                <tr>
-                    <td>12</td>
-                    <td>Ashis Sir</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>13</td>
-                    <td>Prakash Sir</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>14</td>
-                    <td>Dipendra Sir</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                
-
-            </tbody>
-        </table>
+                    <tr>
+                        <td>16</td>
+                        <td>Pawan Sir</td>
+                        <!-- Add other stats here -->
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+    
+                </tbody>
+            </table>
+        </div>
+       
     </div>
     
     

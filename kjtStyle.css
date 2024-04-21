@@ -7,7 +7,6 @@ body {
 }
 
 header {
-    background-image: url('https://images.pexels.com/photos/56759/pexels-photo-56759.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2');
     /* Add your image path here */
     background-size: cover;
     background-position: center;

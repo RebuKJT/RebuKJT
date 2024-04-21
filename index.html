@@ -170,6 +170,76 @@ document.addEventListener('DOMContentLoaded', function () {
     background-color: #f2f2f2;
 }
 
+
+     /* CSS to style the futsal cup details */
+            .futsal-cup-details {
+                margin-top: 20px;
+            }
+
+            .futsal-cup-heading {
+                cursor: pointer;
+                color: #333;
+                text-decoration: underline;
+            }
+
+            .futsal-cup-info {
+                margin-bottom: 10px;
+                font-style: italic;
+                color: #666;
+            }
+
+            .futsal-cup-table {
+                width: 100%;
+                border-collapse: collapse;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+
+            .futsal-cup-table th,
+            .futsal-cup-table td {
+                padding: 10px;
+                text-align: center;
+                border: 1px solid #ddd;
+            }
+
+            .futsal-cup-table th {
+                background-color: #f5f5f5;
+                font-weight: bold;
+            }
+
+            .futsal-cup-table tbody tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+
+            .futsal-cup-table tbody tr:hover {
+                background-color: #f0f0f0;
+            }
+
+            /* Responsive styling */
+            @media (max-width: 768px) {
+
+                .futsal-cup-table th,
+                .futsal-cup-table td {
+                    padding: 8px;
+                }
+            }
+
+        @media (max-width: 576px) {
+            .futsal-cup-heading {
+                font-size: 18px;
+            }
+
+            .futsal-cup-info {
+                font-size: 14px;
+            }
+
+            .futsal-cup-table th,
+            .futsal-cup-table td {
+                font-size: 12px;
+            }
+        }
+
+           
+           
         /* CSS for responsive map container */
 .map-container {
     position: relative;

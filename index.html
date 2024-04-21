@@ -22,7 +22,39 @@ function revealContent() {
             }
         }
     }
+
      
+            // Show resources of Class 6 _ 1st terminal
+     
+document.addEventListener('DOMContentLoaded', function () {
+    const classButtons = document.querySelectorAll('.class-button');
+    const classResources = document.querySelectorAll('.class-resources');
+
+    classButtons.forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+
+            // Close all class sections
+            classResources.forEach(resource => {
+                resource.style.display = 'none';
+            });
+
+            // Open the selected class section
+            const targetClass = this.classList[1];
+            const targetResources = document.getElementById(targetClass + '-resources');
+            targetResources.style.display = 'block';
+
+            // Hide the 1st Terminal section if it's not the computer class 6 section
+            if (targetClass !== 'class6') {
+                const computer1stTerminal = document.getElementById('class6-computer-1st-terminal');
+                if (computer1stTerminal) {
+                    computer1stTerminal.style.display = 'none';
+                }
+            }
+        });
+    });
+});
+
      
 document.addEventListener('DOMContentLoaded', function () {
     const navLinks = document.querySelectorAll('nav a');
@@ -170,7 +202,38 @@ document.addEventListener('DOMContentLoaded', function () {
     background-color: #f2f2f2;
 }
 
+/* Class 6_1st Terminal */
 
+        #class6-computer-1st-terminal {
+    background-color: #f0f0f0; /* Light gray background color */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow effect */
+}
+
+#class6-computer-1st-terminal h3 {
+    color: #333; /* Dark text color */
+    border-bottom: 1px solid #ccc; /* Bottom border */
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.terminal-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.terminal-table th,
+.terminal-table td {
+    border: 1px solid #ccc; /* Border for table cells */
+    padding: 8px;
+}
+
+.terminal-table th {
+    background-color: #f9f9f9; /* Light gray background color for table headers */
+    text-align: left;
+}
+           
      /* CSS to style the futsal cup details */
             .futsal-cup-details {
                 margin-top: 20px;
@@ -500,21 +563,48 @@ document.addEventListener('DOMContentLoaded', function () {
         <li><a href="#class5-computer-follow-up-students">Follow up students</a></li>
         </ul>
     </div>
-       <div id="class6-resources" class="class-resources">
-    <h3>Class 6 Computer Resources</h3>
-    <ul>
-        <li><a href="#class6-computer-syllabus">Syllabus</a></li>
-        <li><a href="#class6-computer-1st-terminal">1st Terminal</a></li>
-        <li><a href="#class6-computer-2nd-terminal">2nd Terminal</a></li>
-        <li><a href="#class6-computer-3rd-terminal">3rd Terminal</a></li>
-        <li><a href="#class6-computer-4th-terminal">4th Terminal</a></li>
-        <li><a href="#class6-computer-homework">Homework</a></li>
-        <li><a href="#class6-computer-important-questions">Important Questions</a></li>
-        <li><a href="#class6-computer-result">Result</a></li>
-        <li><a href="#class6-computer-daily-group-points">Daily Group Points</a></li>
-        <li><a href="#class6-computer-follow-up-students">Follow up students</a></li>
-    </ul>
-</div>
+  <div id="class6-resources" class="class-resources">
+            <h3>Class 6 Computer Resources</h3>
+            <ul>
+                <li><a href="#class6-computer-syllabus">Syllabus</a></li>
+                <li><a href="#class6-computer-1st-terminal" onclick="showTerminal('class6-computer-1st-terminal')">1st
+                        Terminal</a></li>
+                <li><a href="#class6-computer-2nd-terminal">2nd Terminal</a></li>
+                <li><a href="#class6-computer-3rd-terminal">3rd Terminal</a></li>
+                <li><a href="#class6-computer-4th-terminal">4th Terminal</a></li>
+                <li><a href="#class6-computer-homework">Homework</a></li>
+                <li><a href="#class6-computer-important-questions">Important Questions</a></li>
+                <li><a href="#class6-computer-result">Result</a></li>
+                <li><a href="#class6-computer-daily-group-points">Daily Group Points</a></li>
+                <li><a href="#class6-computer-follow-up-students">Follow up students</a></li>
+            </ul>
+        </div>
+
+        <div id="class6-computer-1st-terminal" class="terminal-section" style="display:none;">
+            <h3>1st Terminal</h3>
+            <table class="terminal-table">
+                <thead>
+                    <tr>
+                        <th>SN</th>
+                        <th>Lesson Topic</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Introduction to Computers</td>
+                        <td>Includes basic concepts and history of computers</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Hardware and Software</td>
+                        <td>Understanding different hardware components and software types</td>
+                    </tr>
+                    <!-- Add more rows as needed -->
+                </tbody>
+            </table>
+        </div>
 
         <div id="class7-resources" class="class-resources">
     <h3>Class 7 Computer Resources</h3>

@@ -167,6 +167,16 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+function showTerminal(id) {
+    var terminal = document.getElementById(id);
+    if (terminal.style.display === "none") {
+        terminal.style.display = "block";
+    } else {
+        terminal.style.display = "none";
+    }
+}
+
+
 
     function revealContent() {
         var content = document.getElementById("personal-content");

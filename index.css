@@ -121,6 +121,13 @@ nav a {
 }
 
 
+/* For Daily Group Points- Class 6 */
+#class6-a-group,
+#class6-b-group {
+    display: none;
+}
+
+
 /* CSS for responsive map container */
 .map-container {
     position: relative;

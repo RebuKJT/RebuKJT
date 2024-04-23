@@ -245,6 +245,13 @@ nav {
     background-color: #333;
     overflow: hidden;
 }
+nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #f0f0f0; /* Background color */
+    padding: 10px; /* Add padding for spacing */
+}
 
 .nav-link {
     display: inline-block;
@@ -438,6 +445,17 @@ nav {
     }
 }
 
+/* Media query for mobile devices */
+@media screen and (max-width: 768px) {
+    nav {
+        flex-direction: column; /* Change to vertical layout */
+        align-items: stretch; /* Stretch links to fill container */
+    }
+
+    .nav-link {
+        margin-bottom: 5px; /* Add space between links */
+    }
+}
 
 
 /* Media query for tablets and small desktops */
@@ -461,6 +479,8 @@ nav {
     nav a {
         float: none;
         margin: 5px;
+
+
     }
 
     .content {

@@ -1,25 +1,59 @@
 
-
-function showGroups() {
-    var groupA = document.getElementById('class6-a-group');
-    var groupB = document.getElementById('class6-b-group');
+// Class 6- groups
+// function showGroups() {
+//     var groupA = document.getElementById('class6-a-group');
+//     var groupB = document.getElementById('class6-b-group');
     
-    if (groupA.style.display === 'none') {
-        groupA.style.display = 'block';
-        groupB.style.display = 'block';
-    } else {
-        groupA.style.display = 'none';
-        groupB.style.display = 'none';
-    }
+//     if (groupA.style.display === 'none') {
+//         groupA.style.display = 'block';
+//         groupB.style.display = 'block';
+//     } else {
+//         groupA.style.display = 'none';
+//         groupB.style.display = 'none';
+//     }
+// }
+
+// document.addEventListener('DOMContentLoaded', function () {
+//     const dailyGroupPointsLink = document.querySelector('a[href="#class6-computer-daily-group-points"]');
+//     dailyGroupPointsLink.addEventListener('click', function (event) {
+//         event.preventDefault();
+//         showGroups();
+//     });
+// });
+
+function showGroupButtons() {
+    var groupAButton = document.createElement('button');
+    groupAButton.textContent = 'Class 6 A';
+    groupAButton.addEventListener('click', function() {
+        showGroup('class6-a-group');
+    });
+
+    var groupBButton = document.createElement('button');
+    groupBButton.textContent = 'Class 6 B';
+    groupBButton.addEventListener('click', function() {
+        showGroup('class6-b-group');
+    });
+
+    var groupButtonContainer = document.createElement('div');
+    groupButtonContainer.appendChild(groupAButton);
+    groupButtonContainer.appendChild(groupBButton);
+
+    var dailyGroupPointsLink = document.querySelector('a[href="#class6-computer-daily-group-points"]');
+    dailyGroupPointsLink.parentNode.insertBefore(groupButtonContainer, dailyGroupPointsLink.nextSibling);
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    const dailyGroupPointsLink = document.querySelector('a[href="#class6-computer-daily-group-points"]');
-    dailyGroupPointsLink.addEventListener('click', function (event) {
-        event.preventDefault();
-        showGroups();
-    });
-});
+function showGroup(groupId) {
+    var groupA = document.getElementById('class6-a-group');
+    var groupB = document.getElementById('class6-b-group');
+
+    if (groupId === 'class6-a-group') {
+        groupA.classList.remove('hidden');
+        groupB.classList.add('hidden');
+    } else {
+        groupA.classList.add('hidden');
+        groupB.classList.remove('hidden');
+    }
+}
 
 
 

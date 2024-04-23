@@ -127,6 +127,11 @@ nav a {
     display: none;
 }
 
+.hidden {
+    display: none;
+}
+
+
 
 /* CSS for responsive map container */
 .map-container {

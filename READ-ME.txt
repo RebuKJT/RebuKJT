@@ -1,0 +1,17 @@
+Description:
+
+This project involves the development of a website for Lovely Angels School. The website aims to provide information about the school, its services, faculty, and various activities. It includes sections dedicated to students, such as resources and tuition classes, as well as sections for futsal statistics and contacting the school.
+
+File Structure:
+
+index.html: The main homepage of the website.
+about.html: Information about the school and its mission.
+teacher.html: Details about the school's faculty and staff.
+futsal.html: Stats and information about the school's futsal team.
+students.html: Section dedicated to information for students, divided into Class 4, 5, 6, and 7.
+tuition.html: Information about tuition classes offered by the school.
+contact.html: Contact information and form for inquiries.
+css/: Directory containing CSS stylesheets.
+js/: Directory containing JavaScript files.
+lib/: Directory for third-party libraries.
+img/: Directory for storing images used in the website.

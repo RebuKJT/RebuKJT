@@ -755,27 +755,52 @@
 
 /*** Contact Start ***/
 .contact-detail::before {
-    position: absolute;
     content: "";
-    height: 50%;
+    height: 100%;
     width: 100%;
-    top: 0;
-    left: 0;
     background: linear-gradient(rgb(210, 243, 235, 1), rgba(230, 250, 245, .3)), url(/img/background.jpg) center center no-repeat;
     background-size: cover;
     border-radius: 10px;
     z-index: -1;
 }
 
-.contact-map {
+.contact-map, .contact-form {
     background: #26d48c;
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
-.contact-form {
-    background: #26d48c;
+.contact-form input[type="text"],
+.contact-form input[type="email"],
+.contact-form input[type="tel"],
+.contact-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
 }
 
+.contact-form textarea {
+    resize: vertical; /* Allow resizing vertically */
+}
+
+.contact-form button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff; /* Blue color */
+    color: #fff; /* White text */
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.contact-form button:hover {
+    background-color: #0056b3; /* Darker blue color on hover */
+}
 /*** Contact End ***/
+
 
 
 /*** Footer Start ***/

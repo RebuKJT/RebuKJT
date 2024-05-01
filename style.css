@@ -663,7 +663,9 @@
     margin: 20px auto; /* Add space around the images */
     border-radius: 5px; /* Add rounded corners */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow effect */
+    position: relative; /* Ensure button is positioned relative to its container */
 }
+
 
 
 /* Responsive styling */

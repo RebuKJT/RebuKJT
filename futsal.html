@@ -605,7 +605,7 @@
                     <!-- Hidden images -->
                     <div class="hidden-images">
                         <div class="tournament-image" id="tournament_image1">
-                            <img src="path/to/tournament_image1.jpg" alt="Tournament Image 1">
+                            <img src="#" alt="12 years cup">
                         </div>
                         <div class="tournament-image" id="tournament_image2">
                             <img src="img/Married FC Game Lineup.jpg" alt="Married FC lineup">
@@ -1067,14 +1067,25 @@
             (function ($) {
                 // Place your jQuery code here
                 $(document).ready(function () {
+                    // Hide all images initially
+                    $(".tournament-image").hide();
+
+                    // Handle click event on show image button
                     $(".show-image-btn").click(function () {
-                        var imageId = $(this).closest("tr").index() + 1;
-                        $("#tournament_image" + imageId).toggle();
+                        // Hide all images
+                        $(".tournament-image").hide();
+
+                        // Get the index of the button's parent row
+                        var rowIndex = $(this).closest("tr").index() + 1;
+
+                        // Show the corresponding image
+                        $("#tournament_image" + rowIndex).toggle();
                     });
                 });
-
-
             })(jQuery);
+
+
+
         </script>
 </body>
 

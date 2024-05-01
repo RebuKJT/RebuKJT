@@ -1072,17 +1072,24 @@
 
                     // Handle click event on show image button
                     $(".show-image-btn").click(function () {
-                        // Hide all images
-                        $(".tournament-image").hide();
-
                         // Get the index of the button's parent row
                         var rowIndex = $(this).closest("tr").index() + 1;
+                        var $image = $("#tournament_image" + rowIndex);
 
-                        // Show the corresponding image
-                        $("#tournament_image" + rowIndex).toggle();
+                        if ($image.is(":visible")) {
+                            // If the image is already visible, hide it
+                            $image.hide();
+                        } else {
+                            // Hide all images
+                            $(".tournament-image").hide();
+
+                            // Show the corresponding image
+                            $image.show();
+                        }
                     });
                 });
             })(jQuery);
+
 
 
 

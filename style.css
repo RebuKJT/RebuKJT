@@ -661,6 +661,7 @@
     flex-wrap: wrap; /* Allow images to wrap to the next line if necessary */
     justify-content: center; /* Center the images horizontally */
     gap: 20px; /* Add spacing between images */
+    max-width: 100%; /* Ensure container resizes according to viewport width */
 }
 
 .tournament-image img {
@@ -670,6 +671,11 @@
 
 .tournament-image {
     position: relative; /* Ensure button is positioned relative to its container */
+    max-width: 100%; /* Ensure button resizes according to viewport width */
+}
+
+.show-image-btn {
+    max-width: 100%; /* Ensure button resizes according to viewport width */
 }
 
 

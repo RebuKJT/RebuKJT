@@ -655,6 +655,17 @@
     background-color: #f0f0f0;
 }
 
+/* CSS for the tournament images */
+.tournament-image {
+    display: none; /* Hide images by default */
+    max-width: 100%; /* Ensure images don't exceed container width */
+    height: auto; /* Maintain aspect ratio */
+    margin: 20px auto; /* Add space around the images */
+    border-radius: 5px; /* Add rounded corners */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow effect */
+}
+
+
 /* Responsive styling */
 @media (max-width: 768px) {
 

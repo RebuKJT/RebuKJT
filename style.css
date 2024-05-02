@@ -319,6 +319,55 @@
 
 /*** Carousel End ***/
 
+/* FOR STUDENTS PAGE STARTS */
+
+/* Style for the terminal section */
+.terminal-section {
+    margin-top: 20px;
+}
+
+/* Style for the table */
+.terminal-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+}
+
+/* Style for table headers */
+.terminal-table th {
+    background-color: #f2f2f2;
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+/* Style for table cells */
+.terminal-table td {
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+/* Style for table rows */
+.terminal-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Hover effect on table rows */
+.terminal-table tr:hover {
+    background-color: #f2f2f2;
+}
+
+/* Media query for responsiveness */
+@media screen and (max-width: 600px) {
+    /* Adjust styles for small screens */
+    .terminal-table {
+        overflow-x: auto;
+    }
+}
+/* FOR STUDENTS PAGE ENDS */
+
+
 
 /*** Services Start ***/
 

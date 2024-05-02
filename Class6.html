@@ -255,21 +255,21 @@
         <!-- Testimonial End -->
 
  <!-- Class 6 - Content -->
- <div id="class6-resources" class="class-resources">
+<div id="class6-resources" class="class-resources">
     <h3>Class 6 Computer Resources</h3>
     <ul>
         <li><a href="#class6-computer-syllabus">Syllabus</a></li>
-        <li><a href="#class6-computer-1st-terminal" onclick="showTerminal('class6-computer-1st-terminal')">1st Terminal</a></li>
-        <li><a href="#class6-computer-2nd-terminal">2nd Terminal</a></li>
-        <li><a href="#class6-computer-3rd-terminal">3rd Terminal</a></li>
-        <li><a href="#class6-computer-4th-terminal">4th Terminal</a></li>
+        <li><a href="#class6-computer-1st-terminal" onclick="toggleTerminal('class6-computer-1st-terminal')">1st Terminal</a></li>
+        <li><a href="#class6-computer-2nd-terminal" onclick="toggleTerminal('class6-computer-2nd-terminal')">2nd Terminal</a></li>
+        <li><a href="#class6-computer-3rd-terminal" onclick="toggleTerminal('class6-computer-3rd-terminal')">3rd Terminal</a></li>
+        <li><a href="#class6-computer-4th-terminal" onclick="toggleTerminal('class6-computer-4th-terminal')">4th Terminal</a></li>
         <li><a href="#class6-computer-homework">Homework</a></li>
         <li><a href="#class6-computer-important-questions">Important Questions</a></li>
         <li><a href="#class6-computer-result">Result</a></li>
-        <li><a href="#class6-computer-daily-group-points" onclick="showGroupButtons()">Daily Group Points</a></li>
+        <li><a href="#class6-computer-daily-group-points" onclick="toggleGroupButtons()">Daily Group Points</a></li>
         <li><a href="#class6-computer-follow-up-students">Follow up students</a></li>
     </ul>
-  <div>
+</div>
 
 <div id="class6-computer-1st-terminal" class="terminal-section" style="display:none;">
     <h3>1st Terminal</h3>
@@ -280,6 +280,7 @@
                 <th>Lesson ID</th>
                 <th>Topic</th>
                 <th>Remarks</th>
+                <th>Status</th>
             </tr>
         </thead>
         <tbody>
@@ -289,6 +290,8 @@
 
                 <td>Introduction to Computers</td>
                 <td>Includes basic concepts and history of computers</td>
+                <td>✔️ Completed</td>
+
             </tr>
             <tr>
                 <td>b</td>
@@ -296,6 +299,7 @@
 
                 <td>Concept of Computer Hardware</td>
                 <td>Understanding different hardware components</td>
+                <td></td>
             </tr>
             <tr>
                 <td>c</td>
@@ -303,6 +307,7 @@
 
                 <td>Memory of Computer</td>
                 <td>Types and functions of computer memory</td>
+                <td></td>
             </tr>
             <tr>
                 <td>d</td>
@@ -310,6 +315,7 @@
 
                 <td>Introduction to Software</td>
                 <td>Overview of different types of software</td>
+                <td></td>
             </tr>
             <tr>
                 <td>e</td>
@@ -317,6 +323,7 @@
 
                 <td>Introduction to Word Processing</td>
                 <td>Basic features and functions of word processing software</td>
+                <td>Running</td>
             </tr>
             <tr>
                 <td>f</td>
@@ -324,6 +331,7 @@
 
                 <td>Communication and Internet</td>
                 <td>Understanding communication technologies and the Internet</td>
+                <td></td>
             </tr>
             <!-- Add more rows as needed -->
         </tbody>
@@ -338,7 +346,7 @@
                         <a href="index.html">
                             <h1 class="text-white fw-bold d-block">Lovely<span class="text-secondary">Angels</span> </h1>
                         </a>
-                        <p class="mt-4 text-light">The Lovely Angels English Boarding School is a school located in Mirgauliya, Bangladesh. 
+                        <p class="mt-4 text-light">The Lovely Angels English Boarding School is a school located in Mirgauliya, Morang.
                             It offers English language instruction and educational programs for children. The school strives to provide a nurturing and supportive environment 
                             for its students to reach their full potential. The school's curriculum is designed to promote academic excellence and character development. 
                             Whether you're seeking English language instruction or a well-rounded education for your child, Lovely Angels English Boarding School may be the perfect choice.</p>
@@ -407,6 +415,19 @@
 
         <!-- Template Javascript -->
         <script src="js/main.js"></script>
+        <script>
+             function toggleTerminal(terminalId) {
+        // Hide all terminal sections
+        $('.terminal-section').hide();
+        
+        // Show the selected terminal section
+        $('#' + terminalId).show();
+    }
+
+    function toggleGroupButtons() {
+        // Hide or show group buttons logic
+    }
+        </script>
     </body>
 
 </html>

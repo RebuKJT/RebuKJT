@@ -57,36 +57,8 @@
         }
     });
 
-
-// Class 6 - 1st Terminal
-    $(document).ready(function () {
-        $('.class-button').click(function (event) {
-            event.preventDefault();
-            
-            // Close all class sections
-            $('.class-resources').hide();
-            
-            // Open the selected class section
-            var targetClass = $(this).attr('class').split(' ')[1];
-            $('#' + targetClass + '-resources').show();
-            
-            // Hide the 1st Terminal section if it's not the computer class 6 section
-            if (targetClass !== 'class6') {
-                $('#class6-computer-1st-terminal').hide();
-            }
-            
-            // Hide the 1st Terminal section if it's not the computer class 5 section
-            if (targetClass !== 'class5') {
-                $('#class5-computer-1st-terminal').hide();
-            }
-        });
-    });
-    
-    function showTerminal(id) {
-        $('#' + id).toggle();
-    }
-    
-
+   
+ 
     // Testimonial carousel
 
     $(".testimonial-carousel").owlCarousel({

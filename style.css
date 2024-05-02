@@ -302,6 +302,11 @@
     background-size: cover;
 }
 
+.page-headerClass5 {
+    background: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, .6)), url(img/CLass\ 5_Page\ Photo.jpg) center center no-repeat;
+    background-size: cover;
+}
+
 .page-headerFutsal {
     background: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, .6)), url(img\Futsal_Lovely.jpg) center 40% no-repeat;
     background-size: cover;

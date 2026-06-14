@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Class 4 – Notes, Test & Games | Lovely Angels</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Saira:wght@500;600;700&display=swap" rel="stylesheet">
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+<link href="bootstrap.min.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+
+<style>
+  /* ════════════════════════════════
+     CLASS HUB VARIABLES  (change only these per class)
+     Class 4 = blue/purple theme
+  ════════════════════════════════ */
+  :root {
+    --cls-color1: #0d6efd;
+    --cls-color2: #6610f2;
+    --cls-gradient: linear-gradient(135deg, #0d6efd, #6610f2);
+    --cls-name: "Class 4";
+    --cls-num: "4";
+  }
+
+  /* ── LOCK SCREEN (shown until correct password entered) ── */
+  #lockScreen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--cls-gradient);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  #lockScreen .lock-box {
+    background: #fff; border-radius: 20px; padding: 44px 36px;
+    text-align: center; width: 100%; max-width: 380px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  }
+  .lock-icon { font-size: 3rem; color: var(--cls-color1); margin-bottom: 10px; }
+  .lock-title { font-family:'Saira',sans-serif; font-size:1.6rem; font-weight:700; margin-bottom:4px; }
+  .lock-sub   { font-size:.9rem; color:#6c757d; margin-bottom:22px; }
+  #lockInput  {
+    border-radius: 10px; text-align: center; font-size:1.1rem;
+    letter-spacing:.14em; border: 2px solid #dee2e6;
+    padding: 10px; width:100%; margin-bottom:6px;
+    transition: border-color .2s;
+  }
+  #lockInput:focus { outline:none; border-color: var(--cls-color1); }
+  #lockError { color:#dc3545; font-size:.85rem; height:18px; margin-bottom:10px; }
+  #lockBtn {
+    width:100%; border-radius:10px; padding:11px;
+    font-size:1rem; font-weight:700; cursor:pointer; border:none;
+    background: var(--cls-gradient); color:#fff; transition: opacity .2s;
+  }
+  #lockBtn:hover { opacity:.88; }
+  .lock-hint { font-size:.78rem; color:#adb5bd; margin-top:14px; }
+
+  /* ── PAGE CONTENT (hidden until unlocked) ── */
+  #pageContent { display:none; }
+
+  /* ── Class hero banner ── */
+  .class-hero {
+    background: var(--cls-gradient);
+    padding: 44px 0 36px; color:#fff;
+  }
+  .class-hero .class-num-big {
+    font-family:'Saira',sans-serif; font-size: 6rem; font-weight:700;
+    line-height:1; opacity:.2; position:absolute; right:30px; top:10px;
+  }
+  .class-hero h1 { font-family:'Saira',sans-serif; font-size:2.2rem; font-weight:700; }
+  .class-hero p  { opacity:.85; font-size:1rem; }
+  .class-hero .breadcrumb-item a { color:rgba(255,255,255,.7); text-decoration:none; }
+  .class-hero .breadcrumb-item.active { color:#fff; }
+  .class-hero .breadcrumb-divider { color:rgba(255,255,255,.5); }
+
+  /* ── Section tabs ── */
+  .hub-tabs .nav-link {
+    border-radius: 12px; margin-right:6px; margin-bottom:6px;
+    font-weight:600; font-size:.9rem; padding:8px 18px;
+    border: 2px solid transparent; color:#495057;
+    transition: all .2s;
+  }
+  .hub-tabs .nav-link:hover        { border-color: var(--cls-color1); color: var(--cls-color1); }
+  .hub-tabs .nav-link.active        { background: var(--cls-gradient); border-color:transparent; color:#fff; }
+  .hub-tabs-wrapper { background:#f8f9fa; border-radius:16px; padding:14px 16px; margin-bottom:28px; }
+
+  /* ── Notes section ── */
+  .notes-chapter {
+    background:#fff; border-radius:14px; border:1px solid #e9ecef;
+    padding:22px 24px; margin-bottom:16px;
+    transition: box-shadow .2s, transform .2s;
+  }
+  .notes-chapter:hover { box-shadow: 0 4px 18px rgba(0,0,0,.1); transform:translateY(-2px); }
+  .notes-chapter .ch-num {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:38px; height:38px; border-radius:10px;
+    background: var(--cls-gradient); color:#fff;
+    font-weight:700; font-size:1rem; margin-right:12px; flex-shrink:0;
+  }
+  .notes-chapter .ch-subject-badge {
+    font-size:.72rem; padding:3px 9px; border-radius:20px; margin-left:8px;
+    font-weight:600; vertical-align:middle;
+  }
+  .notes-chapter .ch-title { font-weight:700; font-size:1.05rem; margin-bottom:2px; }
+  .notes-chapter .ch-desc  { font-size:.85rem; color:#6c757d; margin-bottom:0; }
+  .notes-chapter .btn-note {
+    font-size:.83rem; padding:6px 14px; border-radius:8px;
+    font-weight:600; white-space:nowrap;
+  }
+
+  /* Coming soon badge */
+  .coming-soon {
+    background:#fff3cd; border:1px dashed #ffc107; border-radius:14px;
+    padding:40px 20px; text-align:center; color:#856404;
+  }
+  .coming-soon i { font-size:2.5rem; margin-bottom:10px; display:block; }
+
+  /* ── Quiz cards ── */
+  .quiz-card {
+    border-radius:16px; border:none; overflow:hidden;
+    box-shadow: 0 4px 18px rgba(0,0,0,.09);
+    transition: transform .2s, box-shadow .2s; height:100%;
+  }
+  .quiz-card:hover { transform:translateY(-4px); box-shadow:0 10px 28px rgba(0,0,0,.16); }
+  .quiz-card .quiz-header {
+    padding:30px 24px 20px; color:#fff;
+    font-family:'Saira',sans-serif;
+  }
+  .quiz-card .quiz-icon { font-size:2.5rem; margin-bottom:10px; display:block; }
+  .quiz-card .quiz-title { font-size:1.3rem; font-weight:700; }
+  .quiz-card .quiz-body { background:#fff; padding:20px 24px; }
+  .quiz-card .quiz-body p { font-size:.88rem; color:#6c757d; }
+  .quiz-card .quiz-body ul { font-size:.85rem; color:#495057; padding-left:18px; }
+  .quiz-card .btn-quiz {
+    width:100%; border-radius:10px; font-weight:700;
+    padding:10px; font-size:.95rem;
+  }
+  .q1-header { background:linear-gradient(135deg,#0d6efd,#0a58ca); }
+  .q2-header { background:linear-gradient(135deg,#198754,#20c997); }
+  .q3-header { background:linear-gradient(135deg,#6610f2,#e83e8c); }
+
+  /* ── Quiz 3 category picker ── */
+  .cat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+  .cat-btn {
+    border-radius:12px; border:2px solid #dee2e6; background:#fff;
+    padding:16px 10px; text-align:center; cursor:pointer; transition:all .2s;
+    font-size:.88rem; font-weight:600; color:#495057;
+  }
+  .cat-btn:hover, .cat-btn.selected {
+    border-color: var(--cls-color1); background:#e7f1ff; color: var(--cls-color1);
+  }
+  .cat-btn .cat-icon { font-size:1.6rem; display:block; margin-bottom:6px; }
+
+  /* ── Games section ── */
+  .game-card {
+    border-radius:14px; border:1px solid #e9ecef; overflow:hidden;
+    background:#fff; text-align:center; padding:30px 20px;
+    transition:transform .2s, box-shadow .2s;
+  }
+  .game-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,0,0,.12); }
+  .game-card .game-icon { font-size:3rem; margin-bottom:12px; display:block; }
+  .game-card .game-title { font-weight:700; font-size:1rem; margin-bottom:6px; }
+  .game-card .game-desc  { font-size:.82rem; color:#6c757d; margin-bottom:14px; }
+
+  /* ── Quiz modal ── */
+  #quizModal .modal-content { border-radius:16px; overflow:hidden; border:none; }
+  #quizModal .modal-body    { padding:28px; }
+  .q-number  { font-size:.82rem; color:#6c757d; font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+  .q-text    { font-size:1.1rem; font-weight:700; margin:10px 0 18px; line-height:1.4; }
+  .q-option  {
+    width:100%; text-align:left; background:#f8f9fa; border:2px solid #e9ecef;
+    border-radius:10px; padding:12px 16px; margin-bottom:8px;
+    font-size:.92rem; font-weight:500; cursor:pointer; transition:all .18s;
+  }
+  .q-option:hover   { border-color: var(--cls-color1); background:#e7f1ff; }
+  .q-option.correct { border-color:#198754!important; background:#d1e7dd!important; color:#0f5132!important; }
+  .q-option.wrong   { border-color:#dc3545!important; background:#f8d7da!important; color:#842029!important; }
+  .q-option:disabled{ cursor:default; }
+  .q-progress { height:6px; border-radius:3px; background:#e9ecef; margin-bottom:18px; }
+  .q-progress-bar { height:100%; border-radius:3px; background: var(--cls-gradient); transition:width .4s; }
+  .score-circle {
+    width:100px; height:100px; border-radius:50%;
+    background: var(--cls-gradient); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.8rem; font-weight:700; margin:0 auto 16px;
+  }
+
+  /* Quiz 3 – category modal */
+  #catModal .modal-content { border-radius:16px; border:none; overflow:hidden; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     LOCK SCREEN
+═══════════════════════════════════════ -->
+<div id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-icon"><i class="fas fa-lock"></i></div>
+    <div class="lock-title">Class 4 Portal</div>
+    <div class="lock-sub">Enter the password to access Notes, Quizzes &amp; Games</div>
+    <input type="password" id="lockInput" placeholder="TYPE PASSWORD" autocomplete="off">
+    <div id="lockError"></div>
+    <button id="lockBtn" onclick="unlock()">
+      <i class="fas fa-unlock-alt me-2"></i>Unlock
+    </button>
+    <div class="lock-hint">Hint: Your class name in CAPITALS (e.g. FOUR)</div>
+    <a href="notes-test-games.html" class="d-block mt-3 text-muted" style="font-size:.82rem;">
+      <i class="fas fa-arrow-left me-1"></i>Back to Class Selection
+    </a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MAIN PAGE (hidden until unlocked)
+═══════════════════════════════════════ -->
+<div id="pageContent">
+
+<!-- Spinner -->
+<div id="spinner" class="show position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+  <div class="spinner-grow text-primary" role="status"></div>
+</div>
+
+<!-- Topbar -->
+<div class="container-fluid bg-dark py-2 d-none d-md-flex">
+  <div class="container">
+    <div class="d-flex justify-content-between topbar">
+      <div class="top-info">
+        <small class="me-3 text-white-50"><a href="#"><i class="fas fa-map-marker-alt me-2 text-secondary"></i></a>Sundarharaicha-2, Morang</small>
+        <small class="me-3 text-white-50"><a href="#"><i class="fas fa-envelope me-2 text-secondary"></i></a>Kuberjungthapa@gmail.com</small>
+      </div>
+      <div class="text-secondary d-none d-xl-flex"><small>Note : Unlock your potential and soar high!</small></div>
+      <div class="top-link">
+        <a href="#" class="bg-light nav-fill btn btn-sm-square rounded-circle"><i class="fab fa-facebook-f text-primary"></i></a>
+        <a href="#" class="bg-light nav-fill btn btn-sm-square rounded-circle"><i class="fab fa-twitter text-primary"></i></a>
+        <a href="#" class="bg-light nav-fill btn btn-sm-square rounded-circle me-0"><i class="fab fa-instagram text-primary"></i></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Navbar -->
+<div class="container-fluid bg-primary">
+  <div class="container">
+    <nav class="navbar navbar-dark navbar-expand-lg py-0">
+      <a href="index.html" class="navbar-brand">
+        <h1 class="text-white fw-bold d-block">Lovely<span class="text-secondary">Angels</span></h1>
+      </a>
+      <button type="button" class="navbar-toggler me-0" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse bg-transparent" id="navbarCollapse">
+        <div class="navbar-nav ms-auto mx-xl-auto p-0">
+          <a href="index.html"  class="nav-item nav-link">Home</a>
+          <a href="about.html"  class="nav-item nav-link">About</a>
+          <a href="teacher.html" class="nav-item nav-link">Teacher</a>
+          <a href="futsal.html"  class="nav-item nav-link">Futsal Stats</a>
+          <div class="nav-item dropdown">
+            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Students</a>
+            <div class="dropdown-menu rounded">
+              <a href="Class4.html" class="dropdown-item">Class 4</a>
+              <a href="Class5.html" class="dropdown-item">Class 5</a>
+              <a href="Class6.html" class="dropdown-item">Class 6</a>
+              <a href="Class7.html" class="dropdown-item">Class 7</a>
+            </div>
+          </div>
+          <a href="notes-test-games.html" class="nav-item nav-link active text-secondary">Notes & Test</a>
+          <a href="Tuition.html" class="nav-item nav-link">Tuition</a>
+        </div>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- Class Hero -->
+<div class="class-hero position-relative overflow-hidden">
+  <div class="container position-relative">
+    <span class="class-num-big">4</span>
+    <nav aria-label="breadcrumb" class="mb-2">
+      <ol class="breadcrumb mb-0" style="--bs-breadcrumb-divider:'›';">
+        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+        <li class="breadcrumb-item"><a href="notes-test-games.html">Notes &amp; Test</a></li>
+        <li class="breadcrumb-item active">Class 4</li>
+      </ol>
+    </nav>
+    <h1><i class="fas fa-graduation-cap me-3"></i>Class 4 Learning Hub</h1>
+    <p class="mb-0">Access your notes, take quizzes, and play learning games — all in one place.</p>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="container py-5">
+
+  <!-- Tab nav -->
+  <div class="hub-tabs-wrapper">
+    <ul class="nav hub-tabs flex-wrap" id="hubTabs">
+      <li class="nav-item">
+        <button class="nav-link active" onclick="showSection('notes')">
+          <i class="fas fa-book me-2"></i>Notes
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" onclick="showSection('quiz1')">
+          <i class="fas fa-laptop me-2"></i>Quiz 1 – Computer &amp; Science
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" onclick="showSection('quiz2')">
+          <i class="fas fa-globe me-2"></i>Quiz 2 – General Knowledge
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" onclick="showSection('quiz3')">
+          <i class="fas fa-random me-2"></i>Quiz 3 – Choose Category
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" onclick="showSection('games')">
+          <i class="fas fa-gamepad me-2"></i>Games
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ── NOTES ── -->
+  <div id="section-notes">
+    <div class="d-flex align-items-center mb-3">
+      <h4 class="fw-bold mb-0 me-3">📓 Class 4 Notes</h4>
+      <span class="badge bg-primary rounded-pill">Computer &amp; Science</span>
+    </div>
+    <p class="text-muted mb-4">Click <strong>Open Notes</strong> to read a chapter. Notes will open in a new tab / popup window.</p>
+
+    <!-- ╔═══ TEACHER: Add chapters here ═══╗
+         Duplicate a .notes-chapter block below for each chapter.
+         Change: ch-num, ch-subject-badge class, ch-title, ch-desc, and the href on the button.
+         For Google Docs: use the "Publish to web" link.
+         For PDF: upload to your repo and link: href="notes/class4/ch1.pdf"  -->
+
+    <div class="notes-chapter d-flex align-items-center gap-3">
+      <span class="ch-num">1</span>
+      <div class="flex-grow-1">
+        <div class="ch-title">
+          Introduction to Computers
+          <span class="ch-subject-badge badge bg-primary">Computer</span>
+        </div>
+        <p class="ch-desc">What is a computer? Parts of a computer, Input &amp; Output devices.</p>
+      </div>
+      <a href="#" target="_blank" class="btn btn-outline-primary btn-note">
+        <i class="fas fa-file-alt me-1"></i>Open Notes
+      </a>
+    </div>
+
+    <div class="notes-chapter d-flex align-items-center gap-3">
+      <span class="ch-num">2</span>
+      <div class="flex-grow-1">
+        <div class="ch-title">
+          Computer Software &amp; Hardware
+          <span class="ch-subject-badge badge bg-primary">Computer</span>
+        </div>
+        <p class="ch-desc">Difference between software and hardware. System software vs Application software.</p>
+      </div>
+      <a href="#" target="_blank" class="btn btn-outline-primary btn-note">
+        <i class="fas fa-file-alt me-1"></i>Open Notes
+      </a>
+    </div>
+
+    <div class="notes-chapter d-flex align-items-center gap-3">
+      <span class="ch-num">3</span>
+      <div class="flex-grow-1">
+        <div class="ch-title">
+          MS Paint
+          <span class="ch-subject-badge badge bg-primary">Computer</span>
+        </div>
+        <p class="ch-desc">Tools in MS Paint, drawing shapes, filling colors, saving files.</p>
+      </div>
+      <a href="#" target="_blank" class="btn btn-outline-primary btn-note">
+        <i class="fas fa-file-alt me-1"></i>Open Notes
+      </a>
+    </div>
+
+    <div class="notes-chapter d-flex align-items-center gap-3">
+      <span class="ch-num">1</span>
+      <div class="flex-grow-1">
+        <div class="ch-title">
+          Our Universe
+          <span class="ch-subject-badge badge bg-success">Science</span>
+        </div>
+        <p class="ch-desc">Planets, stars, solar system. The sun and moon.</p>
+      </div>
+      <a href="#" target="_blank" class="btn btn-outline-success btn-note">
+        <i class="fas fa-file-alt me-1"></i>Open Notes
+      </a>
+    </div>
+
+    <!-- ADD MORE CHAPTERS ABOVE THIS LINE -->
+    <div class="coming-soon mt-3">
+      <i class="fas fa-clock"></i>
+      More chapters being added soon by your teacher!
+    </div>
+  </div>
+
+  <!-- ── QUIZ 1: Computer & Science ── -->
+  <div id="section-quiz1" style="display:none">
+    <div class="d-flex align-items-center mb-4">
+      <h4 class="fw-bold mb-0 me-3">🧠 Quiz 1 — Computer &amp; Science</h4>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4">
+        <div class="quiz-card">
+          <div class="quiz-header q1-header">
+            <span class="quiz-icon">💻</span>
+            <div class="quiz-title">Computer Basics</div>
+            <small>10 Questions · 5 min</small>
+          </div>
+          <div class="quiz-body">
+            <p>Test your knowledge of computer parts, input/output devices, and basic functions.</p>
+            <ul>
+              <li>Multiple choice questions</li>
+              <li>Instant feedback after each answer</li>
+              <li>Score at the end</li>
+            </ul>
+            <button class="btn btn-primary btn-quiz" onclick="startQuiz('computer')">
+              <i class="fas fa-play me-2"></i>Start Quiz
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="quiz-card">
+          <div class="quiz-header q1-header" style="background:linear-gradient(135deg,#20c997,#198754)">
+            <span class="quiz-icon">🔬</span>
+            <div class="quiz-title">Science Quiz</div>
+            <small>10 Questions · 5 min</small>
+          </div>
+          <div class="quiz-body">
+            <p>Questions on plants, animals, our body, and the solar system.</p>
+            <ul>
+              <li>Multiple choice questions</li>
+              <li>Instant feedback after each answer</li>
+              <li>Score at the end</li>
+            </ul>
+            <button class="btn btn-success btn-quiz" onclick="startQuiz('science')">
+              <i class="fas fa-play me-2"></i>Start Quiz
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── QUIZ 2: General Knowledge ── -->
+  <div id="section-quiz2" style="display:none">
+    <div class="d-flex align-items-center mb-4">
+      <h4 class="fw-bold mb-0 me-3">🌍 Quiz 2 — General Knowledge</h4>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4">
+        <div class="quiz-card">
+          <div class="quiz-header q2-header">
+            <span class="quiz-icon">🌏</span>
+            <div class="quiz-title">World &amp; Nepal GK</div>
+            <small>10 Questions · 5 min</small>
+          </div>
+          <div class="quiz-body">
+            <p>Capitals, flags, geography, and general facts about Nepal and the world.</p>
+            <ul>
+              <li>Multiple choice questions</li>
+              <li>Instant feedback</li>
+              <li>Final score card</li>
+            </ul>
+            <button class="btn btn-success btn-quiz" onclick="startQuiz('gk')">
+              <i class="fas fa-play me-2"></i>Start Quiz
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="quiz-card">
+          <div class="quiz-header q2-header" style="background:linear-gradient(135deg,#ffc107,#fd7e14)">
+            <span class="quiz-icon">🔢</span>
+            <div class="quiz-title">Maths Quick Fire</div>
+            <small>10 Questions · 3 min</small>
+          </div>
+          <div class="quiz-body">
+            <p>Fast arithmetic: addition, subtraction, multiplication, and simple word problems.</p>
+            <ul>
+              <li>Multiple choice questions</li>
+              <li>Instant feedback</li>
+              <li>Final score card</li>
+            </ul>
+            <button class="btn btn-warning btn-quiz text-dark" onclick="startQuiz('maths')">
+              <i class="fas fa-play me-2"></i>Start Quiz
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── QUIZ 3: Choose Category ── -->
+  <div id="section-quiz3" style="display:none">
+    <div class="d-flex align-items-center mb-3">
+      <h4 class="fw-bold mb-0 me-3">🎯 Quiz 3 — Choose Your Category</h4>
+    </div>
+    <p class="text-muted mb-4">Pick any category and play a 10-question quiz on that topic!</p>
+    <div class="cat-grid mb-4">
+      <div class="cat-btn" onclick="selectCat(this,'computer')"><span class="cat-icon">💻</span>Computer</div>
+      <div class="cat-btn" onclick="selectCat(this,'science')"><span class="cat-icon">🔬</span>Science</div>
+      <div class="cat-btn" onclick="selectCat(this,'gk')"><span class="cat-icon">🌏</span>General Knowledge</div>
+      <div class="cat-btn" onclick="selectCat(this,'maths')"><span class="cat-icon">🔢</span>Maths</div>
+      <div class="cat-btn" onclick="selectCat(this,'english')"><span class="cat-icon">📖</span>English</div>
+      <div class="cat-btn" onclick="selectCat(this,'nepal')"><span class="cat-icon">🇳🇵</span>Nepal</div>
+      <div class="cat-btn" onclick="selectCat(this,'animals')"><span class="cat-icon">🐾</span>Animals</div>
+      <div class="cat-btn" onclick="selectCat(this,'space')"><span class="cat-icon">🚀</span>Space</div>
+    </div>
+    <button id="startCatBtn" class="btn btn-primary px-4 py-2" style="border-radius:10px;font-weight:700;display:none" onclick="startQuiz(selectedCat)">
+      <i class="fas fa-play me-2"></i>Start <span id="catLabel"></span> Quiz
+    </button>
+  </div>
+
+  <!-- ── GAMES ── -->
+  <div id="section-games" style="display:none">
+    <div class="d-flex align-items-center mb-4">
+      <h4 class="fw-bold mb-0 me-3">🎮 Learning Games</h4>
+    </div>
+    <div class="row g-4">
+      <div class="col-sm-6 col-lg-3">
+        <div class="game-card coming-soon">
+          <span class="game-icon">🎯</span>
+          <div class="game-title">Word Match</div>
+          <div class="game-desc">Match computer terms with their meanings.</div>
+          <span class="badge bg-warning text-dark">Coming Soon</span>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="game-card coming-soon">
+          <span class="game-icon">🧩</span>
+          <div class="game-title">Crossword Puzzle</div>
+          <div class="game-desc">Fill in the crossword using your chapter knowledge.</div>
+          <span class="badge bg-warning text-dark">Coming Soon</span>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="game-card coming-soon">
+          <span class="game-icon">🃏</span>
+          <div class="game-title">Flash Cards</div>
+          <div class="game-desc">Flip cards to memorize key terms and definitions.</div>
+          <span class="badge bg-warning text-dark">Coming Soon</span>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="game-card coming-soon">
+          <span class="game-icon">🏆</span>
+          <div class="game-title">Quiz Battle</div>
+          <div class="game-desc">Race against time to answer as many questions as possible.</div>
+          <span class="badge bg-warning text-dark">Coming Soon</span>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-4 text-muted">
+      <i class="fas fa-hammer me-2"></i>Games are being built. Check back soon!
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ──────────────────────────────
+     QUIZ MODAL
+────────────────────────────── -->
+<div class="modal fade" id="quizModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-body">
+
+        <!-- In-progress view -->
+        <div id="quizPlay">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span id="qCategory" class="badge bg-primary rounded-pill"></span>
+            <button class="btn btn-sm btn-outline-danger" onclick="endQuiz()">✕ Quit</button>
+          </div>
+          <div class="q-progress mb-1">
+            <div class="q-progress-bar" id="qProgressBar" style="width:0%"></div>
+          </div>
+          <div class="q-number" id="qNumber">Question 1 of 10</div>
+          <div class="q-text" id="qText"></div>
+          <div id="qOptions"></div>
+          <div id="qExplain" class="mt-2 p-3 rounded" style="display:none;background:#f0f4ff;font-size:.87rem;"></div>
+        </div>
+
+        <!-- Score view -->
+        <div id="quizScore" style="display:none;text-align:center;padding:20px 0;">
+          <div class="score-circle" id="scoreBig"></div>
+          <h4 class="fw-bold" id="scoreMsg"></h4>
+          <p class="text-muted" id="scoreDetail"></p>
+          <div class="d-flex gap-3 justify-content-center mt-3">
+            <button class="btn btn-primary px-4" onclick="retryQuiz()"><i class="fas fa-redo me-2"></i>Try Again</button>
+            <button class="btn btn-outline-secondary px-4" onclick="endQuiz()">Close</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="container-fluid footer bg-dark">
+  <div class="container pt-4 pb-4">
+    <div class="row">
+      <div class="col-md-6 text-center text-md-start">
+        <span class="text-light"><a href="#" class="text-secondary"><i class="fas fa-copyright text-secondary me-2"></i>Lovely Angels English Boarding School</a>, All right reserved.</span>
+      </div>
+      <div class="col-md-6 text-center text-md-end">
+        <span class="text-light">Designed By <a href="https://Kuberjungthapa.com.np" class="text-secondary">RebuKJT</a></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /pageContent -->
+
+<!-- JS Libraries -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="lib/wow/wow.min.js"></script>
+<script src="lib/easing/easing.min.js"></script>
+<script src="lib/waypoints/waypoints.min.js"></script>
+<script src="lib/owlcarousel/owl.carousel.min.js"></script>
+<script src="js/main.js"></script>
+
+<script>
+/* ════════════════════════════
+   LOCK / UNLOCK
+════════════════════════════ */
+const CLASS_PASSWORD = 'FOUR'; // ← Change per class file
+
+function unlock() {
+  const val = document.getElementById('lockInput').value.trim().toUpperCase();
+  if (val === CLASS_PASSWORD) {
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('pageContent').style.display = 'block';
+    sessionStorage.setItem('unlocked_class4', '1');
+  } else {
+    const err = document.getElementById('lockError');
+    err.textContent = '❌ Wrong password. Try again!';
+    document.getElementById('lockInput').value = '';
+    document.getElementById('lockInput').focus();
+    document.getElementById('lockInput').style.animation = 'none';
+    document.getElementById('lockInput').offsetHeight;
+    document.getElementById('lockInput').style.animation = 'shake .3s ease';
+  }
+}
+document.getElementById('lockInput').addEventListener('keydown', e => { if(e.key==='Enter') unlock(); });
+document.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem('unlocked_class4') === '1') {
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('pageContent').style.display = 'block';
+  }
+});
+
+/* ════════════════════════════
+   SECTION TABS
+════════════════════════════ */
+function showSection(id) {
+  ['notes','quiz1','quiz2','quiz3','games'].forEach(s => {
+    document.getElementById('section-'+s).style.display = (s===id) ? 'block' : 'none';
+  });
+  document.querySelectorAll('.hub-tabs .nav-link').forEach((btn,i) => {
+    btn.classList.toggle('active', btn.getAttribute('onclick').includes("'"+id+"'"));
+  });
+}
+
+/* ════════════════════════════
+   QUIZ 3 CATEGORY SELECTOR
+════════════════════════════ */
+let selectedCat = null;
+const CAT_LABELS = {
+  computer:'Computer', science:'Science', gk:'General Knowledge',
+  maths:'Maths', english:'English', nepal:'Nepal', animals:'Animals', space:'Space'
+};
+function selectCat(el, cat) {
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedCat = cat;
+  document.getElementById('catLabel').textContent = CAT_LABELS[cat];
+  document.getElementById('startCatBtn').style.display = 'inline-block';
+}
+
+/* ════════════════════════════
+   QUESTION BANK
+   ─ Add more questions here!
+   ─ Format: { q, options:[], answer (index 0-3), explain }
+════════════════════════════ */
+const QUESTIONS = {
+  computer: [
+    { q:"What does CPU stand for?", options:["Central Processing Unit","Computer Personal Unit","Control Process Unit","Central Power Unit"], answer:0, explain:"CPU = Central Processing Unit — the brain of the computer." },
+    { q:"Which of these is an input device?", options:["Monitor","Printer","Keyboard","Speaker"], answer:2, explain:"Keyboard is used to input data into the computer." },
+    { q:"Which is an output device?", options:["Mouse","Keyboard","Monitor","Scanner"], answer:2, explain:"A monitor displays output from the computer." },
+    { q:"What does RAM stand for?", options:["Random Access Memory","Read All Memory","Run After Mode","Rapid Access Module"], answer:0, explain:"RAM = Random Access Memory — temporary storage used while the computer is on." },
+    { q:"MS Paint is used for:", options:["Writing documents","Drawing and painting","Playing music","Browsing the internet"], answer:1, explain:"MS Paint is a drawing/painting program in Windows." },
+    { q:"Which device stores data permanently?", options:["RAM","CPU","Hard Disk","Monitor"], answer:2, explain:"Hard Disk (HDD/SSD) stores data permanently even when the computer is off." },
+    { q:"What is software?", options:["Physical parts of a computer","Programs and instructions for the computer","The keyboard and mouse","The computer case"], answer:1, explain:"Software is a set of programs/instructions that tell the computer what to do." },
+    { q:"Which of these is a system software?", options:["MS Word","MS Paint","Windows","Google Chrome"], answer:2, explain:"Windows (Operating System) is a system software." },
+    { q:"The full form of OS is:", options:["Open Source","Output System","Operating System","Online Service"], answer:2, explain:"OS = Operating System — it manages all hardware and software on a computer." },
+    { q:"Which key is used to delete text to the left of the cursor?", options:["Delete","Enter","Backspace","Escape"], answer:2, explain:"Backspace deletes the character to the LEFT of the cursor." },
+  ],
+  science: [
+    { q:"Which planet is closest to the Sun?", options:["Earth","Venus","Mercury","Mars"], answer:2, explain:"Mercury is the closest planet to the Sun." },
+    { q:"What do plants need to make food?", options:["Water only","Sunlight, water and CO₂","Soil and rain","Only sunlight"], answer:1, explain:"Plants need sunlight, water, and carbon dioxide (CO₂) for photosynthesis." },
+    { q:"How many planets are in our Solar System?", options:["7","8","9","10"], answer:1, explain:"There are 8 planets: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune." },
+    { q:"Which gas do humans breathe in?", options:["Carbon dioxide","Oxygen","Nitrogen","Hydrogen"], answer:1, explain:"Humans breathe in Oxygen (O₂) and breathe out Carbon Dioxide (CO₂)." },
+    { q:"The largest planet in our Solar System is:", options:["Saturn","Earth","Jupiter","Uranus"], answer:2, explain:"Jupiter is the largest planet in our Solar System." },
+    { q:"What is the main source of energy for Earth?", options:["Moon","Wind","The Sun","Fire"], answer:2, explain:"The Sun is Earth's primary source of energy." },
+    { q:"Which organ pumps blood in our body?", options:["Lungs","Brain","Kidneys","Heart"], answer:3, explain:"The Heart pumps blood throughout our body." },
+    { q:"Herbivores eat:", options:["Only meat","Plants and meat","Only plants","Insects"], answer:2, explain:"Herbivores (like cows) eat only plants." },
+    { q:"Water boils at:", options:["50°C","100°C","75°C","200°C"], answer:1, explain:"Pure water boils at 100°C (at sea level)." },
+    { q:"Which is the natural satellite of Earth?", options:["Sun","Mars","Moon","Jupiter"], answer:2, explain:"The Moon is Earth's only natural satellite." },
+  ],
+  gk: [
+    { q:"What is the capital of Nepal?", options:["Pokhara","Biratnagar","Kathmandu","Dharan"], answer:2, explain:"Kathmandu is the capital city of Nepal." },
+    { q:"How many continents are there on Earth?", options:["5","6","7","8"], answer:2, explain:"There are 7 continents: Asia, Africa, North America, South America, Antarctica, Europe, Australia." },
+    { q:"Which is the longest river in the world?", options:["Amazon","Nile","Ganges","Yangtze"], answer:1, explain:"The Nile River in Africa is the longest river in the world." },
+    { q:"What is the capital of India?", options:["Mumbai","Kolkata","New Delhi","Chennai"], answer:2, explain:"New Delhi is the capital of India." },
+    { q:"Which is the tallest mountain in the world?", options:["K2","Kangchenjunga","Mount Everest","Lhotse"], answer:2, explain:"Mount Everest (8,849m) is the tallest mountain in the world, located in Nepal." },
+    { q:"How many days are in a leap year?", options:["365","366","360","364"], answer:1, explain:"A leap year has 366 days. It happens every 4 years." },
+    { q:"Which ocean is the largest?", options:["Atlantic","Indian","Arctic","Pacific"], answer:3, explain:"The Pacific Ocean is the largest ocean, covering more than 30% of Earth's surface." },
+    { q:"The national bird of Nepal is:", options:["Eagle","Peacock","Danphe (Lophophorus)","Parrot"], answer:2, explain:"Danphe (Himalayan Monal) is the national bird of Nepal." },
+    { q:"Which country has the most people in the world?", options:["USA","India","China","Russia"], answer:1, explain:"India surpassed China in 2023 to become the most populated country." },
+    { q:"What is 2+2×2?", options:["8","6","4","10"], answer:1, explain:"By BODMAS: 2×2=4 first, then 2+4=6." },
+  ],
+  maths: [
+    { q:"What is 12 × 12?", options:["124","144","132","148"], answer:1, explain:"12 × 12 = 144" },
+    { q:"What is 100 ÷ 4?", options:["20","25","30","40"], answer:1, explain:"100 ÷ 4 = 25" },
+    { q:"What is 37 + 48?", options:["85","75","95","80"], answer:0, explain:"37 + 48 = 85" },
+    { q:"What is 200 − 75?", options:["115","135","125","145"], answer:2, explain:"200 − 75 = 125" },
+    { q:"A dozen = ?", options:["10","11","12","13"], answer:2, explain:"A dozen = 12 items." },
+    { q:"What is half of 64?", options:["28","32","36","34"], answer:1, explain:"64 ÷ 2 = 32" },
+    { q:"How many sides does a pentagon have?", options:["4","5","6","7"], answer:1, explain:"A pentagon has 5 sides." },
+    { q:"Which number comes after 999?", options:["1000","9999","99","10000"], answer:0, explain:"999 + 1 = 1000" },
+    { q:"3 × 3 × 3 = ?", options:["9","18","27","81"], answer:2, explain:"3³ = 3×3×3 = 27" },
+    { q:"What is 15% of 100?", options:["10","15","20","5"], answer:1, explain:"15% of 100 = 15" },
+  ],
+  english: [
+    { q:"Which of these is a noun?", options:["Run","Beautiful","School","Quickly"], answer:2, explain:"'School' is a noun (a place). 'Run' is a verb, 'Beautiful' is an adjective, 'Quickly' is an adverb." },
+    { q:"What is the plural of 'child'?", options:["Childs","Childrens","Children","Childes"], answer:2, explain:"The plural of 'child' is 'children' — an irregular plural." },
+    { q:"Which is the correct spelling?", options:["Frend","Freind","Friend","Freiend"], answer:2, explain:"The correct spelling is 'Friend'." },
+    { q:"'She ___ to school every day.' Fill in the blank.", options:["go","goes","going","gone"], answer:1, explain:"'She goes' — with third person singular (she/he/it), we add -s." },
+    { q:"What is the opposite of 'happy'?", options:["Glad","Joyful","Sad","Angry"], answer:2, explain:"The antonym (opposite) of 'happy' is 'sad'." },
+    { q:"Which punctuation ends a question?", options:[".","!","?",","], answer:2, explain:"A question mark (?) ends a question." },
+    { q:"What is a verb?", options:["A naming word","An action word","A describing word","A joining word"], answer:1, explain:"A verb is an action word (e.g. run, eat, sleep)." },
+    { q:"How many vowels are in the English alphabet?", options:["4","5","6","7"], answer:1, explain:"The 5 vowels are: A, E, I, O, U." },
+    { q:"What is the past tense of 'eat'?", options:["Eated","Ate","Eaten","Eats"], answer:1, explain:"The past tense of 'eat' is 'ate'." },
+    { q:"Which sentence is correct?", options:["I goes to school.","She go to school.","He goes to school.","They goes to school."], answer:2, explain:"'He goes to school.' — correct use of third person singular." },
+  ],
+  nepal: [
+    { q:"What is the national flower of Nepal?", options:["Rose","Lotus","Rhododendron","Marigold"], answer:2, explain:"Rhododendron (Lali Gurans) is the national flower of Nepal." },
+    { q:"Nepal is located in which continent?", options:["Africa","Europe","Asia","Australia"], answer:2, explain:"Nepal is in Asia, between India and China." },
+    { q:"How many provinces does Nepal have?", options:["5","6","7","8"], answer:2, explain:"Nepal has 7 provinces since the 2015 constitution." },
+    { q:"What is the national animal of Nepal?", options:["Tiger","Cow","Elephant","Lion"], answer:1, explain:"The cow (Gai) is the national animal of Nepal." },
+    { q:"Which is the highest peak in Nepal?", options:["Kanchenjunga","Lhotse","Cho Oyu","Mount Everest"], answer:3, explain:"Mount Everest (Sagarmatha) at 8,849m is Nepal's highest peak." },
+    { q:"Dashain is celebrated to worship:", options:["Shiva","Durga","Vishnu","Ganesh"], answer:1, explain:"Dashain celebrates the victory of Goddess Durga over the demon Mahisasura." },
+    { q:"Nepal's currency is called:", options:["Rupee","Taka","Dollar","Dinar"], answer:0, explain:"Nepal's currency is the Nepali Rupee (NPR)." },
+    { q:"The national language of Nepal is:", options:["Hindi","English","Maithili","Nepali"], answer:3, explain:"Nepali is the official national language of Nepal." },
+    { q:"What is the capital of Koshi Province?", options:["Dharan","Itahari","Biratnagar","Dhankuta"], answer:2, explain:"Biratnagar is the capital (headquarters) of Koshi Province." },
+    { q:"Who wrote 'Muna Madan'?", options:["Bhanubhakta","Laxmi Prasad Devkota","Bal Krishna Sama","Siddhicharan Shrestha"], answer:1, explain:"'Muna Madan' was written by Laxmi Prasad Devkota, the Mahakavi of Nepal." },
+  ],
+  animals: [
+    { q:"Which animal is called the 'King of the Jungle'?", options:["Tiger","Elephant","Lion","Cheetah"], answer:2, explain:"The lion is known as the 'King of the Jungle'." },
+    { q:"How many legs does a spider have?", options:["6","8","10","4"], answer:1, explain:"Spiders have 8 legs — they are arachnids, not insects." },
+    { q:"Which animal is the fastest on land?", options:["Lion","Horse","Cheetah","Leopard"], answer:2, explain:"The Cheetah can reach speeds of 112 km/h — fastest land animal." },
+    { q:"What do you call a baby cat?", options:["Puppy","Calf","Kitten","Foal"], answer:2, explain:"A baby cat is called a kitten." },
+    { q:"Which bird cannot fly?", options:["Eagle","Sparrow","Penguin","Parrot"], answer:2, explain:"Penguins cannot fly — they use their wings to swim!" },
+    { q:"What is a group of fish called?", options:["Herd","Pack","School","Flock"], answer:2, explain:"A group of fish swimming together is called a school or shoal." },
+    { q:"Which animal is known for its long neck?", options:["Elephant","Giraffe","Camel","Rhino"], answer:1, explain:"Giraffes have the longest necks of any living animal." },
+    { q:"Which is the largest land animal?", options:["Hippo","Giraffe","Rhino","African Elephant"], answer:3, explain:"The African Elephant is the largest land animal on Earth." },
+    { q:"What do herbivores eat?", options:["Only meat","Plants and meat","Only plants","Fish"], answer:2, explain:"Herbivores eat only plants (e.g. cow, goat, rabbit)." },
+    { q:"Which animal carries its home on its back?", options:["Crab","Snail","Turtle","All of the above"], answer:3, explain:"Snails, turtles, and hermit crabs all carry their shell/home on their back!" },
+  ],
+  space: [
+    { q:"Which planet is known as the 'Red Planet'?", options:["Jupiter","Venus","Mars","Saturn"], answer:2, explain:"Mars is called the Red Planet because of its reddish iron oxide surface." },
+    { q:"How many moons does Earth have?", options:["0","1","2","3"], answer:1, explain:"Earth has exactly 1 moon, simply called 'The Moon'." },
+    { q:"What is the center of our Solar System?", options:["Earth","Moon","The Sun","Jupiter"], answer:2, explain:"The Sun is at the center of our Solar System." },
+    { q:"Which is the smallest planet in our Solar System?", options:["Pluto","Mercury","Mars","Venus"], answer:1, explain:"Mercury is the smallest planet. (Pluto is now a dwarf planet.)" },
+    { q:"What do you call a scientist who studies space?", options:["Geologist","Astronaut","Astronomer","Biologist"], answer:2, explain:"An astronomer studies stars, planets, and the universe." },
+    { q:"How long does Earth take to orbit the Sun?", options:["1 month","365 days","24 hours","7 days"], answer:1, explain:"Earth takes 365¼ days (one year) to orbit the Sun." },
+    { q:"Which planet has rings around it?", options:["Jupiter only","Saturn (most famous)","Uranus only","Mars"], answer:1, explain:"Saturn has the most visible and famous rings, though Jupiter, Uranus, and Neptune also have rings." },
+    { q:"Stars appear to twinkle because:", options:["They switch on and off","Of Earth's atmosphere","They are very far","They are small"], answer:1, explain:"Stars twinkle (scintillate) because their light passes through Earth's moving atmosphere." },
+    { q:"What is the galaxy we live in called?", options:["Andromeda","Milky Way","Triangulum","Centaurus A"], answer:1, explain:"We live in the Milky Way galaxy." },
+    { q:"A person who travels to space is called:", options:["Pilot","Astronaut","Astronomer","Geologist"], answer:1, explain:"A person who travels to space is called an Astronaut." },
+  ],
+};
+
+/* ════════════════════════════
+   QUIZ ENGINE
+════════════════════════════ */
+let currentQuiz = [];
+let currentQ    = 0;
+let score       = 0;
+let answered    = false;
+let quizType    = '';
+let quizModal   = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  quizModal = new bootstrap.Modal(document.getElementById('quizModal'));
+});
+
+function startQuiz(type) {
+  if (!QUESTIONS[type]) {
+    alert('Quiz for this category is coming soon!'); return;
+  }
+  quizType    = type;
+  currentQ    = 0;
+  score       = 0;
+  answered    = false;
+  currentQuiz = shuffle([...QUESTIONS[type]]).slice(0, 10);
+  document.getElementById('quizPlay').style.display  = 'block';
+  document.getElementById('quizScore').style.display = 'none';
+  document.getElementById('qCategory').textContent = CAT_LABELS[type] || type;
+  renderQuestion();
+  quizModal.show();
+}
+
+function shuffle(arr) {
+  for (let i=arr.length-1;i>0;i--) {
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function renderQuestion() {
+  const q = currentQuiz[currentQ];
+  document.getElementById('qNumber').textContent = `Question ${currentQ+1} of ${currentQuiz.length}`;
+  document.getElementById('qProgressBar').style.width = `${((currentQ)/currentQuiz.length)*100}%`;
+  document.getElementById('qText').textContent = q.q;
+  document.getElementById('qExplain').style.display = 'none';
+  const opts = document.getElementById('qOptions');
+  opts.innerHTML = '';
+  q.options.forEach((opt,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'q-option d-block w-100';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(i);
+    opts.appendChild(btn);
+  });
+  answered = false;
+}
+
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  const q = currentQuiz[currentQ];
+  const btns = document.querySelectorAll('.q-option');
+  btns.forEach(b => b.disabled = true);
+  btns[idx].classList.add(idx === q.answer ? 'correct' : 'wrong');
+  if (idx !== q.answer) btns[q.answer].classList.add('correct');
+  if (idx === q.answer) score++;
+  const exp = document.getElementById('qExplain');
+  exp.innerHTML = `<i class="fas fa-info-circle me-2 text-primary"></i>${q.explain}`;
+  exp.style.display = 'block';
+  setTimeout(() => {
+    currentQ++;
+    if (currentQ < currentQuiz.length) {
+      renderQuestion();
+    } else {
+      showScore();
+    }
+  }, 1600);
+}
+
+function showScore() {
+  document.getElementById('quizPlay').style.display  = 'none';
+  document.getElementById('quizScore').style.display = 'block';
+  document.getElementById('qProgressBar').style.width = '100%';
+  const pct = Math.round((score/currentQuiz.length)*100);
+  document.getElementById('scoreBig').textContent = `${score}/${currentQuiz.length}`;
+  let msg, detail;
+  if(pct>=80){ msg="🎉 Excellent!"; detail="Amazing work! You really know your stuff!"; }
+  else if(pct>=60){ msg="👍 Good Job!"; detail="Nice effort! Review the missed questions and try again."; }
+  else if(pct>=40){ msg="📚 Keep Practising!"; detail="Don't give up — read your notes and try again!"; }
+  else { msg="😊 Keep Trying!"; detail="Read through the chapter notes and give it another shot!"; }
+  document.getElementById('scoreMsg').textContent    = msg;
+  document.getElementById('scoreDetail').textContent = detail;
+}
+
+function retryQuiz() { startQuiz(quizType); }
+function endQuiz()   { quizModal.hide(); }
+</script>
+
+<style>
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-10px)}
+  75%{transform:translateX(10px)}
+}
+</style>
+</body>
+</html>

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class 5 Resources | Lovely Angels English Boarding School</title>
+<meta name="description" content="Class 5 study resources for General Knowledge and Computer, organised by terminal exam.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --chalk-green:#1F3B33;
+    --chalk-green-dark:#152A25;
+    --paper:#F4F1E6;
+    --paper-line:#DCD6C2;
+    --margin-red:#C1443B;
+    --ink:#26302C;
+    --ink-soft:#5B6660;
+    --mustard:#C99A1E;
+    --mustard-soft:#F3E4BC;
+    --teal:#2C7A73;
+    --teal-soft:#D9EDE9;
+    --radius:10px;
+    --shadow:0 6px 18px rgba(21,42,37,0.12);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  .hand{
+    font-family:'Caveat',cursive;
+    color:var(--margin-red);
+    font-weight:700;
+  }
+  a{color:inherit;}
+  :focus-visible{
+    outline:3px solid var(--teal);
+    outline-offset:2px;
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    *{animation:none!important; transition:none!important;}
+  }
+
+  /* ===== Top bar ===== */
+  .topbar{
+    background:var(--chalk-green-dark);
+    color:#EFEAD9;
+    font-size:0.82rem;
+    padding:6px 20px;
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .topbar a{text-decoration:none;color:#EFEAD9;opacity:0.85;}
+  .topbar a:hover{opacity:1;text-decoration:underline;}
+
+  nav.main{
+    background:var(--chalk-green);
+    color:#F4F1E6;
+    padding:14px 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  nav.main .brand{
+    font-family:'Fraunces',serif;
+    font-size:1.3rem;
+    font-weight:700;
+    text-decoration:none;
+    color:#F4F1E6;
+  }
+  nav.main ul{
+    list-style:none;
+    display:flex;
+    gap:22px;
+    margin:0;
+    padding:0;
+    flex-wrap:wrap;
+  }
+  nav.main a{
+    text-decoration:none;
+    color:#DCE6DF;
+    font-size:0.95rem;
+  }
+  nav.main a:hover, nav.main a.active{color:#fff; border-bottom:2px solid var(--mustard);}
+
+  /* ===== Hero: copybook cover ===== */
+  .cover{
+    position:relative;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.18)),
+      repeating-linear-gradient(135deg, var(--chalk-green) 0 40px, var(--chalk-green-dark) 40px 80px);
+    color:#F4F1E6;
+    padding:56px 24px 44px;
+    overflow:hidden;
+  }
+  .cover::before{
+    content:"";
+    position:absolute;
+    left:0; top:0; bottom:0;
+    width:14px;
+    background:var(--margin-red);
+    box-shadow:2px 0 0 rgba(0,0,0,0.15);
+  }
+  .cover-inner{
+    max-width:900px;
+    margin:0 auto;
+    padding-left:26px;
+  }
+  .cover .eyebrow{
+    font-family:'Caveat',cursive;
+    font-size:1.4rem;
+    color:var(--mustard-soft);
+    display:block;
+    margin-bottom:2px;
+  }
+  .cover h1{
+    font-size:clamp(2.2rem,6vw,3.4rem);
+    margin:0 0 10px;
+    color:#fff;
+  }
+  .cover p.tagline{
+    font-size:1.05rem;
+    max-width:480px;
+    color:#E4E3D3;
+    margin:0;
+  }
+  .cover .ribbon{
+    position:absolute;
+    right:36px;
+    top:0;
+    width:34px;
+    height:120px;
+    background:var(--margin-red);
+    clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%);
+    box-shadow:var(--shadow);
+  }
+
+  /* ===== Subject tabs (folder tabs) ===== */
+  .subject-tabs{
+    display:flex;
+    gap:8px;
+    max-width:1000px;
+    margin:-20px auto 0;
+    padding:0 24px;
+    position:relative;
+    z-index:2;
+  }
+  .subject-tab{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:1rem;
+    padding:12px 22px 10px;
+    border-radius:10px 10px 0 0;
+    background:#E8E2CC;
+    color:var(--ink-soft);
+    border:none;
+    cursor:pointer;
+    box-shadow:0 -2px 6px rgba(0,0,0,0.06);
+  }
+  .subject-tab[aria-selected="true"]{
+    background:var(--paper);
+    color:var(--ink);
+    box-shadow:var(--shadow);
+  }
+  .subject-tab .dot{
+    display:inline-block;
+    width:9px;height:9px;border-radius:50%;
+    margin-right:8px;
+  }
+  .subject-tab[data-accent="mustard"] .dot{background:var(--mustard);}
+  .subject-tab[data-accent="teal"] .dot{background:var(--teal);}
+
+  main{max-width:1000px; margin:0 auto; padding:0 24px 60px;}
+
+  .subject-panel{
+    background:var(--paper);
+    border-radius:0 10px 10px 10px;
+    box-shadow:var(--shadow);
+    padding:28px 22px 8px;
+  }
+  .subject-panel[hidden]{display:none;}
+
+  /* ===== Terminal pill nav ===== */
+  .terminal-nav{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding-bottom:14px;
+    margin-bottom:20px;
+    border-bottom:1px dashed var(--paper-line);
+  }
+  .terminal-pill{
+    flex:0 0 auto;
+    font-size:0.85rem;
+    font-weight:600;
+    padding:7px 14px;
+    border-radius:999px;
+    border:1.5px solid var(--paper-line);
+    background:#fff;
+    color:var(--ink-soft);
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .terminal-pill[aria-pressed="true"]{
+    background:var(--chalk-green);
+    border-color:var(--chalk-green);
+    color:#fff;
+  }
+
+  /* ===== Ruled paper resource grid ===== */
+  .ruled{
+    background-image: repeating-linear-gradient(var(--paper) 0 31px, var(--paper-line) 31px 32px);
+    border-radius:8px;
+    padding:6px 4px 20px;
+  }
+  .resource-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:16px;
+    padding:10px 6px;
+  }
+
+  .card{
+    position:relative;
+    background:#FFFDF7;
+    border-radius:8px;
+    padding:16px 16px 14px 20px;
+    box-shadow:0 2px 8px rgba(21,42,37,0.08);
+    border-left:4px solid var(--margin-red);
+  }
+  .card .type{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:0.72rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--teal);
+    margin-bottom:6px;
+  }
+  .card[data-type="pdf"] .type{color:var(--margin-red);}
+  .card[data-type="video"] .type{color:var(--teal);}
+  .card[data-type="doc"] .type{color:var(--mustard);}
+  .card h3{
+    font-size:1.05rem;
+    margin:0 0 6px;
+    color:var(--ink);
+  }
+  .card p{
+    font-size:0.88rem;
+    color:var(--ink-soft);
+    margin:0 0 12px;
+    line-height:1.4;
+  }
+  .card .note{
+    position:absolute;
+    top:10px;
+    right:14px;
+    font-size:1.05rem;
+    transform:rotate(-4deg);
+  }
+  .card .open{
+    display:inline-block;
+    font-size:0.85rem;
+    font-weight:600;
+    text-decoration:none;
+    padding:7px 14px;
+    border-radius:6px;
+    background:var(--chalk-green);
+    color:#fff;
+  }
+  .card .open:hover{background:var(--chalk-green-dark);}
+
+  .empty{
+    padding:34px 10px;
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:0.95rem;
+  }
+  .empty span.hand{font-size:1.3rem; display:block; margin-bottom:4px;}
+
+  /* ===== Q&A ===== */
+  .qna-section{margin-top:36px; padding-bottom:30px;}
+  .qna-section h2{font-size:1.4rem; margin-bottom:14px;}
+  details.qa{
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-radius:8px;
+    margin-bottom:10px;
+    padding:12px 16px;
+  }
+  details.qa summary{
+    cursor:pointer;
+    font-weight:600;
+    list-style:none;
+  }
+  details.qa summary::-webkit-details-marker{display:none;}
+  details.qa summary::before{
+    content:"Q ";
+    color:var(--margin-red);
+    font-family:'Fraunces',serif;
+    font-weight:700;
+  }
+  details.qa p{margin:10px 0 2px; color:var(--ink-soft); font-size:0.92rem; line-height:1.5;}
+
+  footer{
+    background:var(--chalk-green-dark);
+    color:#CFC9B4;
+    text-align:center;
+    padding:26px 20px;
+    font-size:0.85rem;
+  }
+  footer a{color:#F3E4BC; text-decoration:none;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span>Sundarharaicha-2, Morang &nbsp;•&nbsp; 9802701683</span>
+  <a href="mailto:info@lovelyangels.edu.np">info@lovelyangels.edu.np</a>
+</div>
+
+<nav class="main">
+  <a class="brand" href="index.html">LovelyAngels</a>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="teacher.html">Teacher</a></li>
+    <li><a href="futsal.html">Futsal Stats</a></li>
+    <li><a href="Class4.html">Class 4</a></li>
+    <li><a href="Class5.html" class="active">Class 5</a></li>
+    <li><a href="Class6.html">Class 6</a></li>
+    <li><a href="Class7.html">Class 7</a></li>
+    <li><a href="Tuition.html">Tuition</a></li>
+  </ul>
+</nav>
+
+<header class="cover">
+  <div class="ribbon" aria-hidden="true"></div>
+  <div class="cover-inner">
+    <span class="eyebrow">Exercise copy —</span>
+    <h1 id="class-title">Class 5</h1>
+    <p class="tagline" id="class-tagline">Unlock your potential and soar high!</p>
+  </div>
+</header>
+
+<div class="subject-tabs" role="tablist" id="subject-tabs" aria-label="Choose subject"></div>
+
+<main id="subject-panels"></main>
+
+<footer>
+  <p>Lovely Angels English Boarding School, All rights reserved.</p>
+  <p>Designed by <a href="https://Kuberjungthapa.com.np" target="_blank" rel="noopener">RebuKJT</a></p>
+</footer>
+
+<script>
+const ICONS = {
+  pdf:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
+  video:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>',
+  doc:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg>',
+  link: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1-1"/></svg>',
+  image:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>'
+};
+
+let DATA = null;
+let activeSubject = null;
+let activeTerminal = {};
+
+async function init(){
+  try{
+    const res = await fetch('resources.json', {cache:'no-store'});
+    DATA = await res.json();
+  }catch(e){
+    document.getElementById('subject-panels').innerHTML =
+      '<p class="empty">Couldn\'t load resources.json. Make sure it sits next to this page on the server.</p>';
+    return;
+  }
+  document.getElementById('class-title').textContent = DATA.class || 'Class';
+  document.getElementById('class-tagline').textContent = DATA.tagline || '';
+  document.title = (DATA.class || 'Class') + ' Resources | Lovely Angels English Boarding School';
+
+  DATA.subjects.forEach(s => { activeTerminal[s.id] = s.terminals[0] ? s.terminals[0].id : null; });
+  activeSubject = DATA.subjects[0].id;
+
+  renderTabs();
+  renderPanels();
+}
+
+function renderTabs(){
+  const tabWrap = document.getElementById('subject-tabs');
+  tabWrap.innerHTML = '';
+  DATA.subjects.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'subject-tab';
+    btn.setAttribute('role','tab');
+    btn.setAttribute('data-accent', s.accent);
+    btn.setAttribute('aria-selected', s.id === activeSubject ? 'true':'false');
+    btn.innerHTML = '<span class="dot"></span>' + s.name;
+    btn.addEventListener('click', () => { activeSubject = s.id; renderTabs(); renderPanels(); });
+    tabWrap.appendChild(btn);
+  });
+}
+
+function renderPanels(){
+  const wrap = document.getElementById('subject-panels');
+  wrap.innerHTML = '';
+  DATA.subjects.forEach(s => {
+    const panel = document.createElement('section');
+    panel.className = 'subject-panel';
+    panel.hidden = s.id !== activeSubject;
+
+    const nav = document.createElement('div');
+    nav.className = 'terminal-nav';
+    s.terminals.forEach(t => {
+      const pill = document.createElement('button');
+      pill.className = 'terminal-pill';
+      pill.textContent = t.label;
+      pill.setAttribute('aria-pressed', t.id === activeTerminal[s.id] ? 'true':'false');
+      pill.addEventListener('click', () => { activeTerminal[s.id] = t.id; renderPanels(); });
+      nav.appendChild(pill);
+    });
+    panel.appendChild(nav);
+
+    const currentTerminal = s.terminals.find(t => t.id === activeTerminal[s.id]) || s.terminals[0];
+    const ruled = document.createElement('div');
+    ruled.className = 'ruled';
+
+    if(!currentTerminal || !currentTerminal.resources || currentTerminal.resources.length === 0){
+      ruled.innerHTML = '<div class="empty"><span class="hand">nothing here yet!</span>Add resources for this section in resources.json.</div>';
+    } else {
+      const grid = document.createElement('div');
+      grid.className = 'resource-grid';
+      currentTerminal.resources.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.setAttribute('data-type', r.type || 'link');
+        card.innerHTML =
+          '<span class="type">' + (ICONS[r.type] || ICONS.link) + (r.type || 'link') + '</span>' +
+          (r.note ? '<span class="note hand">' + r.note + '</span>' : '') +
+          '<h3>' + escapeHtml(r.title) + '</h3>' +
+          (r.description ? '<p>' + escapeHtml(r.description) + '</p>' : '') +
+          '<a class="open" href="' + r.url + '" target="_blank" rel="noopener">Open</a>';
+        grid.appendChild(card);
+      });
+      ruled.appendChild(grid);
+    }
+    panel.appendChild(ruled);
+
+    if(s.qna && s.qna.length){
+      const qs = document.createElement('div');
+      qs.className = 'qna-section';
+      qs.innerHTML = '<h2>Important Questions &amp; Answers</h2>';
+      s.qna.forEach(item => {
+        const d = document.createElement('details');
+        d.className = 'qa';
+        d.innerHTML = '<summary>' + escapeHtml(item.q) + '</summary><p>' + escapeHtml(item.a) + '</p>';
+        qs.appendChild(d);
+      });
+      panel.appendChild(qs);
+    }
+
+    wrap.appendChild(panel);
+  });
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+init();
+</script>
+</body>
+</html>

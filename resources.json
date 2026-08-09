@@ -1,0 +1,97 @@
+{
+  "class": "Class 5",
+  "tagline": "Unlock your potential and soar high!",
+  "subjects": [
+    {
+      "id": "gk",
+      "name": "General Knowledge",
+      "short": "GK",
+      "accent": "mustard",
+      "terminals": [
+        {
+          "id": "syllabus",
+          "label": "Syllabus",
+          "resources": [
+            {
+              "title": "GK Full Syllabus 2083",
+              "description": "Complete year syllabus with unit breakdown.",
+              "type": "pdf",
+              "url": "https://drive.google.com/",
+              "note": "start here"
+            }
+          ]
+        },
+        {
+          "id": "1st",
+          "label": "1st Terminal",
+          "resources": [
+            {
+              "title": "Our Solar System",
+              "description": "Planets, order from the sun, and key facts to remember.",
+              "type": "pdf",
+              "url": "https://drive.google.com/",
+              "note": "exam favourite"
+            },
+            {
+              "title": "Capitals & Countries Chart",
+              "description": "Printable chart for daily 5-minute revision.",
+              "type": "doc",
+              "url": "https://drive.google.com/"
+            }
+          ]
+        },
+        { "id": "2nd", "label": "2nd Terminal", "resources": [] },
+        { "id": "3rd", "label": "3rd Terminal", "resources": [] },
+        { "id": "4th", "label": "4th Terminal", "resources": [] },
+        { "id": "homework", "label": "Homework", "resources": [] },
+        { "id": "important", "label": "Important Questions", "resources": [] },
+        { "id": "result", "label": "Result", "resources": [] }
+      ],
+      "qna": [
+        {
+          "q": "What is Abacus?",
+          "a": "Abacus is the first mechanical computing device, developed by the Chinese around 3000 to 4000 years ago. It is made of a wooden rack with metal rods."
+        },
+        {
+          "q": "What is Napier's Bone?",
+          "a": "Napier's Bones was a manually operated calculating device invented by John Napier. It consists of eleven rods -- ten carved with multiplication tables from 0 to 9, and one carved with the numbers 1 to 9."
+        }
+      ]
+    },
+    {
+      "id": "computer",
+      "name": "Computer",
+      "short": "COMP",
+      "accent": "teal",
+      "terminals": [
+        { "id": "syllabus", "label": "Com-Syllabus", "resources": [] },
+        {
+          "id": "1st",
+          "label": "1st Terminal",
+          "resources": [
+            {
+              "title": "Introduction to Computers",
+              "description": "Basic concepts and history of computing.",
+              "type": "pdf",
+              "url": "https://drive.google.com/"
+            },
+            {
+              "title": "Understanding Hardware",
+              "description": "Components and functions of a computer system.",
+              "type": "video",
+              "url": "https://drive.google.com/",
+              "note": "watch before class"
+            }
+          ]
+        },
+        { "id": "2nd", "label": "2nd Terminal", "resources": [] },
+        { "id": "3rd", "label": "3rd Terminal", "resources": [] },
+        { "id": "4th", "label": "4th Terminal", "resources": [] },
+        { "id": "homework", "label": "Homework", "resources": [] },
+        { "id": "important", "label": "Important Questions", "resources": [] },
+        { "id": "result", "label": "Result", "resources": [] }
+      ],
+      "qna": []
+    }
+  ]
+}

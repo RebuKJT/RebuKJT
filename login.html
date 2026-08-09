@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lovely Angels — Teacher Resource Portal Login</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #0a1f44 0%, #1a3a6e 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 40px 32px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  h1 {
+    font-size: 1.3rem;
+    color: #0a1f44;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .sub {
+    text-align: center;
+    color: #666;
+    font-size: 0.85rem;
+    margin-bottom: 28px;
+  }
+  label {
+    display: block;
+    font-size: 0.85rem;
+    color: #333;
+    margin-bottom: 6px;
+    margin-top: 16px;
+    font-weight: 600;
+  }
+  input {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 0.95rem;
+  }
+  input:focus {
+    outline: none;
+    border-color: #d4af37;
+  }
+  button {
+    width: 100%;
+    margin-top: 24px;
+    padding: 12px;
+    background: #0a1f44;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button:hover { background: #12305f; }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+  .toggle {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: #666;
+  }
+  .toggle a {
+    color: #0a1f44;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .msg {
+    margin-top: 16px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    display: none;
+  }
+  .msg.error { background: #fdecea; color: #b3261e; display: block; }
+  .msg.success { background: #e6f4ea; color: #1e7e34; display: block; }
+  .badge {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .badge span {
+    background: #d4af37;
+    color: #0a1f44;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="badge"><span>LOVELY ANGELS ENGLISH BOARDING SCHOOL</span></div>
+  <h1 id="formTitle">Teacher Login</h1>
+  <p class="sub" id="formSub">Sign in to manage class resources</p>
+
+  <form id="authForm">
+    <label for="email">Email</label>
+    <input type="email" id="email" required autocomplete="email">
+
+    <label for="password">Password</label>
+    <input type="password" id="password" required autocomplete="current-password" minlength="6">
+
+    <button type="submit" id="submitBtn">Sign In</button>
+  </form>
+
+  <div class="msg" id="msgBox"></div>
+
+  <p class="toggle">
+    <span id="toggleText">Setting up for the first time?</span>
+    <a id="toggleLink">Create an account</a>
+  </p>
+</div>
+
+<!-- Firebase SDK (modular, v10) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import {
+    getAuth,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+  // ============================================
+  // PASTE YOUR FIREBASE CONFIG HERE
+  // (Project Settings → General → Your apps → SDK snippet → Config)
+  // ============================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  const form = document.getElementById("authForm");
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+  const submitBtn = document.getElementById("submitBtn");
+  const msgBox = document.getElementById("msgBox");
+  const toggleLink = document.getElementById("toggleLink");
+  const toggleText = document.getElementById("toggleText");
+  const formTitle = document.getElementById("formTitle");
+  const formSub = document.getElementById("formSub");
+
+  let mode = "login"; // "login" | "signup"
+
+  function showMsg(text, type) {
+    msgBox.textContent = text;
+    msgBox.className = "msg " + type;
+  }
+
+  function clearMsg() {
+    msgBox.className = "msg";
+    msgBox.textContent = "";
+  }
+
+  toggleLink.addEventListener("click", () => {
+    if (mode === "login") {
+      mode = "signup";
+      formTitle.textContent = "Create Teacher Account";
+      formSub.textContent = "This creates a login only — an admin must still grant access";
+      submitBtn.textContent = "Create Account";
+      toggleText.textContent = "Already have an account?";
+      toggleLink.textContent = "Sign in instead";
+    } else {
+      mode = "login";
+      formTitle.textContent = "Teacher Login";
+      formSub.textContent = "Sign in to manage class resources";
+      submitBtn.textContent = "Sign In";
+      toggleText.textContent = "Setting up for the first time?";
+      toggleLink.textContent = "Create an account";
+    }
+    clearMsg();
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearMsg();
+    submitBtn.disabled = true;
+    submitBtn.textContent = mode === "login" ? "Signing in..." : "Creating account...";
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    try {
+      if (mode === "login") {
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        showMsg("Signed in. UID: " + cred.user.uid, "success");
+      } else {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        showMsg(
+          "Account created. Your UID is: " + cred.user.uid +
+          " — copy this UID and give it to the site admin to create your Firestore profile.",
+          "success"
+        );
+      }
+    } catch (err) {
+      showMsg(friendlyError(err.code), "error");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = mode === "login" ? "Sign In" : "Create Account";
+    }
+  });
+
+  function friendlyError(code) {
+    const map = {
+      "auth/email-already-in-use": "That email is already registered. Try signing in instead.",
+      "auth/invalid-email": "That email address doesn't look valid.",
+      "auth/weak-password": "Password should be at least 6 characters.",
+      "auth/user-not-found": "No account found with that email.",
+      "auth/wrong-password": "Incorrect password.",
+      "auth/invalid-credential": "Incorrect email or password.",
+      "auth/too-many-requests": "Too many attempts. Please wait a moment and try again."
+    };
+    return map[code] || "Something went wrong. Please try again.";
+  }
+
+  // Optional: log auth state changes to console for debugging
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      console.log("Signed in as:", user.uid, user.email);
+    }
+  });
+</script>
+
+</body>
+</html>

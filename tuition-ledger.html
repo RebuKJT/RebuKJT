@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tuition Ledger | Lovely Angels English Boarding School</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --chalk-green:#1F3B33;
+    --chalk-green-dark:#152A25;
+    --paper:#F4F1E6;
+    --paper-line:#DCD6C2;
+    --margin-red:#C1443B;
+    --ink:#26302C;
+    --ink-soft:#5B6660;
+    --mustard:#C99A1E;
+    --teal:#2C7A73;
+    --radius:10px;
+    --shadow:0 6px 18px rgba(21,42,37,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; font-weight:600; margin:0 0 6px;}
+  .hand{font-family:'Caveat',cursive; color:var(--margin-red); font-weight:700;}
+  button, input, select{font-family:inherit;}
+  :focus-visible{outline:3px solid var(--teal); outline-offset:2px;}
+
+  nav.main{
+    background:var(--chalk-green);
+    color:#F4F1E6;
+    padding:14px 24px;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  }
+  nav.main .brand{font-family:'Fraunces',serif; font-size:1.2rem; font-weight:700; text-decoration:none; color:#F4F1E6;}
+  nav.main .who{font-size:0.85rem; color:#DCE6DF; display:flex; align-items:center; gap:14px;}
+  nav.main button{
+    background:transparent; border:1px solid #DCE6DF; color:#F4F1E6;
+    padding:6px 12px; border-radius:6px; cursor:pointer; font-size:0.82rem;
+  }
+  nav.main button:hover{background:rgba(255,255,255,0.1);}
+
+  main{max-width:980px; margin:0 auto; padding:28px 20px 60px;}
+
+  /* ---- login ---- */
+  .login-wrap{
+    max-width:380px; margin:80px auto; background:#fff; border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:32px 28px; border-top:5px solid var(--margin-red);
+  }
+  .login-wrap h1{font-size:1.5rem; margin-bottom:4px;}
+  .login-wrap p{color:var(--ink-soft); font-size:0.88rem; margin-top:0; margin-bottom:22px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:0.8rem; font-weight:600; margin-bottom:4px; color:var(--ink-soft);}
+  .field input, .field select{
+    width:100%; padding:9px 11px; border:1.5px solid var(--paper-line); border-radius:6px; font-size:0.92rem;
+  }
+  .btn{
+    display:inline-block; border:none; border-radius:6px; padding:10px 18px;
+    background:var(--chalk-green); color:#fff; font-weight:600; font-size:0.9rem; cursor:pointer;
+  }
+  .btn:hover{background:var(--chalk-green-dark);}
+  .btn.secondary{background:#fff; color:var(--chalk-green); border:1.5px solid var(--chalk-green);}
+  .btn.danger{background:var(--margin-red);}
+  .btn.small{padding:5px 10px; font-size:0.78rem;}
+  .btn-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .error{color:var(--margin-red); font-size:0.85rem; margin-top:8px; min-height:1em;}
+
+  /* ---- app shell ---- */
+  .session-banner{
+    background:var(--chalk-green); color:#F4F1E6; border-radius:var(--radius);
+    padding:16px 20px; display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:10px; margin-bottom:22px; box-shadow:var(--shadow);
+  }
+  .session-banner .label{font-family:'Fraunces',serif; font-size:1.1rem;}
+  .session-banner .dates{font-size:0.85rem; color:#DCE6DF;}
+  .session-banner select{
+    background:#fff; border:none; border-radius:6px; padding:6px 10px; font-size:0.85rem;
+  }
+
+  .card{
+    background:#fff; border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:22px; margin-bottom:22px;
+  }
+  .card h2{font-size:1.15rem; margin-bottom:16px;}
+
+  .form-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; align-items:end;}
+  .preview{
+    grid-column:1/-1; background:var(--paper); border:1px dashed var(--paper-line);
+    border-radius:8px; padding:12px 14px; font-size:0.88rem; color:var(--ink-soft);
+  }
+  .preview b{color:var(--ink); font-family:'Fraunces',serif;}
+
+  table{width:100%; border-collapse:collapse; font-size:0.88rem;}
+  thead th{
+    text-align:left; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em;
+    color:var(--ink-soft); border-bottom:2px solid var(--paper-line); padding:8px 10px;
+  }
+  tbody td{padding:10px 10px; border-bottom:1px solid var(--paper-line);}
+  tbody tr:hover{background:var(--paper);}
+  tfoot td{padding:10px 10px; font-weight:700; border-top:2px solid var(--ink);}
+  .grade-pill{
+    display:inline-block; font-size:0.75rem; font-weight:600; padding:2px 9px;
+    border-radius:999px; background:#E8E2CC; color:var(--ink-soft);
+  }
+  .empty-row td{text-align:center; color:var(--ink-soft); padding:26px 10px;}
+
+  /* ---- settings modal ---- */
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(21,42,37,0.55);
+    align-items:flex-start; justify-content:center; padding:40px 16px; overflow-y:auto; z-index:50;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:#fff; border-radius:var(--radius); max-width:560px; width:100%;
+    padding:26px 26px 22px; box-shadow:0 20px 50px rgba(0,0,0,0.3);
+  }
+  .modal h2{display:flex; justify-content:space-between; align-items:center; font-size:1.2rem;}
+  .modal .close{background:none; border:none; font-size:1.3rem; cursor:pointer; color:var(--ink-soft); line-height:1;}
+  .modal h3{font-size:0.95rem; margin-top:20px; margin-bottom:10px; color:var(--teal);}
+  .grade-row{display:grid; grid-template-columns:1fr 110px auto; gap:8px; margin-bottom:8px; align-items:center;}
+  .grade-row input{padding:7px 9px; border:1.5px solid var(--paper-line); border-radius:6px; font-size:0.85rem;}
+  .rm{background:none; border:none; color:var(--margin-red); cursor:pointer; font-size:1rem;}
+
+  .status-msg{font-size:0.82rem; margin-top:10px; min-height:1.2em;}
+  .status-msg.ok{color:var(--teal);}
+  .status-msg.err{color:var(--margin-red);}
+
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+<nav class="main">
+  <a class="brand" href="index.html">LovelyAngels — Tuition Ledger</a>
+  <div class="who" id="nav-who" hidden>
+    <span id="who-email"></span>
+    <button id="btn-settings">Settings</button>
+    <button id="btn-signout">Sign out</button>
+  </div>
+</nav>
+
+<main>
+  <!-- LOGIN -->
+  <div class="login-wrap" id="login-wrap">
+    <span class="hand">private ledger —</span>
+    <h1>Teacher sign in</h1>
+    <p>Use your Teacher Portal account to open the tuition ledger.</p>
+    <div class="field">
+      <label for="login-email">Email</label>
+      <input id="login-email" type="email" autocomplete="username" />
+    </div>
+    <div class="field">
+      <label for="login-pass">Password</label>
+      <input id="login-pass" type="password" autocomplete="current-password" />
+    </div>
+    <button class="btn" id="btn-login" style="width:100%;">Sign in</button>
+    <p class="error" id="login-error"></p>
+  </div>
+
+  <!-- APP -->
+  <div id="app" hidden>
+    <div class="session-banner">
+      <div>
+        <div class="label" id="session-label">No session selected</div>
+        <div class="dates" id="session-dates">—</div>
+      </div>
+      <select id="session-select"></select>
+    </div>
+
+    <div class="card">
+      <h2>Add student</h2>
+      <div class="form-grid">
+        <div class="field" style="margin:0;">
+          <label for="s-name">Student name</label>
+          <input id="s-name" type="text" placeholder="Full name" />
+        </div>
+        <div class="field" style="margin:0;">
+          <label for="s-grade">Grade</label>
+          <select id="s-grade"></select>
+        </div>
+        <div class="field" style="margin:0;">
+          <label for="s-arrival">Arrival date</label>
+          <input id="s-arrival" type="date" />
+        </div>
+        <div class="field" style="margin:0;">
+          <button class="btn" id="btn-add-student" style="width:100%;">Add student</button>
+        </div>
+        <div class="preview" id="calc-preview">
+          Enter a grade and arrival date to see the calculated fee.
+        </div>
+      </div>
+      <p class="status-msg" id="add-status"></p>
+    </div>
+
+    <div class="card">
+      <h2>Students in this session</h2>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Grade</th><th>Arrival</th><th>Days</th><th>Fee (Rs)</th><th></th></tr>
+        </thead>
+        <tbody id="students-body">
+          <tr class="empty-row"><td colspan="6">No students yet.</td></tr>
+        </tbody>
+        <tfoot>
+          <tr><td colspan="4">Total</td><td id="total-fee">Rs 0</td><td></td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settings-overlay">
+  <div class="modal">
+    <h2>Settings <button class="close" id="close-settings">&times;</button></h2>
+
+    <h3>Grade &amp; monthly fee</h3>
+    <div id="grade-rows"></div>
+    <button class="btn secondary small" id="btn-add-grade">+ Add grade</button>
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn" id="btn-save-grades">Save fee settings</button>
+    </div>
+    <p class="status-msg" id="grades-status"></p>
+
+    <h3>Sessions</h3>
+    <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr auto;">
+      <div class="field" style="margin:0;">
+        <label for="new-session-label">Label</label>
+        <input id="new-session-label" type="text" placeholder="e.g. 2083 Term 1" />
+      </div>
+      <div class="field" style="margin:0;">
+        <label for="new-session-start">Start date</label>
+        <input id="new-session-start" type="date" />
+      </div>
+      <div class="field" style="margin:0;">
+        <label for="new-session-end">End date</label>
+        <input id="new-session-end" type="date" />
+      </div>
+      <div class="field" style="margin:0;">
+        <button class="btn" id="btn-add-session">Create</button>
+      </div>
+    </div>
+    <p class="status-msg" id="session-status"></p>
+  </div>
+</div>
+
+<!-- Firebase compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+/* =========================================================
+   PASTE YOUR EXISTING FIREBASE CONFIG BELOW.
+   This must be the SAME config object your Teacher Portal
+   already uses (same project, same Auth users).
+   ========================================================= */
+const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* ---------- element refs ---------- */
+const loginWrap = document.getElementById('login-wrap');
+const app = document.getElementById('app');
+const navWho = document.getElementById('nav-who');
+const whoEmail = document.getElementById('who-email');
+
+const loginEmail = document.getElementById('login-email');
+const loginPass = document.getElementById('login-pass');
+const loginError = document.getElementById('login-error');
+
+const sessionLabelEl = document.getElementById('session-label');
+const sessionDatesEl = document.getElementById('session-dates');
+const sessionSelect = document.getElementById('session-select');
+
+const sName = document.getElementById('s-name');
+const sGrade = document.getElementById('s-grade');
+const sArrival = document.getElementById('s-arrival');
+const calcPreview = document.getElementById('calc-preview');
+const addStatus = document.getElementById('add-status');
+
+const studentsBody = document.getElementById('students-body');
+const totalFeeEl = document.getElementById('total-fee');
+
+const settingsOverlay = document.getElementById('settings-overlay');
+const gradeRowsWrap = document.getElementById('grade-rows');
+const gradesStatus = document.getElementById('grades-status');
+const sessionStatus = document.getElementById('session-status');
+
+/* ---------- state ---------- */
+let gradeFees = {};          // { "Class 4": 1500, ... }  (monthly fee, Rs)
+let sessions = [];           // [{id,label,startDate,endDate}]
+let activeSessionId = null;
+let unsubStudents = null;
+
+/* ---------- auth ---------- */
+document.getElementById('btn-login').addEventListener('click', () => {
+  loginError.textContent = '';
+  auth.signInWithEmailAndPassword(loginEmail.value.trim(), loginPass.value)
+    .catch(err => { loginError.textContent = friendlyAuthError(err); });
+});
+document.getElementById('btn-signout').addEventListener('click', () => auth.signOut());
+
+function friendlyAuthError(err){
+  if(err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found'){
+    return 'Email or password is incorrect.';
+  }
+  return err.message;
+}
+
+auth.onAuthStateChanged(user => {
+  if(user){
+    loginWrap.hidden = true;
+    app.hidden = false;
+    navWho.hidden = false;
+    whoEmail.textContent = user.email;
+    loadSettings();
+    loadSessions();
+  } else {
+    loginWrap.hidden = false;
+    app.hidden = true;
+    navWho.hidden = true;
+    if(unsubStudents) unsubStudents();
+  }
+});
+
+/* ---------- settings modal open/close ---------- */
+document.getElementById('btn-settings').addEventListener('click', () => {
+  renderGradeRows();
+  settingsOverlay.classList.add('open');
+});
+document.getElementById('close-settings').addEventListener('click', () => settingsOverlay.classList.remove('open'));
+settingsOverlay.addEventListener('click', e => { if(e.target === settingsOverlay) settingsOverlay.classList.remove('open'); });
+
+/* ---------- load grade fee settings ---------- */
+function loadSettings(){
+  db.collection('tuitionSettings').doc('config').get().then(doc => {
+    if(doc.exists){
+      gradeFees = doc.data().gradeFees || {};
+    } else {
+      gradeFees = { "Class 4": 0, "Class 5": 0, "Class 6": 0, "Class 7": 0 };
+    }
+    populateGradeSelect();
+  });
+}
+
+function populateGradeSelect(){
+  sGrade.innerHTML = '';
+  Object.keys(gradeFees).forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g; opt.textContent = g;
+    sGrade.appendChild(opt);
+  });
+  updatePreview();
+}
+
+function renderGradeRows(){
+  gradeRowsWrap.innerHTML = '';
+  Object.entries(gradeFees).forEach(([grade, fee]) => addGradeRow(grade, fee));
+}
+
+function addGradeRow(grade = '', fee = ''){
+  const row = document.createElement('div');
+  row.className = 'grade-row';
+  row.innerHTML = `
+    <input type="text" placeholder="Grade name (e.g. Class 4)" value="${escapeAttr(grade)}" data-role="grade">
+    <input type="number" placeholder="Rs / month" value="${fee}" data-role="fee">
+    <button class="rm" title="Remove">&times;</button>
+  `;
+  row.querySelector('.rm').addEventListener('click', () => row.remove());
+  gradeRowsWrap.appendChild(row);
+}
+document.getElementById('btn-add-grade').addEventListener('click', () => addGradeRow());
+
+document.getElementById('btn-save-grades').addEventListener('click', () => {
+  const rows = gradeRowsWrap.querySelectorAll('.grade-row');
+  const newFees = {};
+  rows.forEach(r => {
+    const grade = r.querySelector('[data-role="grade"]').value.trim();
+    const fee = parseFloat(r.querySelector('[data-role="fee"]').value) || 0;
+    if(grade) newFees[grade] = fee;
+  });
+  db.collection('tuitionSettings').doc('config').set({ gradeFees: newFees }, { merge: true })
+    .then(() => {
+      gradeFees = newFees;
+      populateGradeSelect();
+      gradesStatus.textContent = 'Saved.';
+      gradesStatus.className = 'status-msg ok';
+    })
+    .catch(err => { gradesStatus.textContent = err.message; gradesStatus.className = 'status-msg err'; });
+});
+
+/* ---------- sessions ---------- */
+function loadSessions(){
+  db.collection('tuitionSessions').orderBy('startDate', 'desc').get().then(snap => {
+    sessions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    sessionSelect.innerHTML = '';
+    sessions.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.label;
+      sessionSelect.appendChild(opt);
+    });
+    if(sessions.length){
+      activeSessionId = sessions[0].id;
+      sessionSelect.value = activeSessionId;
+      renderActiveSessionBanner();
+      watchStudents();
+    } else {
+      sessionLabelEl.textContent = 'No session yet — add one in Settings';
+      sessionDatesEl.textContent = '—';
+    }
+  });
+}
+sessionSelect.addEventListener('change', () => {
+  activeSessionId = sessionSelect.value;
+  renderActiveSessionBanner();
+  watchStudents();
+});
+
+function renderActiveSessionBanner(){
+  const s = sessions.find(x => x.id === activeSessionId);
+  if(!s) return;
+  sessionLabelEl.textContent = s.label;
+  sessionDatesEl.textContent = fmtDate(s.startDate) + ' → ' + fmtDate(s.endDate);
+  updatePreview();
+}
+
+document.getElementById('btn-add-session').addEventListener('click', () => {
+  const label = document.getElementById('new-session-label').value.trim();
+  const start = document.getElementById('new-session-start').value;
+  const end = document.getElementById('new-session-end').value;
+  sessionStatus.textContent = '';
+  if(!label || !start || !end){
+    sessionStatus.textContent = 'Fill in label, start date and end date.';
+    sessionStatus.className = 'status-msg err';
+    return;
+  }
+  if(end < start){
+    sessionStatus.textContent = 'End date must be after start date.';
+    sessionStatus.className = 'status-msg err';
+    return;
+  }
+  db.collection('tuitionSessions').add({ label, startDate: start, endDate: end, createdAt: firebase.firestore.FieldValue.serverTimestamp() })
+    .then(docRef => {
+      sessionStatus.textContent = 'Session created.';
+      sessionStatus.className = 'status-msg ok';
+      document.getElementById('new-session-label').value = '';
+      document.getElementById('new-session-start').value = '';
+      document.getElementById('new-session-end').value = '';
+      loadSessions();
+      settingsOverlay.classList.remove('open');
+    })
+    .catch(err => { sessionStatus.textContent = err.message; sessionStatus.className = 'status-msg err'; });
+});
+
+/* ---------- fee calculation ---------- */
+function daysBetween(arrivalStr, endStr){
+  const arrival = new Date(arrivalStr + 'T00:00:00');
+  const end = new Date(endStr + 'T00:00:00');
+  const diff = Math.round((end - arrival) / 86400000);
+  return Math.max(0, diff);
+}
+function calcFee(grade, days){
+  const monthlyFee = gradeFees[grade] || 0;
+  const perDay = monthlyFee / 30;
+  return Math.round(perDay * days);
+}
+
+function updatePreview(){
+  const s = sessions.find(x => x.id === activeSessionId);
+  const grade = sGrade.value;
+  const arrival = sArrival.value;
+  if(!s || !grade || !arrival){
+    calcPreview.innerHTML = 'Enter a grade and arrival date to see the calculated fee.';
+    return;
+  }
+  const days = daysBetween(arrival, s.endDate);
+  const fee = calcFee(grade, days);
+  const perDay = ((gradeFees[grade] || 0) / 30).toFixed(1);
+  calcPreview.innerHTML = `<b>${days} day(s)</b> in tuition (arrival → ${fmtDate(s.endDate)}) &nbsp;•&nbsp; Rs ${perDay}/day &nbsp;•&nbsp; Fee: <b>Rs ${fee}</b>`;
+}
+sGrade.addEventListener('change', updatePreview);
+sArrival.addEventListener('change', updatePreview);
+
+/* ---------- add student ---------- */
+document.getElementById('btn-add-student').addEventListener('click', () => {
+  addStatus.textContent = '';
+  const s = sessions.find(x => x.id === activeSessionId);
+  const name = sName.value.trim();
+  const grade = sGrade.value;
+  const arrival = sArrival.value;
+  if(!s){ addStatus.textContent = 'Create a session first (Settings).'; addStatus.className = 'status-msg err'; return; }
+  if(!name || !grade || !arrival){ addStatus.textContent = 'Fill in name, grade and arrival date.'; addStatus.className = 'status-msg err'; return; }
+
+  const days = daysBetween(arrival, s.endDate);
+  const fee = calcFee(grade, days);
+
+  db.collection('tuitionStudents').add({
+    name, grade, arrivalDate: arrival,
+    sessionId: activeSessionId,
+    days, feeAmount: fee,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    createdBy: auth.currentUser.email
+  }).then(() => {
+    sName.value = ''; sArrival.value = '';
+    updatePreview();
+    addStatus.textContent = 'Student added.';
+    addStatus.className = 'status-msg ok';
+  }).catch(err => { addStatus.textContent = err.message; addStatus.className = 'status-msg err'; });
+});
+
+/* ---------- students list (live) ---------- */
+function watchStudents(){
+  if(unsubStudents) unsubStudents();
+  studentsBody.innerHTML = '<tr class="empty-row"><td colspan="6">Loading…</td></tr>';
+  unsubStudents = db.collection('tuitionStudents')
+    .where('sessionId', '==', activeSessionId)
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      if(snap.empty){
+        studentsBody.innerHTML = '<tr class="empty-row"><td colspan="6">No students yet.</td></tr>';
+        totalFeeEl.textContent = 'Rs 0';
+        return;
+      }
+      let total = 0;
+      studentsBody.innerHTML = '';
+      snap.forEach(doc => {
+        const d = doc.data();
+        total += d.feeAmount || 0;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(d.name)}</td>
+          <td><span class="grade-pill">${escapeHtml(d.grade)}</span></td>
+          <td>${fmtDate(d.arrivalDate)}</td>
+          <td>${d.days}</td>
+          <td>Rs ${d.feeAmount}</td>
+          <td><button class="rm" title="Delete" data-id="${doc.id}">&times;</button></td>
+        `;
+        tr.querySelector('.rm').addEventListener('click', () => {
+          if(confirm('Remove ' + d.name + ' from this session?')){
+            db.collection('tuitionStudents').doc(doc.id).delete();
+          }
+        });
+        studentsBody.appendChild(tr);
+      });
+      totalFeeEl.textContent = 'Rs ' + total;
+    }, err => {
+      studentsBody.innerHTML = '<tr class="empty-row"><td colspan="6">' + err.message + '</td></tr>';
+    });
+}
+
+/* ---------- helpers ---------- */
+function fmtDate(str){
+  if(!str) return '—';
+  const d = new Date(str + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+}
+function escapeHtml(str){ const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
+function escapeAttr(str){ return escapeHtml(str).replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>

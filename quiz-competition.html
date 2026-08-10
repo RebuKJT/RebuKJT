@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class 5 Quiz Competition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --chalk-green:#1F3B33; --chalk-green-dark:#152A25;
+    --paper:#F4F1E6; --paper-line:#DCD6C2;
+    --margin-red:#C1443B; --ink:#26302C; --ink-soft:#5B6660;
+    --mustard:#C99A1E; --teal:#2C7A73; --gold:#E7B93C; --silver:#B9C2BC; --bronze:#C97A3B;
+    --radius:10px; --shadow:0 6px 18px rgba(21,42,37,0.14);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif;}
+  h1,h2,h3{font-family:'Fraunces',serif; font-weight:700; margin:0 0 8px;}
+  .hand{font-family:'Caveat',cursive; font-weight:700; color:var(--margin-red);}
+  button,input,select,textarea{font-family:inherit;}
+  :focus-visible{outline:3px solid var(--teal); outline-offset:2px;}
+
+  nav.main{background:var(--chalk-green); color:#F4F1E6; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  nav.main .brand{font-family:'Fraunces',serif; font-size:1.15rem; font-weight:700;}
+  .tabs{display:flex; gap:6px;}
+  .tabs button{background:transparent; border:1px solid rgba(255,255,255,0.3); color:#DCE6DF; padding:7px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;}
+  .tabs button.active{background:#fff; color:var(--chalk-green); border-color:#fff;}
+
+  main{max-width:1100px; margin:0 auto; padding:22px 18px 60px;}
+  .card{background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:20px; margin-bottom:18px;}
+  .card h2{font-size:1.05rem;}
+  .btn{border:none; border-radius:6px; padding:9px 16px; background:var(--chalk-green); color:#fff; font-weight:600; font-size:0.85rem; cursor:pointer;}
+  .btn:hover{background:var(--chalk-green-dark);}
+  .btn.secondary{background:#fff; color:var(--chalk-green); border:1.5px solid var(--chalk-green);}
+  .btn.danger{background:var(--margin-red);}
+  .btn.big{padding:16px 30px; font-size:1.1rem; border-radius:10px;}
+  .btn:disabled{opacity:0.4; cursor:not-allowed;}
+  .field{margin-bottom:10px;}
+  .field label{display:block; font-size:0.78rem; font-weight:600; color:var(--ink-soft); margin-bottom:3px;}
+  .field input, .field textarea, .field select{width:100%; padding:7px 9px; border:1.5px solid var(--paper-line); border-radius:6px; font-size:0.85rem;}
+  .row{display:flex; gap:10px; flex-wrap:wrap;}
+  .row > *{flex:1; min-width:110px;}
+  .status-msg{font-size:0.8rem; margin-top:6px; min-height:1.1em;}
+  .status-msg.ok{color:var(--teal);} .status-msg.err{color:var(--margin-red);}
+
+  table{width:100%; border-collapse:collapse; font-size:0.85rem;}
+  thead th{text-align:left; font-size:0.7rem; text-transform:uppercase; color:var(--ink-soft); border-bottom:2px solid var(--paper-line); padding:6px;}
+  tbody td{padding:6px; border-bottom:1px solid var(--paper-line);}
+  tbody td input{width:100%; padding:5px 7px; border:1px solid var(--paper-line); border-radius:5px; font-size:0.83rem;}
+
+  .round-card{border:1.5px solid var(--paper-line); border-radius:8px; padding:12px 14px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;}
+  .round-card .meta{font-size:0.78rem; color:var(--ink-soft);}
+
+  /* Play tab */
+  .turn-banner{background:var(--chalk-green); color:#fff; border-radius:var(--radius); padding:18px 22px; text-align:center; margin-bottom:18px; box-shadow:var(--shadow);}
+  .turn-banner .eyebrow{font-family:'Caveat',cursive; font-size:1.2rem; color:var(--mustard); display:block;}
+  .turn-banner h1{font-size:1.8rem; color:#fff; margin:2px 0 0;}
+
+  .num-grid{display:grid; grid-template-columns:repeat(8,1fr); gap:8px;}
+  @media (max-width:640px){ .num-grid{grid-template-columns:repeat(4,1fr);} }
+  .num-btn{
+    aspect-ratio:1; border-radius:8px; border:1.5px solid var(--paper-line); background:#fff;
+    font-family:'Fraunces',serif; font-weight:700; font-size:1.1rem; cursor:pointer; color:var(--ink);
+  }
+  .num-btn:hover:not(:disabled){border-color:var(--teal); color:var(--teal);}
+  .num-btn:disabled{background:var(--paper); color:var(--paper-line); cursor:not-allowed; border-color:var(--paper-line);}
+  .num-btn.passed-here{background:#FCEFC7; border-color:var(--mustard); color:var(--mustard);}
+
+  .question-screen{text-align:center; padding:10px 0;}
+  .question-screen .qnum{font-size:0.85rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.04em;}
+  .question-screen .qtext{font-family:'Fraunces',serif; font-size:1.5rem; margin:14px 0; line-height:1.35;}
+  .question-screen .answer{font-size:1rem; color:var(--teal); font-weight:600; margin-bottom:16px;}
+  .timer{font-family:'Fraunces',serif; font-size:3rem; font-weight:900; margin:10px 0;}
+  .timer.low{color:var(--margin-red);}
+  .eval-btns{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:14px;}
+  .eval-btns button{padding:12px 24px; font-size:1rem; border-radius:8px; border:none; font-weight:700; cursor:pointer;}
+  .eval-correct{background:var(--teal); color:#fff;}
+  .eval-wrong{background:var(--margin-red); color:#fff;}
+  .eval-pass{background:var(--mustard); color:#fff;}
+
+  .confirm-banner{text-align:center; padding:24px; font-family:'Fraunces',serif; font-size:1.3rem;}
+  .confirm-banner .pts{font-size:1.8rem; font-weight:900; margin-top:6px;}
+
+  /* Scoreboard */
+  .board-wrap{background:radial-gradient(circle at 50% 0%, var(--chalk-green), var(--chalk-green-dark) 70%); border-radius:var(--radius); padding:30px 18px; color:#fff;}
+  .rank-row{display:grid; grid-template-columns:44px 1fr auto; align-items:center; gap:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px 16px; margin-bottom:8px;}
+  .rank-row.top1{background:linear-gradient(90deg, rgba(231,185,60,0.25), rgba(255,255,255,0.06)); border-color:var(--gold);}
+  .rank-num{font-family:'Fraunces',serif; font-weight:900; font-size:1.2rem; text-align:center; color:#8FA79D;}
+  .rank-row.top1 .rank-num{color:var(--gold); font-size:1.5rem;}
+  .rank-row.top2 .rank-num{color:var(--silver);}
+  .rank-row.top3 .rank-num{color:var(--bronze);}
+  .rank-name{font-family:'Fraunces',serif; font-weight:600;}
+  .rank-name .cap{font-size:0.8rem; color:#B9C7C1; font-weight:400;}
+  .rank-score{font-family:'Fraunces',serif; font-weight:700; font-size:1.2rem; color:var(--teal);}
+  .rank-row.top1 .rank-score{color:var(--gold);}
+
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+<nav class="main">
+  <span class="brand">🏆 Class 5 Quiz Competition</span>
+  <div class="tabs">
+    <button data-tab="setup" class="active">Setup</button>
+    <button data-tab="play">Play</button>
+    <button data-tab="board">Scoreboard</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ===== SETUP TAB ===== -->
+  <section id="tab-setup">
+    <div class="card">
+      <h2>Groups &amp; captains</h2>
+      <p style="font-size:0.82rem; color:var(--ink-soft); margin-top:-4px;">Group names are fixed. Fill in captain and members — this can be edited anytime before you start playing.</p>
+      <table>
+        <thead><tr><th>Group</th><th>Captain</th><th>Member 2</th><th>Member 3</th></tr></thead>
+        <tbody id="groups-body"></tbody>
+      </table>
+      <div style="margin-top:12px;"><button class="btn" id="btn-save-groups">Save groups</button></div>
+      <p class="status-msg" id="groups-status"></p>
+    </div>
+
+    <div class="card">
+      <h2>Rounds</h2>
+      <div id="rounds-list"></div>
+      <div class="row" style="margin-top:10px;">
+        <div class="field"><label>Round name</label><input id="r-name" placeholder="e.g. General Knowledge"></div>
+        <div class="field"><label># Questions</label><input id="r-count" type="number" min="1" value="24"></div>
+        <div class="field"><label>Direct time (sec)</label><input id="r-direct" type="number" min="1" value="15"></div>
+        <div class="field"><label>Pass time (sec)</label><input id="r-pass" type="number" min="1" value="10"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Correct marks</label><input id="r-correct" type="number" value="1"></div>
+        <div class="field"><label>Wrong marks</label><input id="r-wrong" type="number" value="0"></div>
+        <div class="field"><label>Time-up marks</label><input id="r-timeup" type="number" value="0"></div>
+        <div class="field" style="align-self:end;"><button class="btn secondary" id="btn-add-round" style="width:100%;">+ Add round</button></div>
+      </div>
+      <p class="status-msg" id="rounds-status"></p>
+    </div>
+
+    <div class="card">
+      <h2>Question bank</h2>
+      <div class="field">
+        <label>Round</label>
+        <select id="qb-round"></select>
+      </div>
+      <div class="field">
+        <label>Paste questions — one per line, format: <code>Question text | Answer</code></label>
+        <textarea id="qb-text" rows="8" placeholder="What is the old name of Yangon? | Rangoon
+Which is the largest planet? | Jupiter"></textarea>
+      </div>
+      <button class="btn secondary" id="btn-save-questions">Save questions to round</button>
+      <p class="status-msg" id="qb-status"></p>
+    </div>
+  </section>
+
+  <!-- ===== PLAY TAB ===== -->
+  <section id="tab-play" hidden>
+    <div class="card">
+      <div class="row" style="align-items:end;">
+        <div class="field"><label>Active round</label><select id="play-round"></select></div>
+        <div class="field" style="flex:0 0 auto;"><button class="btn secondary" id="btn-reset-round">Reset this round's questions</button></div>
+      </div>
+    </div>
+
+    <div class="turn-banner">
+      <span class="eyebrow" id="turn-eyebrow">Current turn</span>
+      <h1 id="turn-group">—</h1>
+    </div>
+
+    <div class="card" id="grid-card">
+      <h2>Choose a question number</h2>
+      <div class="num-grid" id="num-grid"></div>
+    </div>
+
+    <div class="card" id="question-card" hidden>
+      <div class="question-screen" id="question-screen"></div>
+    </div>
+
+    <div class="card" id="confirm-card" hidden>
+      <div class="confirm-banner" id="confirm-banner"></div>
+      <div style="text-align:center;"><button class="btn big" id="btn-continue">Continue ▶</button></div>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size:0.9rem;">Quick scores</h2>
+      <div id="mini-scores" style="font-size:0.85rem; display:flex; flex-wrap:wrap; gap:10px;"></div>
+    </div>
+  </section>
+
+  <!-- ===== SCOREBOARD TAB ===== -->
+  <section id="tab-board" hidden>
+    <div style="text-align:right; margin-bottom:10px;">
+      <button class="btn secondary" id="btn-fullscreen">Fullscreen (for projector)</button>
+    </div>
+    <div class="board-wrap">
+      <h1 style="text-align:center; color:#fff; margin-bottom:20px;">🏆 Live Scoreboard</h1>
+      <div id="board-list"></div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const FIXED_GROUPS = ["Everest","Annapurna","Lumbini","Sagarmatha","Koshi","Gandaki","Karnali","Bagmati"];
+const STORAGE_KEY = "class5QuizState";
+
+function defaultState(){
+  return {
+    groups: FIXED_GROUPS.map((name,i) => ({ id:'g'+i, name, captain:'', member2:'', member3:'', score:0 })),
+    rounds: [],
+    currentRoundId: null,
+    turnIndex: 0,
+    activeQuestion: null
+  };
+}
+
+let state = load();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return defaultState();
+}
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+document.querySelectorAll('.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ['setup','play','board'].forEach(t => document.getElementById('tab-'+t).hidden = (t !== btn.dataset.tab));
+    if(btn.dataset.tab === 'play') renderPlay();
+    if(btn.dataset.tab === 'board') renderBoard();
+  });
+});
+
+function renderGroupsTable(){
+  const body = document.getElementById('groups-body');
+  body.innerHTML = '';
+  state.groups.forEach(g => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${g.name}</strong></td>
+      <td><input data-id="${g.id}" data-field="captain" value="${escapeAttr(g.captain)}"></td>
+      <td><input data-id="${g.id}" data-field="member2" value="${escapeAttr(g.member2)}"></td>
+      <td><input data-id="${g.id}" data-field="member3" value="${escapeAttr(g.member3)}"></td>
+    `;
+    body.appendChild(tr);
+  });
+}
+document.getElementById('btn-save-groups').addEventListener('click', () => {
+  document.querySelectorAll('#groups-body input').forEach(inp => {
+    const g = state.groups.find(x => x.id === inp.dataset.id);
+    if(g) g[inp.dataset.field] = inp.value;
+  });
+  save();
+  const st = document.getElementById('groups-status');
+  st.textContent = 'Saved.'; st.className = 'status-msg ok';
+  renderPlay(); renderBoard();
+});
+
+function renderRoundsList(){
+  const list = document.getElementById('rounds-list');
+  list.innerHTML = '';
+  if(!state.rounds.length){
+    list.innerHTML = '<p style="color:var(--ink-soft); font-size:0.85rem;">No rounds yet — add one below.</p>';
+  }
+  state.rounds.forEach(r => {
+    const qCount = r.questions.length;
+    const div = document.createElement('div');
+    div.className = 'round-card';
+    div.innerHTML = `
+      <div>
+        <strong>${escapeHtml(r.name)}</strong>
+        <div class="meta">${qCount}/${r.questionCount} questions loaded • direct ${r.directTime}s / pass ${r.passTime}s • correct +${r.correctMarks}</div>
+      </div>
+      <button class="btn danger" data-del="${r.id}">Delete</button>
+    `;
+    div.querySelector('[data-del]').addEventListener('click', () => {
+      if(confirm('Delete round "'+r.name+'"? This removes its questions too.')){
+        state.rounds = state.rounds.filter(x => x.id !== r.id);
+        if(state.currentRoundId === r.id) state.currentRoundId = null;
+        save(); renderRoundsList(); renderQBRoundSelect(); renderPlayRoundSelect();
+      }
+    });
+    list.appendChild(div);
+  });
+  renderQBRoundSelect();
+  renderPlayRoundSelect();
+}
+
+document.getElementById('btn-add-round').addEventListener('click', () => {
+  const name = document.getElementById('r-name').value.trim();
+  const count = parseInt(document.getElementById('r-count').value) || 1;
+  const direct = parseInt(document.getElementById('r-direct').value) || 15;
+  const pass = parseInt(document.getElementById('r-pass').value) || 10;
+  const correct = parseFloat(document.getElementById('r-correct').value) || 1;
+  const wrong = parseFloat(document.getElementById('r-wrong').value) || 0;
+  const timeup = parseFloat(document.getElementById('r-timeup').value) || 0;
+  const st = document.getElementById('rounds-status');
+  if(!name){ st.textContent = 'Enter a round name.'; st.className = 'status-msg err'; return; }
+  state.rounds.push({
+    id: 'r'+Date.now(), name, questionCount: count,
+    directTime: direct, passTime: pass,
+    correctMarks: correct, wrongMarks: wrong, passMarks: 0, timeUpMarks: timeup,
+    questions: []
+  });
+  document.getElementById('r-name').value = '';
+  save();
+  st.textContent = 'Round added — now paste its questions below.'; st.className = 'status-msg ok';
+  renderRoundsList();
+});
+
+function renderQBRoundSelect(){
+  const sel = document.getElementById('qb-round');
+  sel.innerHTML = state.rounds.map(r => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join('');
+}
+document.getElementById('btn-save-questions').addEventListener('click', () => {
+  const roundId = document.getElementById('qb-round').value;
+  const round = state.rounds.find(r => r.id === roundId);
+  const st = document.getElementById('qb-status');
+  if(!round){ st.textContent = 'Add a round first.'; st.className='status-msg err'; return; }
+  const lines = document.getElementById('qb-text').value.split('\n').map(l => l.trim()).filter(Boolean);
+  const questions = lines.map((line, i) => {
+    const parts = line.split('|').map(s => (s||'').trim());
+    return { num: i+1, text: parts[0] || '(no text)', answer: parts[1] || '', status: 'AVAILABLE', holderGroupId: null, originalGroupId: null };
+  });
+  round.questions = questions;
+  save();
+  st.textContent = 'Saved ' + questions.length + ' question(s) to "' + round.name + '".' +
+    (questions.length !== round.questionCount ? ' (Heads up: round is set for ' + round.questionCount + '.)' : '');
+  st.className = 'status-msg ok';
+  renderRoundsList();
+});
+
+function renderPlayRoundSelect(){
+  const sel = document.getElementById('play-round');
+  const prev = sel.value;
+  sel.innerHTML = state.rounds.filter(r => r.questions.length).map(r => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join('');
+  if(state.rounds.find(r => r.id === (state.currentRoundId||prev))) {
+    sel.value = state.currentRoundId || prev;
+  }
+  state.currentRoundId = sel.value || null;
+}
+document.getElementById('play-round').addEventListener('change', (e) => {
+  state.currentRoundId = e.target.value;
+  state.turnIndex = 0;
+  state.activeQuestion = null;
+  save();
+  renderPlay();
+});
+document.getElementById('btn-reset-round').addEventListener('click', () => {
+  const round = getActiveRound();
+  if(!round) return;
+  if(!confirm('Reset all question statuses for "'+round.name+'"? Scores are not affected.')) return;
+  round.questions.forEach(q => { q.status='AVAILABLE'; q.holderGroupId=null; q.originalGroupId=null; });
+  state.turnIndex = 0; state.activeQuestion = null;
+  save(); renderPlay();
+});
+
+function getActiveRound(){ return state.rounds.find(r => r.id === state.currentRoundId); }
+function currentTurnGroup(){ return state.groups[state.turnIndex % state.groups.length]; }
+
+let timerInterval = null;
+
+function renderPlay(){
+  renderPlayRoundSelect();
+  const round = getActiveRound();
+  const gridCard = document.getElementById('grid-card');
+  const qCard = document.getElementById('question-card');
+  const confirmCard = document.getElementById('confirm-card');
+  renderMiniScores();
+
+  if(!round){
+    document.getElementById('turn-group').textContent = 'Set up a round with questions first';
+    document.getElementById('num-grid').innerHTML = '';
+    gridCard.hidden = false; qCard.hidden = true; confirmCard.hidden = true;
+    return;
+  }
+
+  const group = currentTurnGroup();
+  document.getElementById('turn-eyebrow').textContent = round.name + ' — current turn';
+  document.getElementById('turn-group').textContent = group.name.toUpperCase() + (group.captain ? ' ('+group.captain+')' : '');
+
+  if(state.activeQuestion && state.activeQuestion.phase === 'result'){
+    gridCard.hidden = true; qCard.hidden = true; confirmCard.hidden = false;
+    renderConfirm();
+    return;
+  }
+  if(state.activeQuestion && state.activeQuestion.phase === 'question'){
+    gridCard.hidden = true; qCard.hidden = false; confirmCard.hidden = true;
+    renderQuestionScreen();
+    return;
+  }
+
+  gridCard.hidden = false; qCard.hidden = true; confirmCard.hidden = true;
+  const grid = document.getElementById('num-grid');
+  grid.innerHTML = '';
+  round.questions.forEach(q => {
+    const btn = document.createElement('button');
+    btn.className = 'num-btn';
+    btn.textContent = q.num;
+    if(q.status === 'COMPLETED'){ btn.disabled = true; }
+    else if(q.status === 'PASSED'){ btn.className += ' passed-here'; btn.disabled = true; btn.title = 'Currently with another group'; }
+    else {
+      btn.addEventListener('click', () => selectQuestion(round, q));
+    }
+    grid.appendChild(btn);
+  });
+}
+
+function selectQuestion(round, q){
+  const group = currentTurnGroup();
+  q.status = 'SELECTED';
+  q.originalGroupId = group.id;
+  q.holderGroupId = group.id;
+  const endsAt = Date.now() + round.directTime * 1000;
+  state.activeQuestion = { roundId: round.id, num: q.num, holderGroupId: group.id, originalGroupId: group.id, isPassed: false, endsAt, duration: round.directTime, phase: 'question' };
+  save();
+  renderPlay();
+  startTimer();
+}
+
+function renderQuestionScreen(){
+  const round = getActiveRound();
+  const aq = state.activeQuestion;
+  const q = round.questions.find(x => x.num === aq.num);
+  const holder = state.groups.find(g => g.id === aq.holderGroupId);
+  const wrap = document.getElementById('question-screen');
+  const remaining = Math.max(0, Math.ceil((aq.endsAt - Date.now())/1000));
+  wrap.innerHTML = `
+    <div class="qnum">${escapeHtml(holder.name)}${holder.captain ? ' ('+escapeHtml(holder.captain)+')' : ''} — Question ${q.num}${aq.isPassed ? ' (passed)' : ''}</div>
+    <div class="qtext">${escapeHtml(q.text)}</div>
+    <div class="timer" id="timer-display">${remaining}</div>
+    <div class="eval-btns">
+      <button class="eval-correct" id="btn-correct">✓ CORRECT</button>
+      <button class="eval-wrong" id="btn-wrong">✕ WRONG</button>
+      <button class="eval-pass" id="btn-pass">→ PASS</button>
+    </div>
+  `;
+  document.getElementById('btn-correct').addEventListener('click', () => resolve('CORRECT'));
+  document.getElementById('btn-wrong').addEventListener('click', () => advanceOrComplete('WRONG'));
+  document.getElementById('btn-pass').addEventListener('click', () => advanceOrComplete('PASS'));
+}
+
+function startTimer(){
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    const aq = state.activeQuestion;
+    if(!aq || aq.phase !== 'question'){ clearInterval(timerInterval); return; }
+    const remaining = Math.max(0, Math.ceil((aq.endsAt - Date.now())/1000));
+    const el = document.getElementById('timer-display');
+    if(el){
+      el.textContent = remaining;
+      el.classList.toggle('low', remaining <= 5);
+    }
+    if(remaining <= 0){
+      clearInterval(timerInterval);
+      resolve('TIME_UP');
+    }
+  }, 250);
+}
+
+function advanceOrComplete(reasonLabel){
+  if(timerInterval) clearInterval(timerInterval);
+  const round = getActiveRound();
+  const aq = state.activeQuestion;
+  const q = round.questions.find(x => x.num === aq.num);
+  const groupCount = state.groups.length;
+  const originalIndex = state.groups.findIndex(g => g.id === q.originalGroupId);
+  const currentIndex = state.groups.findIndex(g => g.id === aq.holderGroupId);
+  const nextIndex = (currentIndex + 1) % groupCount;
+
+  if(nextIndex === originalIndex){
+    // full circle — nobody got it, question closes
+    q.status = 'COMPLETED';
+    state.turnIndex = (originalIndex + 1) % groupCount;
+    state.activeQuestion = Object.assign({}, aq, {
+      phase: 'result',
+      result: { outcome: 'UNSOLVED', points: 0, groupName: null, captain: null, lastReason: reasonLabel }
+    });
+    save();
+    renderPlay();
+    renderMiniScores();
+  } else {
+    const nextGroup = state.groups[nextIndex];
+    q.status = 'PASSED';
+    q.holderGroupId = nextGroup.id;
+    state.turnIndex = nextIndex;
+    const endsAt = Date.now() + round.passTime * 1000;
+    state.activeQuestion = { roundId: round.id, num: q.num, holderGroupId: nextGroup.id, originalGroupId: q.originalGroupId, isPassed: true, endsAt, duration: round.passTime, phase: 'question' };
+    save();
+    renderPlay();
+    startTimer();
+  }
+}
+
+function resolve(outcome){
+  if(timerInterval) clearInterval(timerInterval);
+  const round = getActiveRound();
+  const aq = state.activeQuestion;
+  const q = round.questions.find(x => x.num === aq.num);
+  const holder = state.groups.find(g => g.id === aq.holderGroupId);
+
+  let points = 0;
+  if(outcome === 'CORRECT') points = round.correctMarks;
+  else if(outcome === 'WRONG') points = round.wrongMarks;
+  else if(outcome === 'TIME_UP') points = round.timeUpMarks;
+
+  holder.score = (holder.score || 0) + points;
+  q.status = 'COMPLETED';
+  state.turnIndex = (state.turnIndex + 1) % state.groups.length;
+
+  state.activeQuestion = Object.assign({}, aq, {
+    phase: 'result',
+    result: {
+      outcome, points, groupName: holder.name, captain: holder.captain,
+      answer: outcome === 'CORRECT' ? q.answer : null
+    }
+  });
+  save();
+  renderPlay();
+  renderMiniScores();
+}
+
+function renderConfirm(){
+  const aq = state.activeQuestion;
+  const r = aq.result;
+  const labelMap = { CORRECT:'CORRECT', WRONG:'WRONG', TIME_UP:'TIME UP', UNSOLVED:'NO ONE GOT IT' };
+  const banner = document.getElementById('confirm-banner');
+  if(r.outcome === 'UNSOLVED'){
+    banner.innerHTML = `
+      <div class="hand" style="font-size:1.6rem;">${labelMap.UNSOLVED}</div>
+      <div style="font-size:0.9rem; color:var(--ink-soft); margin-top:6px;">It went all the way around — question closed, no points given.</div>
+    `;
+    return;
+  }
+  banner.innerHTML = `
+    <div>${escapeHtml(r.groupName)}${r.captain ? ' ('+escapeHtml(r.captain)+')' : ''}</div>
+    <div class="hand" style="font-size:1.6rem;">${labelMap[r.outcome]}</div>
+    <div class="pts">${r.points >= 0 ? '+' : ''}${r.points}</div>
+    ${r.outcome === 'CORRECT' && r.answer ? '<div style="font-size:0.9rem; color:var(--ink-soft); margin-top:8px;">Answer: '+escapeHtml(r.answer)+'</div>' : ''}
+  `;
+}
+document.getElementById('btn-continue').addEventListener('click', () => {
+  state.activeQuestion = null;
+  save();
+  renderPlay();
+});
+
+function renderMiniScores(){
+  const wrap = document.getElementById('mini-scores');
+  const sorted = state.groups.slice().sort((a,b) => (b.score||0)-(a.score||0));
+  wrap.innerHTML = sorted.map(g => '<span><strong>'+escapeHtml(g.name)+'</strong>: '+(g.score||0)+'</span>').join(' &nbsp;•&nbsp; ');
+}
+
+function renderBoard(){
+  const list = document.getElementById('board-list');
+  const sorted = state.groups.slice().sort((a,b) => (b.score||0)-(a.score||0));
+  const medals = ['🥇','🥈','🥉'];
+  list.innerHTML = sorted.map((g,i) => `
+    <div class="rank-row ${i===0?'top1':i===1?'top2':i===2?'top3':''}">
+      <div class="rank-num">${i+1}</div>
+      <div class="rank-name">${medals[i]||''} ${escapeHtml(g.name)} <span class="cap">${g.captain ? '('+escapeHtml(g.captain)+')' : ''}</span></div>
+      <div class="rank-score">${g.score||0}</div>
+    </div>
+  `).join('');
+}
+document.getElementById('btn-fullscreen').addEventListener('click', () => {
+  const el = document.querySelector('.board-wrap');
+  if(el.requestFullscreen) el.requestFullscreen();
+});
+
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
+function escapeAttr(str){ return escapeHtml(str).replace(/"/g,'&quot;'); }
+
+renderGroupsTable();
+renderRoundsList();
+renderPlay();
+renderBoard();
+</script>
+</body>
+</html>

@@ -324,6 +324,15 @@ function loadSessions(){
         activityChips.innerHTML = '';
         scoreBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--ink-soft); padding:20px;">Start a term first.</td></tr>';
       }
+    })
+    .catch(err => {
+      termLabel.textContent = 'Could not load terms';
+      termSub.textContent = err.message;
+      scoreBody.innerHTML = '<tr><td colspan="3" style="color:var(--margin-red); padding:14px;">'
+        + escapeHtml(err.message)
+        + (err.message.includes('index') ? ' — open the browser console (F12) for a link to create it in Firebase Console.' : '')
+        + '</td></tr>';
+      console.error('loadSessions failed:', err);
     });
 }
 sessionSelect.addEventListener('change', () => {

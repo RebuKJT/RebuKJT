@@ -196,6 +196,11 @@ function openBoard(){
       const session = { id: snap.docs[0].id, ...snap.docs[0].data() };
       termNameEl.textContent = session.label;
       watchEntries(activeClass.id, session.id);
+    })
+    .catch(err => {
+      termNameEl.textContent = 'Could not load';
+      rankList.innerHTML = '<div class="empty-state">' + escapeHtml(err.message) + '</div>';
+      console.error('board session load failed:', err);
     });
 }
 

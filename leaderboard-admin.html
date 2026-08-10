@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class Points — Admin | Lovely Angels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --chalk-green:#1F3B33; --chalk-green-dark:#152A25;
+    --paper:#F4F1E6; --paper-line:#DCD6C2;
+    --margin-red:#C1443B; --ink:#26302C; --ink-soft:#5B6660;
+    --mustard:#C99A1E; --teal:#2C7A73; --radius:10px;
+    --shadow:0 6px 18px rgba(21,42,37,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif;}
+  h1,h2,h3{font-family:'Fraunces',serif; font-weight:600; margin:0 0 6px;}
+  .hand{font-family:'Caveat',cursive; color:var(--margin-red); font-weight:700;}
+  :focus-visible{outline:3px solid var(--teal); outline-offset:2px;}
+
+  nav.main{background:var(--chalk-green); color:#F4F1E6; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  nav.main .brand{font-family:'Fraunces',serif; font-size:1.2rem; font-weight:700; color:#F4F1E6; text-decoration:none;}
+  nav.main .who{font-size:0.85rem; color:#DCE6DF; display:flex; align-items:center; gap:14px;}
+  nav.main button{background:transparent; border:1px solid #DCE6DF; color:#F4F1E6; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:0.82rem;}
+  nav.main button:hover{background:rgba(255,255,255,0.1);}
+
+  main{max-width:1040px; margin:0 auto; padding:28px 20px 60px;}
+
+  .login-wrap{max-width:380px; margin:80px auto; background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:32px 28px; border-top:5px solid var(--margin-red);}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:0.8rem; font-weight:600; margin-bottom:4px; color:var(--ink-soft);}
+  .field input, .field select{width:100%; padding:9px 11px; border:1.5px solid var(--paper-line); border-radius:6px; font-size:0.92rem;}
+  .btn{display:inline-block; border:none; border-radius:6px; padding:10px 18px; background:var(--chalk-green); color:#fff; font-weight:600; font-size:0.88rem; cursor:pointer;}
+  .btn:hover{background:var(--chalk-green-dark);}
+  .btn.secondary{background:#fff; color:var(--chalk-green); border:1.5px solid var(--chalk-green);}
+  .btn.small{padding:6px 12px; font-size:0.78rem;}
+  .error{color:var(--margin-red); font-size:0.85rem; margin-top:8px; min-height:1em;}
+  .status-msg{font-size:0.82rem; margin-top:8px; min-height:1.1em;}
+  .status-msg.ok{color:var(--teal);} .status-msg.err{color:var(--margin-red);}
+
+  .card{background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; margin-bottom:22px;}
+  .card h2{font-size:1.1rem; margin-bottom:14px;}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:end;}
+
+  .class-banner{background:var(--chalk-green); color:#F4F1E6; border-radius:var(--radius); padding:16px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:22px; box-shadow:var(--shadow);}
+  .class-banner select{background:#fff; border:none; border-radius:6px; padding:6px 10px; font-size:0.85rem;}
+  .class-banner .term{font-size:0.85rem; color:#DCE6DF;}
+
+  .chip-list{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;}
+  .chip{display:flex; align-items:center; gap:6px; background:var(--paper); border:1px solid var(--paper-line); border-radius:999px; padding:5px 6px 5px 12px; font-size:0.82rem;}
+  .chip button{background:none; border:none; color:var(--margin-red); cursor:pointer; font-size:0.95rem; padding:0 4px;}
+
+  table{width:100%; border-collapse:collapse; font-size:0.85rem;}
+  thead th{text-align:left; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--ink-soft); border-bottom:2px solid var(--paper-line); padding:8px 6px; white-space:nowrap;}
+  tbody td{padding:6px; border-bottom:1px solid var(--paper-line); white-space:nowrap;}
+  tbody tr:hover{background:var(--paper);}
+  td.total-cell{font-weight:700; font-family:'Fraunces',serif;}
+  td.rank-cell{color:var(--ink-soft); font-size:0.8rem;}
+  input.score-input{width:64px; padding:5px 6px; border:1.5px solid var(--paper-line); border-radius:5px; font-size:0.85rem; text-align:center;}
+  input.name-cell{border:none; background:transparent; font-weight:600; width:120px;}
+
+  .board-link-card{display:flex; gap:16px; align-items:center; flex-wrap:wrap;}
+  .board-link-card img{width:110px; height:110px; border-radius:6px; border:1px solid var(--paper-line);}
+  .board-link-card code{background:var(--paper); padding:2px 8px; border-radius:4px; font-size:0.85rem;}
+
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+<nav class="main">
+  <a class="brand" href="index.html">LovelyAngels — Class Points (Admin)</a>
+  <div class="who" id="nav-who" hidden>
+    <span id="who-email"></span>
+    <button id="btn-signout">Sign out</button>
+  </div>
+</nav>
+
+<main>
+  <div class="login-wrap" id="login-wrap">
+    <span class="hand">private —</span>
+    <h1 style="font-size:1.4rem;">Teacher sign in</h1>
+    <p style="color:var(--ink-soft); font-size:0.88rem; margin-bottom:20px;">Same account as your Teacher Portal / Tuition Ledger.</p>
+    <div class="field"><label for="login-email">Email</label><input id="login-email" type="email" autocomplete="username"></div>
+    <div class="field"><label for="login-pass">Password</label><input id="login-pass" type="password" autocomplete="current-password"></div>
+    <button class="btn" id="btn-login" style="width:100%;">Sign in</button>
+    <p class="error" id="login-error"></p>
+  </div>
+
+  <div id="app" hidden>
+
+    <div class="card">
+      <h2>Class</h2>
+      <div class="row">
+        <div class="field" style="margin:0; min-width:180px;">
+          <label for="class-select">Choose class</label>
+          <select id="class-select"></select>
+        </div>
+        <div class="field" style="margin:0;">
+          <label for="new-class-name">New class name</label>
+          <input id="new-class-name" type="text" placeholder="e.g. Class 6">
+        </div>
+        <div class="field" style="margin:0;">
+          <label for="new-class-pin">Board PIN</label>
+          <input id="new-class-pin" type="text" placeholder="e.g. 4271" style="width:100px;">
+        </div>
+        <button class="btn secondary" id="btn-add-class">+ Create class</button>
+      </div>
+      <p class="status-msg" id="class-status"></p>
+    </div>
+
+    <div id="class-body" hidden>
+      <div class="class-banner">
+        <div>
+          <div style="font-family:'Fraunces',serif; font-size:1.1rem;" id="term-label">No term yet</div>
+          <div class="term" id="term-sub">—</div>
+        </div>
+        <div class="row" style="align-items:center;">
+          <select id="session-select"></select>
+          <button class="btn small" id="btn-new-term">+ Start new term</button>
+        </div>
+      </div>
+
+      <div class="card board-link-card">
+        <img id="qr-img" alt="QR code for the class board" />
+        <div>
+          <h2 style="margin-bottom:4px;">Board view</h2>
+          <p style="font-size:0.85rem; color:var(--ink-soft); margin:0 0 6px;">
+            Project this link in class, or let students scan the QR. They'll need the PIN below.
+          </p>
+          <p style="margin:0;"><a id="board-link" href="#" target="_blank" style="color:var(--teal); font-weight:600;">Open board view</a></p>
+          <p style="margin:4px 0 0;">PIN: <code id="pin-display">—</code></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Activities / columns for this term</h2>
+        <div class="chip-list" id="activity-chips"></div>
+        <div class="row">
+          <div class="field" style="margin:0;">
+            <label for="new-activity">Add activity</label>
+            <input id="new-activity" type="text" placeholder='e.g. "Test 1 /5" or "Discipline"'>
+          </div>
+          <button class="btn secondary" id="btn-add-activity">+ Add</button>
+        </div>
+        <p class="status-msg" id="activity-status"></p>
+      </div>
+
+      <div class="card">
+        <h2>Roster</h2>
+        <div class="row">
+          <div class="field" style="margin:0;">
+            <label for="new-student-name">Add student</label>
+            <input id="new-student-name" type="text" placeholder="Student name">
+          </div>
+          <div class="field" style="margin:0;">
+            <label for="new-student-roll">Roll no. (optional)</label>
+            <input id="new-student-roll" type="text" style="width:110px;">
+          </div>
+          <button class="btn secondary" id="btn-add-student">+ Add</button>
+        </div>
+        <p class="status-msg" id="roster-status"></p>
+      </div>
+
+      <div class="card">
+        <h2>Scores</h2>
+        <p style="font-size:0.82rem; color:var(--ink-soft); margin-top:-8px;">
+          Type a number in any cell — negative numbers count as deductions. Totals and the board update instantly.
+        </p>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr id="score-head-row"><th>SN</th><th>Name</th><th>Total</th></tr></thead>
+            <tbody id="score-body"><tr><td colspan="3" style="text-align:center; color:var(--ink-soft); padding:20px;">No students yet.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* PASTE the SAME firebaseConfig you used in tuition-ledger.html */
+ const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+const BOARD_URL_BASE = "leaderboard-board.html"; // adjust if you host it elsewhere
+
+/* ---- elements ---- */
+const loginWrap = document.getElementById('login-wrap');
+const app = document.getElementById('app');
+const navWho = document.getElementById('nav-who');
+const whoEmail = document.getElementById('who-email');
+const loginEmail = document.getElementById('login-email');
+const loginPass = document.getElementById('login-pass');
+const loginError = document.getElementById('login-error');
+
+const classSelect = document.getElementById('class-select');
+const classBody = document.getElementById('class-body');
+const classStatus = document.getElementById('class-status');
+
+const sessionSelect = document.getElementById('session-select');
+const termLabel = document.getElementById('term-label');
+const termSub = document.getElementById('term-sub');
+
+const qrImg = document.getElementById('qr-img');
+const boardLink = document.getElementById('board-link');
+const pinDisplay = document.getElementById('pin-display');
+
+const activityChips = document.getElementById('activity-chips');
+const activityStatus = document.getElementById('activity-status');
+
+const rosterStatus = document.getElementById('roster-status');
+const scoreHeadRow = document.getElementById('score-head-row');
+const scoreBody = document.getElementById('score-body');
+
+/* ---- state ---- */
+let classes = [];
+let activeClassId = null;
+let sessions = [];
+let activeSessionId = null;
+let unsubEntries = null;
+
+/* ---- auth ---- */
+document.getElementById('btn-login').addEventListener('click', () => {
+  loginError.textContent = '';
+  auth.signInWithEmailAndPassword(loginEmail.value.trim(), loginPass.value)
+    .catch(err => loginError.textContent = err.message);
+});
+document.getElementById('btn-signout').addEventListener('click', () => auth.signOut());
+
+auth.onAuthStateChanged(user => {
+  if(user){
+    loginWrap.hidden = true; app.hidden = false; navWho.hidden = false;
+    whoEmail.textContent = user.email;
+    loadClasses();
+  } else {
+    loginWrap.hidden = false; app.hidden = true; navWho.hidden = true;
+    if(unsubEntries) unsubEntries();
+  }
+});
+
+/* ---- classes ---- */
+function loadClasses(){
+  db.collection('leaderboardClasses').orderBy('name').get().then(snap => {
+    classes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    classSelect.innerHTML = '';
+    classes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.name;
+      classSelect.appendChild(opt);
+    });
+    if(classes.length){
+      activeClassId = classSelect.value = classes[0].id;
+      classBody.hidden = false;
+      onClassChanged();
+    } else {
+      classBody.hidden = true;
+    }
+  });
+}
+classSelect.addEventListener('change', () => { activeClassId = classSelect.value; onClassChanged(); });
+
+document.getElementById('btn-add-class').addEventListener('click', () => {
+  const name = document.getElementById('new-class-name').value.trim();
+  const pin = document.getElementById('new-class-pin').value.trim();
+  classStatus.textContent = '';
+  if(!name || !pin){ classStatus.textContent = 'Enter a class name and a PIN.'; classStatus.className = 'status-msg err'; return; }
+  db.collection('leaderboardClasses').add({ name, pin, createdAt: firebase.firestore.FieldValue.serverTimestamp() })
+    .then(ref => {
+      classStatus.textContent = 'Class created.'; classStatus.className = 'status-msg ok';
+      document.getElementById('new-class-name').value = '';
+      document.getElementById('new-class-pin').value = '';
+      loadClasses();
+    })
+    .catch(err => { classStatus.textContent = err.message; classStatus.className = 'status-msg err'; });
+});
+
+function onClassChanged(){
+  const c = classes.find(x => x.id === activeClassId);
+  pinDisplay.textContent = c ? c.pin : '—';
+  const link = BOARD_URL_BASE + '?class=' + activeClassId;
+  boardLink.href = link;
+  qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' +
+    encodeURIComponent(new URL(link, window.location.href).href);
+  loadSessions();
+}
+
+/* ---- sessions (terms) ---- */
+function loadSessions(){
+  db.collection('leaderboardSessions')
+    .where('classId', '==', activeClassId)
+    .orderBy('createdAt', 'desc')
+    .get().then(snap => {
+      sessions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      sessionSelect.innerHTML = '';
+      sessions.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id; opt.textContent = s.label;
+        sessionSelect.appendChild(opt);
+      });
+      if(sessions.length){
+        activeSessionId = sessionSelect.value = sessions[0].id;
+        renderTermBanner();
+        renderActivityChips();
+        watchEntries();
+      } else {
+        termLabel.textContent = 'No term yet';
+        termSub.textContent = 'Click "Start new term" to begin';
+        activityChips.innerHTML = '';
+        scoreBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--ink-soft); padding:20px;">Start a term first.</td></tr>';
+      }
+    });
+}
+sessionSelect.addEventListener('change', () => {
+  activeSessionId = sessionSelect.value;
+  renderTermBanner(); renderActivityChips(); watchEntries();
+});
+
+function renderTermBanner(){
+  const s = sessions.find(x => x.id === activeSessionId);
+  if(!s) return;
+  termLabel.textContent = s.label;
+  const c = classes.find(x => x.id === activeClassId);
+  termSub.textContent = (c ? c.name : '') + ' • ' + (s.activities || []).length + ' activities';
+}
+
+document.getElementById('btn-new-term').addEventListener('click', () => {
+  const label = prompt('Name this term (e.g. "2083 Term 1")');
+  if(!label) return;
+  db.collection('leaderboardSessions').add({
+    classId: activeClassId, label, activities: [],
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(ref => {
+    activeSessionId = ref.id;
+    // carry roster forward: copy latest known student names into fresh entries
+    seedEntriesFromRoster(ref.id);
+    loadSessions();
+  });
+});
+
+function seedEntriesFromRoster(newSessionId){
+  if(!sessions.length) return;
+  const prevSessionId = sessions[0].id;
+  db.collection('leaderboardEntries').where('classId','==',activeClassId).where('sessionId','==',prevSessionId).get()
+    .then(snap => {
+      const batch = db.batch();
+      snap.forEach(doc => {
+        const d = doc.data();
+        const ref = db.collection('leaderboardEntries').doc();
+        batch.set(ref, { classId: activeClassId, sessionId: newSessionId, name: d.name, rollNo: d.rollNo || '', scores: {}, total: 0, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      });
+      if(!snap.empty) batch.commit();
+    });
+}
+
+/* ---- activities ---- */
+function renderActivityChips(){
+  const s = sessions.find(x => x.id === activeSessionId);
+  activityChips.innerHTML = '';
+  (s?.activities || []).forEach(name => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.innerHTML = `<span>${escapeHtml(name)}</span><button title="Remove">&times;</button>`;
+    chip.querySelector('button').addEventListener('click', () => removeActivity(name));
+    activityChips.appendChild(chip);
+  });
+  renderScoreTable();
+}
+
+document.getElementById('btn-add-activity').addEventListener('click', () => {
+  const input = document.getElementById('new-activity');
+  const name = input.value.trim();
+  activityStatus.textContent = '';
+  if(!name || !activeSessionId){ activityStatus.textContent = 'Type a name first.'; activityStatus.className='status-msg err'; return; }
+  const s = sessions.find(x => x.id === activeSessionId);
+  const activities = [...(s.activities || []), name];
+  db.collection('leaderboardSessions').doc(activeSessionId).update({ activities })
+    .then(() => { input.value=''; s.activities = activities; renderActivityChips(); });
+});
+function removeActivity(name){
+  const s = sessions.find(x => x.id === activeSessionId);
+  const activities = (s.activities || []).filter(a => a !== name);
+  db.collection('leaderboardSessions').doc(activeSessionId).update({ activities })
+    .then(() => { s.activities = activities; renderActivityChips(); });
+}
+
+/* ---- roster / entries ---- */
+document.getElementById('btn-add-student').addEventListener('click', () => {
+  const name = document.getElementById('new-student-name').value.trim();
+  const rollNo = document.getElementById('new-student-roll').value.trim();
+  rosterStatus.textContent = '';
+  if(!name || !activeSessionId){ rosterStatus.textContent = 'Type a name first (and start a term).'; rosterStatus.className='status-msg err'; return; }
+  db.collection('leaderboardEntries').add({
+    classId: activeClassId, sessionId: activeSessionId, name, rollNo,
+    scores: {}, total: 0, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    document.getElementById('new-student-name').value='';
+    document.getElementById('new-student-roll').value='';
+    rosterStatus.textContent = 'Added.'; rosterStatus.className='status-msg ok';
+  }).catch(err => { rosterStatus.textContent = err.message; rosterStatus.className='status-msg err'; });
+});
+
+let currentEntries = [];
+function watchEntries(){
+  if(unsubEntries) unsubEntries();
+  unsubEntries = db.collection('leaderboardEntries')
+    .where('classId','==',activeClassId).where('sessionId','==',activeSessionId)
+    .onSnapshot(snap => {
+      currentEntries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      currentEntries.sort((a,b) => (b.total||0) - (a.total||0));
+      renderScoreTable();
+    }, err => {
+      scoreBody.innerHTML = '<tr><td colspan="3">'+err.message+'</td></tr>';
+    });
+}
+
+function renderScoreTable(){
+  const s = sessions.find(x => x.id === activeSessionId);
+  const activities = s?.activities || [];
+  scoreHeadRow.innerHTML = '<th>SN</th><th>Name</th>' + activities.map(a => `<th>${escapeHtml(a)}</th>`).join('') + '<th>Total</th><th></th>';
+  scoreBody.innerHTML = '';
+  if(!currentEntries.length){
+    scoreBody.innerHTML = `<tr><td colspan="${activities.length+4}" style="text-align:center; color:var(--ink-soft); padding:20px;">No students yet.</td></tr>`;
+    return;
+  }
+  currentEntries.forEach((entry, i) => {
+    const tr = document.createElement('tr');
+    let cells = `<td class="rank-cell">${i+1}.</td><td>${escapeHtml(entry.name)}</td>`;
+    activities.forEach(a => {
+      const val = (entry.scores && entry.scores[a] !== undefined) ? entry.scores[a] : '';
+      cells += `<td><input type="number" step="0.5" class="score-input" data-entry="${entry.id}" data-activity="${escapeAttr(a)}" value="${val}"></td>`;
+    });
+    cells += `<td class="total-cell">${entry.total || 0}</td><td><button class="chip" style="border:none; background:none; color:var(--margin-red); cursor:pointer;" data-del="${entry.id}">Remove</button></td>`;
+    tr.innerHTML = cells;
+    scoreBody.appendChild(tr);
+  });
+  scoreBody.querySelectorAll('.score-input').forEach(inp => {
+    inp.addEventListener('change', onScoreChange);
+  });
+  scoreBody.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if(confirm('Remove this student from the term?')) db.collection('leaderboardEntries').doc(btn.dataset.del).delete();
+    });
+  });
+}
+
+function onScoreChange(e){
+  const entryId = e.target.dataset.entry;
+  const activity = e.target.dataset.activity;
+  const val = e.target.value === '' ? null : parseFloat(e.target.value);
+  const entry = currentEntries.find(x => x.id === entryId);
+  if(!entry) return;
+  const scores = { ...(entry.scores||{}) };
+  if(val === null) delete scores[activity]; else scores[activity] = val;
+  const total = Object.values(scores).reduce((sum,v) => sum + (typeof v === 'number' ? v : 0), 0);
+  db.collection('leaderboardEntries').doc(entryId).update({ scores, total, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+}
+
+/* ---- helpers ---- */
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str; return d.innerHTML; }
+function escapeAttr(str){ return escapeHtml(str).replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>

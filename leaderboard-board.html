@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class Leaderboard | Lovely Angels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#152A25; --bg2:#1F3B33;
+    --paper:#F4F1E6; --ink:#26302C; --ink-soft:#8FA79D;
+    --gold:#E7B93C; --silver:#C7D0CB; --bronze:#C97A3B;
+    --teal:#3DA79A; --margin-red:#E0645A;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh;
+    background:radial-gradient(circle at 50% 0%, var(--bg2), var(--bg) 70%);
+    color:var(--paper); font-family:'Inter',system-ui,sans-serif;
+  }
+  h1,h2{font-family:'Fraunces',serif; font-weight:700; margin:0;}
+  .hand{font-family:'Caveat',cursive; font-weight:700;}
+  :focus-visible{outline:3px solid var(--teal); outline-offset:2px;}
+
+  /* ---- gate ---- */
+  .gate-wrap{
+    max-width:380px; margin:90px auto; background:#fff; color:var(--ink);
+    border-radius:var(--radius); padding:32px 28px; text-align:center;
+    box-shadow:0 20px 50px rgba(0,0,0,0.35);
+  }
+  .gate-wrap h1{font-size:1.4rem; margin-bottom:6px;}
+  .gate-wrap p{color:#5B6660; font-size:0.88rem; margin-bottom:20px;}
+  .gate-wrap select, .gate-wrap input{
+    width:100%; padding:10px 12px; margin-bottom:12px; border:1.5px solid #DCD6C2; border-radius:8px; font-size:1rem; text-align:center;
+  }
+  .gate-wrap button{
+    width:100%; padding:11px; border:none; border-radius:8px; background:var(--bg2); color:#fff;
+    font-weight:700; font-size:0.95rem; cursor:pointer;
+  }
+  .gate-wrap button:hover{background:var(--bg);}
+  .gate-error{color:#C1443B; font-size:0.85rem; margin-top:10px; min-height:1em;}
+
+  /* ---- board ---- */
+  #board{ max-width:760px; margin:0 auto; padding:36px 18px 60px; }
+  .board-head{ text-align:center; margin-bottom:28px; }
+  .board-head .eyebrow{ display:block; font-size:1.3rem; color:var(--gold); margin-bottom:2px; }
+  .board-head h1{ font-size:clamp(1.8rem,6vw,2.6rem); }
+  .board-head .term{ color:var(--ink-soft); font-size:0.9rem; margin-top:4px; }
+
+  .rank-list{ display:flex; flex-direction:column; gap:10px; }
+  .rank-row{
+    position:relative;
+    display:grid; grid-template-columns:46px 1fr auto; align-items:center; gap:14px;
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:10px;
+    padding:12px 16px;
+    transition:transform 0.6s cubic-bezier(.2,.8,.2,1), background 0.4s;
+  }
+  .rank-row.top1{ background:linear-gradient(90deg, rgba(231,185,60,0.22), rgba(255,255,255,0.06)); border-color:rgba(231,185,60,0.5); }
+  .rank-row.top2{ border-color:rgba(199,208,203,0.4); }
+  .rank-row.top3{ border-color:rgba(201,122,59,0.45); }
+  .rank-num{ font-family:'Fraunces',serif; font-weight:900; font-size:1.3rem; text-align:center; color:var(--ink-soft); }
+  .rank-row.top1 .rank-num{ color:var(--gold); font-size:1.6rem; }
+  .rank-row.top2 .rank-num{ color:var(--silver); }
+  .rank-row.top3 .rank-num{ color:var(--bronze); }
+  .rank-name{ font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; }
+  .rank-total{ font-family:'Fraunces',serif; font-weight:700; font-size:1.2rem; color:var(--teal); }
+  .rank-row.top1 .rank-total{ color:var(--gold); }
+  .medal{ margin-right:6px; }
+  .empty-state{ text-align:center; color:var(--ink-soft); padding:60px 10px; }
+  footer{ text-align:center; color:var(--ink-soft); font-size:0.78rem; padding:20px; }
+
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+<div class="gate-wrap" id="gate">
+  <span class="hand" style="color:var(--margin-red);">class board —</span>
+  <h1 id="gate-title">Enter class PIN</h1>
+  <p>Ask your teacher for today's PIN if you don't have it.</p>
+  <select id="gate-class" hidden></select>
+  <input id="gate-pin" type="text" inputmode="numeric" placeholder="PIN" maxlength="8">
+  <button id="gate-submit">View board</button>
+  <p class="gate-error" id="gate-error"></p>
+</div>
+
+<div id="board" hidden>
+  <div class="board-head">
+    <span class="eyebrow hand" id="class-name">Class</span>
+    <h1>Leaderboard</h1>
+    <div class="term" id="term-name">—</div>
+  </div>
+  <div class="rank-list" id="rank-list">
+    <div class="empty-state">No scores yet — check back soon!</div>
+  </div>
+</div>
+
+<footer>Lovely Angels English Boarding School</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* PASTE the SAME firebaseConfig used in tuition-ledger.html / leaderboard-admin.html */
+ const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const gate = document.getElementById('gate');
+const gateClassSelect = document.getElementById('gate-class');
+const gatePin = document.getElementById('gate-pin');
+const gateError = document.getElementById('gate-error');
+const boardEl = document.getElementById('board');
+const classNameEl = document.getElementById('class-name');
+const termNameEl = document.getElementById('term-name');
+const rankList = document.getElementById('rank-list');
+
+const params = new URLSearchParams(window.location.search);
+let presetClassId = params.get('class');
+let classes = [];
+let activeClass = null;
+let unsub = null;
+
+function storageKey(classId){ return 'board_pin_ok_' + classId; }
+
+if(presetClassId){
+  // still verify class exists & fetch its name for the title, but skip dropdown
+  db.collection('leaderboardClasses').doc(presetClassId).get().then(doc => {
+    if(!doc.exists){ gateError.textContent = 'Class not found.'; return; }
+    activeClass = { id: doc.id, ...doc.data() };
+    document.getElementById('gate-title').textContent = 'Enter PIN for ' + activeClass.name;
+    if(sessionStorage.getItem(storageKey(activeClass.id)) === 'yes'){
+      openBoard();
+    }
+  });
+} else {
+  gateClassSelect.hidden = false;
+  db.collection('leaderboardClasses').orderBy('name').get().then(snap => {
+    classes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    gateClassSelect.innerHTML = '<option value="">Select class…</option>' +
+      classes.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  });
+}
+
+document.getElementById('gate-submit').addEventListener('click', () => {
+  gateError.textContent = '';
+  const classId = presetClassId || gateClassSelect.value;
+  if(!classId){ gateError.textContent = 'Choose a class.'; return; }
+  const pinTyped = gatePin.value.trim();
+  if(!pinTyped){ gateError.textContent = 'Type the PIN.'; return; }
+
+  const proceed = (cls) => {
+    if(cls.pin !== pinTyped){ gateError.textContent = 'Wrong PIN.'; return; }
+    activeClass = cls;
+    sessionStorage.setItem(storageKey(cls.id), 'yes');
+    openBoard();
+  };
+
+  if(activeClass && activeClass.id === classId){
+    proceed(activeClass);
+  } else {
+    db.collection('leaderboardClasses').doc(classId).get().then(doc => {
+      if(!doc.exists){ gateError.textContent = 'Class not found.'; return; }
+      proceed({ id: doc.id, ...doc.data() });
+    });
+  }
+});
+
+function openBoard(){
+  gate.hidden = true;
+  boardEl.hidden = false;
+  classNameEl.textContent = activeClass.name;
+  document.title = activeClass.name + ' Leaderboard | Lovely Angels';
+
+  db.collection('leaderboardSessions')
+    .where('classId','==',activeClass.id)
+    .orderBy('createdAt','desc')
+    .limit(1)
+    .get().then(snap => {
+      if(snap.empty){
+        termNameEl.textContent = 'No term started yet';
+        rankList.innerHTML = '<div class="empty-state">Ask your teacher to start a term.</div>';
+        return;
+      }
+      const session = { id: snap.docs[0].id, ...snap.docs[0].data() };
+      termNameEl.textContent = session.label;
+      watchEntries(activeClass.id, session.id);
+    });
+}
+
+let prevOrder = [];
+function watchEntries(classId, sessionId){
+  if(unsub) unsub();
+  unsub = db.collection('leaderboardEntries')
+    .where('classId','==',classId).where('sessionId','==',sessionId)
+    .onSnapshot(snap => {
+      const entries = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      entries.sort((a,b) => (b.total||0) - (a.total||0));
+      renderBoard(entries);
+    }, err => {
+      rankList.innerHTML = '<div class="empty-state">' + escapeHtml(err.message) + '</div>';
+    });
+}
+
+function renderBoard(entries){
+  if(!entries.length){
+    rankList.innerHTML = '<div class="empty-state">No scores yet — check back soon!</div>';
+    return;
+  }
+  // FLIP animation: capture old positions
+  const oldPositions = {};
+  rankList.querySelectorAll('.rank-row').forEach(row => {
+    oldPositions[row.dataset.id] = row.getBoundingClientRect().top;
+  });
+
+  const medals = ['🥇','🥈','🥉'];
+  rankList.innerHTML = entries.map((e,i) => {
+    const cls = i===0?'top1':i===1?'top2':i===2?'top3':'';
+    const medal = medals[i] ? `<span class="medal">${medals[i]}</span>` : '';
+    return `<div class="rank-row ${cls}" data-id="${e.id}">
+      <div class="rank-num">${i+1}</div>
+      <div class="rank-name">${medal}${escapeHtml(e.name)}</div>
+      <div class="rank-total">${e.total || 0}</div>
+    </div>`;
+  }).join('');
+
+  // FLIP: animate from old to new position
+  rankList.querySelectorAll('.rank-row').forEach(row => {
+    const id = row.dataset.id;
+    if(oldPositions[id] !== undefined){
+      const newTop = row.getBoundingClientRect().top;
+      const delta = oldPositions[id] - newTop;
+      if(delta){
+        row.style.transform = `translateY(${delta}px)`;
+        requestAnimationFrame(() => { row.style.transform = ''; });
+      }
+    }
+  });
+}
+
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str; return d.innerHTML; }
+</script>
+</body>
+</html>

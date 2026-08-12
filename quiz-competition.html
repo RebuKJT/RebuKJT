@@ -470,32 +470,77 @@ function startTimer(){
 
 function advanceOrComplete(reasonLabel){
   if(timerInterval) clearInterval(timerInterval);
+
   const round = getActiveRound();
   const aq = state.activeQuestion;
   const q = round.questions.find(x => x.num === aq.num);
+
   const groupCount = state.groups.length;
-  const originalIndex = state.groups.findIndex(g => g.id === q.originalGroupId);
-  const currentIndex = state.groups.findIndex(g => g.id === aq.holderGroupId);
+
+  const originalIndex = state.groups.findIndex(
+    g => g.id === q.originalGroupId
+  );
+
+  const currentIndex = state.groups.findIndex(
+    g => g.id === aq.holderGroupId
+  );
+
   const nextIndex = (currentIndex + 1) % groupCount;
 
+  // If the question has gone all the way around
+  // and returned to the original group, close it.
   if(nextIndex === originalIndex){
-    // full circle — nobody got it, question closes
+
     q.status = 'COMPLETED';
+
+    // IMPORTANT:
+    // Question-selection authority moves one step
+    // after the ORIGINAL chooser.
     state.turnIndex = (originalIndex + 1) % groupCount;
+
     state.activeQuestion = Object.assign({}, aq, {
       phase: 'result',
-      result: { outcome: 'UNSOLVED', points: 0, groupName: null, captain: null, lastReason: reasonLabel }
+      result: {
+        outcome: 'UNSOLVED',
+        points: 0,
+        groupName: null,
+        captain: null,
+        lastReason: reasonLabel
+      }
     });
+
     save();
     renderPlay();
     renderMiniScores();
+
   } else {
+
+    // Pass the question to the next group.
     const nextGroup = state.groups[nextIndex];
+
     q.status = 'PASSED';
     q.holderGroupId = nextGroup.id;
-    state.turnIndex = nextIndex;
+
+    // IMPORTANT:
+    // DO NOT change state.turnIndex here.
+    //
+    // The question-selection turn must remain with
+    // the original chooser's rotation until this
+    // question is completely resolved.
+
     const endsAt = Date.now() + round.passTime * 1000;
-    state.activeQuestion = { roundId: round.id, num: q.num, holderGroupId: nextGroup.id, originalGroupId: q.originalGroupId, isPassed: true, endsAt, duration: round.passTime, phase: 'question' };
+
+    state.activeQuestion = {
+      roundId: round.id,
+      num: q.num,
+      holderGroupId: nextGroup.id,
+      originalGroupId: q.originalGroupId,
+      isPassed: true,
+      endsAt,
+      duration: round.passTime,
+      phase: 'question'
+    };
+
     save();
     renderPlay();
     startTimer();
@@ -504,27 +549,41 @@ function advanceOrComplete(reasonLabel){
 
 function resolve(outcome){
   if(timerInterval) clearInterval(timerInterval);
+
   const round = getActiveRound();
   const aq = state.activeQuestion;
   const q = round.questions.find(x => x.num === aq.num);
   const holder = state.groups.find(g => g.id === aq.holderGroupId);
 
   let points = 0;
+
   if(outcome === 'CORRECT') points = round.correctMarks;
   else if(outcome === 'WRONG') points = round.wrongMarks;
   else if(outcome === 'TIME_UP') points = round.timeUpMarks;
 
   holder.score = (holder.score || 0) + points;
   q.status = 'COMPLETED';
-  state.turnIndex = (state.turnIndex + 1) % state.groups.length;
+
+  // NEXT QUESTION AUTHORITY
+  // Always move one group forward from the ORIGINAL chooser.
+  // The group that finally answered the question does not matter.
+  const originalIndex = state.groups.findIndex(
+    g => g.id === aq.originalGroupId
+  );
+
+  state.turnIndex = (originalIndex + 1) % state.groups.length;
 
   state.activeQuestion = Object.assign({}, aq, {
     phase: 'result',
     result: {
-      outcome, points, groupName: holder.name, captain: holder.captain,
+      outcome,
+      points,
+      groupName: holder.name,
+      captain: holder.captain,
       answer: outcome === 'CORRECT' ? q.answer : null
     }
   });
+
   save();
   renderPlay();
   renderMiniScores();

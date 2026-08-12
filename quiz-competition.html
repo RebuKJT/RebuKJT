@@ -197,6 +197,7 @@ Which is the largest planet? | Jupiter"></textarea>
   <section id="tab-board" hidden>
     <div style="text-align:right; margin-bottom:10px;">
       <button class="btn secondary" id="btn-fullscreen">Fullscreen (for projector)</button>
+        <button class="btn danger" id="btn-reset-scores">Reset Scores</button>
     </div>
     <div class="board-wrap">
       <h1 style="text-align:center; color:#fff; margin-bottom:20px;">🏆 Live Scoreboard</h1>
@@ -639,6 +640,43 @@ document.getElementById('btn-fullscreen').addEventListener('click', () => {
 
 function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
 function escapeAttr(str){ return escapeHtml(str).replace(/"/g,'&quot;'); }
+
+document.getElementById('btn-reset-scores').addEventListener('click', () => {
+
+  if(!confirm(
+    "Reset all group scores and question progress?\n\n" +
+    "Your saved questions and rounds will NOT be deleted."
+  )) return;
+
+  // Reset all group scores
+  state.groups.forEach(g => {
+    g.score = 0;
+  });
+
+  // Reset current turn to Group A
+  state.turnIndex = 0;
+
+  // Remove any question currently in progress
+  state.activeQuestion = null;
+
+  // Make all questions available again
+  state.rounds.forEach(r => {
+    r.questions.forEach(q => {
+      q.status = 'AVAILABLE';
+      q.holderGroupId = null;
+      q.originalGroupId = null;
+    });
+  });
+
+  // Save the reset state
+  save();
+
+  // Refresh the screen
+  renderPlay();
+  renderBoard();
+
+  alert('Scoreboard reset successfully!');
+});
 
 renderGroupsTable();
 renderRoundsList();

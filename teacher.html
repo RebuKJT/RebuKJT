@@ -65,24 +65,91 @@
                 <button type="button" class="navbar-toggler me-0" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
                 <div class="collapse navbar-collapse bg-transparent" id="navbarCollapse">
-                    <div class="navbar-nav ms-auto mx-xl-auto p-0">
-                        <a href="index.html" class="nav-item nav-link active text-secondary">Home</a>
-                        <a href="about.html" class="nav-item nav-link">About</a>
-                        <a href="teacher.html" class="nav-item nav-link">For Teacher</a>
-                        <a href="futsal.html" class="nav-item nav-link">Futsal Stats</a>
-                        <div class="nav-item dropdown">
-                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Class</a>
-                            <div class="dropdown-menu rounded">
-                                <a href="Class4.html" class="dropdown-item">Class 4</a>
-                                <a href="Class5.html" class="dropdown-item">Class 5</a>
-                                <a href="Class6.html" class="dropdown-item">Class 6</a>
-                                <a href="Class7.html" class="dropdown-item">Class 7</a>
-                            </div>
-                        </div>
-                        <a href="Tuition.html" class="nav-item nav-link">Tuition</a>
-                    </div>
+    <div class="navbar-nav ms-auto mx-xl-auto p-0 lovely-nav">
+
+        <a href="index.html" class="nav-item nav-link active">
+            <i class="fas fa-house me-1"></i>
+            Home
+        </a>
+
+        <a href="about.html" class="nav-item nav-link">
+            <i class="fas fa-circle-info me-1"></i>
+            About
+        </a>
+
+        <a href="teacher.html" class="nav-item nav-link">
+            <i class="fas fa-chalkboard-user me-1"></i>
+            Teachers
+        </a>
+
+        <a href="futsal.html" class="nav-item nav-link">
+            <i class="fas fa-futbol me-1"></i>
+            Futsal Stats
+        </a>
+
+        <div class="nav-item dropdown">
+            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-user-graduate me-1"></i>
+                Students
+            </a>
+
+            <div class="dropdown-menu lovely-dropdown">
+
+                <div class="dropdown-header">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    Student Resources
                 </div>
+
+                <a href="Class4.html" class="dropdown-item">
+                    <i class="fas fa-book-open"></i>
+                    Class 4
+                </a>
+
+                <a href="Class5.html" class="dropdown-item">
+                    <i class="fas fa-book-open"></i>
+                    Class 5
+                </a>
+
+                <a href="Class6.html" class="dropdown-item">
+                    <i class="fas fa-book-open"></i>
+                    Class 6
+                </a>
+
+                <a href="Class7.html" class="dropdown-item">
+                    <i class="fas fa-book-open"></i>
+                    Class 7
+                </a>
+
+                <a href="Class8.html" class="dropdown-item">
+                    <i class="fas fa-book-open"></i>
+                    Class 8
+                </a>
+
+                <div class="dropdown-divider"></div>
+
+                <a href="classFive.html" class="dropdown-item new-resource">
+                    <i class="fas fa-sparkles"></i>
+                    Class 5 — New
+                    <span>NEW</span>
+                </a>
+
+                <a href="quiz-competition.html" class="dropdown-item">
+                    <i class="fas fa-trophy"></i>
+                    Quiz & Competition
+                </a>
+
+            </div>
+        </div>
+
+        <a href="Tuition.html" class="nav-item nav-link">
+            <i class="fas fa-calculator me-1"></i>
+            Tuition
+        </a>
+
+    </div>
+</div>
                 <div class="d-none d-xl-flex flex-shirink-0">
                     <div id="phone-tada" class="d-flex align-items-center justify-content-center me-4">
                         <a href="" class="position-relative animated tada infinite">
@@ -107,19 +174,35 @@
 
         
         <!-- Page Header Start -->
-        <div class="container-fluid page-header py-5">
-            <div class="container text-center py-5">
-                <h1 class="display-2 text-white mb-4 animated slideInDown">Teachers</h1>
-                <nav aria-label="breadcrumb animated slideInDown">
-                    <ol class="breadcrumb justify-content-center mb-0">
-                        <li class="breadcrumb-item"><a href="login.html">Login</a></li>
-                        <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
-                        <!-- <li class="breadcrumb-item"><a href="#">Pages</a></li>
-                        <li class="breadcrumb-item" aria-current="page">Services</li> -->
-                    </ol>
-                </nav>
-            </div>
+      <div class="container-fluid page-header py-5">
+    <div class="container text-center py-5">
+
+        <h1 class="display-2 text-white mb-4 animated slideInDown">
+            Teachers
+        </h1>
+
+        <!-- Modern Navigation Buttons -->
+        <div class="teacher-nav-buttons animated slideInDown">
+
+            <a href="login.html" class="teacher-nav-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Login</span>
+            </a>
+
+            <a href="dashboard.html" class="teacher-nav-btn">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="notes.html" class="teacher-nav-btn">
+                <i class="fas fa-book-open"></i>
+                <span>Student Notes</span>
+            </a>
+
         </div>
+
+    </div>
+</div>
         <!-- Page Header End -->
 
 

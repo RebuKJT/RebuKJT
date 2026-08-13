@@ -535,6 +535,448 @@
 
 /*** Blog End ***/
 
+/* Tuition Start */ 
+/* =================================
+   Tuition Navigation Buttons
+================================= */
+
+.tuition-nav-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 10px;
+}
+
+.tuition-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    padding: 11px 20px;
+
+    color: #ffffff;
+    text-decoration: none;
+
+    font-size: 0.92rem;
+    font-weight: 600;
+
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 50px;
+
+    background: rgba(255, 255, 255, 0.12);
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+
+    transition:
+        transform 0.25s ease,
+        background 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+}
+
+.tuition-nav-btn i {
+    font-size: 0.95rem;
+}
+
+/* Hover */
+.tuition-nav-btn:hover {
+    color: #ffffff;
+    text-decoration: none;
+
+    transform: translateY(-4px);
+
+    background: rgba(255, 255, 255, 0.22);
+
+    border-color: rgba(255, 255, 255, 0.75);
+
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* Active Tuition Ledger */
+.tuition-nav-btn.active {
+    background: #d4af37;
+    color: #0a1f44;
+    border-color: #d4af37;
+
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.35);
+}
+
+.tuition-nav-btn.active:hover {
+    background: #e5c454;
+    color: #0a1f44;
+}
+
+/* Admin button */
+.tuition-nav-btn.admin {
+    border-color: rgba(255, 190, 190, 0.5);
+}
+
+.tuition-nav-btn.admin:hover {
+    background: rgba(180, 40, 40, 0.35);
+    border-color: rgba(255, 180, 180, 0.8);
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+
+    .tuition-nav-buttons {
+        gap: 9px;
+    }
+
+    .tuition-nav-btn {
+        padding: 9px 15px;
+        font-size: 0.84rem;
+    }
+
+    .tuition-nav-btn i {
+        font-size: 0.85rem;
+    }
+}
+
+
+/* ==========================================
+   LOVELY ANGELS - MODERN NAVBAR
+========================================== */
+
+.lovely-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Main navigation links */
+.lovely-nav > .nav-link,
+.lovely-nav > .dropdown > .nav-link {
+    position: relative;
+
+    padding: 10px 15px !important;
+
+    color: rgba(255,255,255,0.88) !important;
+
+    font-size: 0.92rem;
+    font-weight: 600;
+
+    border-radius: 10px;
+
+    transition:
+        color 0.25s ease,
+        background 0.25s ease,
+        transform 0.25s ease;
+}
+
+/* Icon */
+.lovely-nav .nav-link i {
+    font-size: 0.82rem;
+    opacity: 0.85;
+    transition: transform 0.25s ease;
+}
+
+/* Hover */
+.lovely-nav > .nav-link:hover,
+.lovely-nav > .dropdown > .nav-link:hover {
+    color: #ffffff !important;
+
+    background: rgba(255,255,255,0.10);
+
+    transform: translateY(-2px);
+}
+
+.lovely-nav .nav-link:hover i {
+    transform: scale(1.15);
+}
+
+/* Animated gold underline */
+.lovely-nav > .nav-link::after,
+.lovely-nav > .dropdown > .nav-link::after {
+    content: "";
+
+    position: absolute;
+    left: 50%;
+    bottom: 4px;
+
+    width: 0;
+    height: 2px;
+
+    background: #d4af37;
+
+    border-radius: 10px;
+
+    transform: translateX(-50%);
+
+    transition: width 0.25s ease;
+}
+
+.lovely-nav > .nav-link:hover::after,
+.lovely-nav > .dropdown > .nav-link:hover::after,
+.lovely-nav > .nav-link.active::after {
+    width: 55%;
+}
+
+/* Active page */
+.lovely-nav > .nav-link.active {
+    color: #d4af37 !important;
+
+    background: rgba(212,175,55,0.10);
+}
+
+.lovely-nav > .nav-link.active i {
+    color: #d4af37;
+}
+
+
+/* ==========================================
+   STUDENT DROPDOWN
+========================================== */
+
+.lovely-dropdown {
+    min-width: 245px;
+
+    margin-top: 12px !important;
+
+    padding: 8px;
+
+    background: rgba(255,255,255,0.98);
+
+    border: 1px solid rgba(212,175,55,0.25);
+
+    border-radius: 14px !important;
+
+    box-shadow:
+        0 15px 40px rgba(0,0,0,0.18),
+        0 3px 10px rgba(0,0,0,0.08);
+
+    animation: lovelyDropdown 0.2s ease;
+}
+
+@keyframes lovelyDropdown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* Dropdown heading */
+.lovely-dropdown .dropdown-header {
+    padding: 10px 12px;
+
+    color: #0a1f44;
+
+    font-size: 0.75rem;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+
+    border-bottom: 1px solid #eeeeee;
+
+    margin-bottom: 5px;
+}
+
+
+/* Dropdown items */
+.lovely-dropdown .dropdown-item {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    padding: 10px 12px;
+
+    color: #333;
+
+    font-size: 0.88rem;
+    font-weight: 500;
+
+    border-radius: 9px;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.lovely-dropdown .dropdown-item i {
+    width: 20px;
+
+    text-align: center;
+
+    color: #0a1f44;
+
+    transition: transform 0.2s ease;
+}
+
+.lovely-dropdown .dropdown-item:hover {
+    color: #0a1f44;
+
+    background: #f5f1df;
+
+    transform: translateX(3px);
+}
+
+.lovely-dropdown .dropdown-item:hover i {
+    color: #d4af37;
+
+    transform: scale(1.15);
+}
+
+
+/* NEW badge */
+.lovely-dropdown .new-resource {
+    position: relative;
+}
+
+.lovely-dropdown .new-resource span {
+    margin-left: auto;
+
+    padding: 3px 7px;
+
+    background: #d4af37;
+
+    color: #0a1f44;
+
+    font-size: 0.62rem;
+    font-weight: 800;
+
+    border-radius: 20px;
+}
+
+
+/* Dropdown divider */
+.lovely-dropdown .dropdown-divider {
+    margin: 7px 4px;
+
+    border-color: #eeeeee;
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 991.98px) {
+
+    .lovely-nav {
+        padding: 12px 10px;
+        gap: 2px;
+    }
+
+    .lovely-nav > .nav-link,
+    .lovely-nav > .dropdown > .nav-link {
+        padding: 11px 14px !important;
+        border-radius: 8px;
+    }
+
+    .lovely-dropdown {
+        margin-top: 4px !important;
+
+        border-radius: 10px !important;
+
+        box-shadow: none;
+    }
+
+    .lovely-nav > .nav-link::after,
+    .lovely-nav > .dropdown > .nav-link::after {
+        display: none;
+    }
+}
+
+
+/* ================================
+   Teacher Navigation Buttons
+================================ */
+
+.teacher-nav-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 10px;
+}
+
+.teacher-nav-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+
+    padding: 11px 20px;
+
+    color: #ffffff;
+    text-decoration: none;
+
+    font-size: 0.92rem;
+    font-weight: 600;
+
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 50px;
+
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+
+    transition:
+        transform 0.25s ease,
+        background 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+}
+
+.teacher-nav-btn i {
+    font-size: 0.95rem;
+}
+
+.teacher-nav-btn:hover {
+    color: #ffffff;
+    text-decoration: none;
+
+    transform: translateY(-4px);
+
+    background: rgba(255,255,255,0.22);
+    border-color: rgba(255,255,255,0.7);
+
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+
+/* Gold highlight on first button */
+.teacher-nav-btn:first-child {
+    background: #d4af37;
+    color: #0a1f44;
+    border-color: #d4af37;
+}
+
+.teacher-nav-btn:first-child:hover {
+    background: #e5c454;
+    color: #0a1f44;
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+
+    .teacher-nav-buttons {
+        gap: 10px;
+    }
+
+    .teacher-nav-btn {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+    }
+}
+
 
 /*** Team Start ***/
 

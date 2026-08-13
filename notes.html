@@ -159,7 +159,7 @@ function loadFiles(gradeId, subjectId, unitId){
       <div class="file-card">
         <h3>${escapeHtml(f.title || f.name || 'Untitled file')}</h3>
         ${f.description ? '<p>'+escapeHtml(f.description)+'</p>' : ''}
-        <a href="${escapeAttr(f.url)}" target="_blank" rel="noopener">Open</a>
+        <a href="${escapeAttr(f.driveLink || f.url || '#')}" target="_blank" rel="noopener">Open</a>
       </div>
     `).join('');
   }).catch(err => showError(err));

@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Futsal Expenses | Lovely Angels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --chalk-green:#1F3B33; --chalk-green-dark:#152A25;
+    --paper:#F4F1E6; --paper-line:#DCD6C2;
+    --margin-red:#C1443B; --ink:#26302C; --ink-soft:#5B6660;
+    --mustard:#C99A1E; --teal:#2C7A73; --radius:10px; --shadow:0 6px 18px rgba(21,42,37,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif;}
+  h1,h2,h3{font-family:'Fraunces',serif; font-weight:600; margin:0 0 8px;}
+  .hand{font-family:'Caveat',cursive; color:var(--margin-red); font-weight:700;}
+  :focus-visible{outline:3px solid var(--teal); outline-offset:2px;}
+
+  nav.main{background:var(--chalk-green); color:#F4F1E6; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  nav.main .brand{font-family:'Fraunces',serif; font-size:1.15rem; font-weight:700; color:#F4F1E6;}
+  .tabs{display:flex; gap:6px; flex-wrap:wrap;}
+  .tabs button{background:transparent; border:1px solid rgba(255,255,255,0.3); color:#DCE6DF; padding:7px 14px; border-radius:6px; cursor:pointer; font-size:0.82rem; font-weight:600;}
+  .tabs button.active{background:#fff; color:var(--chalk-green); border-color:#fff;}
+  nav.main .who{font-size:0.85rem; color:#DCE6DF; display:flex; align-items:center; gap:12px;}
+  nav.main .who button{background:transparent; border:1px solid #DCE6DF; color:#F4F1E6; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:0.8rem;}
+
+  main{max-width:1080px; margin:0 auto; padding:24px 18px 60px;}
+  .card{background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:20px; margin-bottom:18px;}
+  .card h2{font-size:1.05rem;}
+  .login-wrap{max-width:380px; margin:80px auto; background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:32px 28px; border-top:5px solid var(--margin-red);}
+  .field{margin-bottom:10px;}
+  .field label{display:block; font-size:0.78rem; font-weight:600; color:var(--ink-soft); margin-bottom:3px;}
+  .field input, .field select{width:100%; padding:7px 9px; border:1.5px solid var(--paper-line); border-radius:6px; font-size:0.85rem;}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:end;}
+  .row > *{flex:1; min-width:120px;}
+  .btn{border:none; border-radius:6px; padding:9px 16px; background:var(--chalk-green); color:#fff; font-weight:600; font-size:0.85rem; cursor:pointer;}
+  .btn:hover{background:var(--chalk-green-dark);}
+  .btn.secondary{background:#fff; color:var(--chalk-green); border:1.5px solid var(--chalk-green);}
+  .btn.danger{background:var(--margin-red);}
+  .btn.small{padding:5px 10px; font-size:0.78rem;}
+  .status-msg{font-size:0.8rem; margin-top:6px; min-height:1.1em;}
+  .status-msg.ok{color:var(--teal);} .status-msg.err{color:var(--margin-red);}
+  .error{color:var(--margin-red); font-size:0.85rem; margin-top:8px; min-height:1em;}
+
+  table{width:100%; border-collapse:collapse; font-size:0.85rem;}
+  thead th{text-align:left; font-size:0.7rem; text-transform:uppercase; color:var(--ink-soft); border-bottom:2px solid var(--paper-line); padding:6px;}
+  tbody td{padding:6px; border-bottom:1px solid var(--paper-line);}
+  tfoot td{padding:8px 6px; font-weight:700; border-top:2px solid var(--ink);}
+
+  .chip-list{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;}
+  .chip{display:flex; align-items:center; gap:6px; background:var(--paper); border:1px solid var(--paper-line); border-radius:999px; padding:5px 6px 5px 12px; font-size:0.82rem;}
+  .chip button{background:none; border:none; color:var(--margin-red); cursor:pointer; font-size:0.95rem; padding:0 4px;}
+  .roster-chip{display:flex; align-items:center; gap:5px; font-size:0.82rem; background:var(--paper); border:1.5px solid var(--paper-line); border-radius:999px; padding:5px 10px 5px 6px; cursor:pointer;}
+  .roster-chip input{width:auto; margin:0;}
+
+  .item-row{border:1.5px solid var(--paper-line); border-radius:8px; padding:12px 14px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;}
+  .item-row .meta{font-size:0.78rem; color:var(--ink-soft);}
+  .item-row .actions{display:flex; gap:6px;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin:10px 0;}
+  .stat-box{background:var(--paper); border-radius:8px; padding:12px 14px;}
+  .stat-box .num{font-family:'Fraunces',serif; font-weight:700; font-size:1.3rem; color:var(--chalk-green);}
+  .stat-box .label{font-size:0.75rem; color:var(--ink-soft);}
+
+  .history-detail{background:var(--paper); border-radius:8px; padding:12px 14px; margin-top:10px; font-size:0.85rem;}
+
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+<nav class="main">
+  <span class="brand">🍜 Futsal Expenses</span>
+  <div class="tabs" id="tabs" hidden>
+    <button data-tab="activity" class="active">New Activity</button>
+    <button data-tab="history">History</button>
+    <button data-tab="dashboard">Dashboard</button>
+    <button data-tab="hotels">Hotels</button>
+    <button data-tab="groups">Groups</button>
+  </div>
+  <div class="who" id="nav-who" hidden>
+    <span id="who-email"></span>
+    <button id="btn-signout">Sign out</button>
+  </div>
+</nav>
+
+<main>
+  <div class="login-wrap" id="login-wrap">
+    <span class="hand">private —</span>
+    <h1 style="font-size:1.4rem;">Teacher sign in</h1>
+    <p style="color:var(--ink-soft); font-size:0.88rem; margin-bottom:20px;">Same account as your other admin pages.</p>
+    <div class="field"><label>Email</label><input id="login-email" type="email" autocomplete="username" placeholder="Enter your email"></div>
+    <div class="field"><label for="login-pass">Password</label><input id="login-pass" type="password" autocomplete="current-password"></div>
+    <button class="btn" id="btn-login" style="width:100%;">Sign in</button>
+    <p class="error" id="login-error"></p>
+  </div>
+
+  <div id="app" hidden>
+
+    <!-- ================= HOTELS TAB ================= -->
+    <section id="tab-hotels" hidden>
+      <div class="card">
+        <h2>Add a hotel</h2>
+        <div class="row">
+          <div class="field"><label>Hotel name</label><input id="h-name" placeholder="e.g. Ronik Hotel"></div>
+          <div class="field"><label>Location</label><input id="h-location" placeholder="e.g. Biratchowk"></div>
+          <div class="field" style="flex:0 0 auto;"><button class="btn secondary" id="btn-add-hotel">+ Add hotel</button></div>
+        </div>
+        <p class="status-msg" id="hotel-status"></p>
+      </div>
+      <div class="card">
+        <h2>Hotels &amp; menus</h2>
+        <div id="hotels-list"></div>
+      </div>
+    </section>
+
+    <!-- ================= GROUPS TAB ================= -->
+    <section id="tab-groups" hidden>
+      <div class="card">
+        <h2>Add a group</h2>
+        <div class="row">
+          <div class="field"><label>Group name</label><input id="g-name" placeholder="e.g. LAEBS"></div>
+          <div class="field" style="flex:0 0 auto;"><button class="btn secondary" id="btn-add-group">+ Add group</button></div>
+        </div>
+        <p class="status-msg" id="group-status"></p>
+      </div>
+      <div class="card">
+        <h2>Groups &amp; rosters</h2>
+        <div id="groups-list"></div>
+      </div>
+    </section>
+
+    <!-- ================= NEW ACTIVITY TAB ================= -->
+    <section id="tab-activity">
+      <div class="card">
+        <h2>1. Hotel &amp; group</h2>
+        <div class="row">
+          <div class="field"><label>Date</label><input id="a-date" type="date"></div>
+          <div class="field"><label>Hotel</label><select id="a-hotel"><option value="">Select hotel…</option></select></div>
+          <div class="field"><label>Group</label><select id="a-group"><option value="">Select group…</option></select></div>
+        </div>
+      </div>
+
+      <div class="card" id="a-present-card" hidden>
+        <h2>2. Who's here today?</h2>
+        <div id="a-present-check" class="chip-list"></div>
+        <div class="row">
+          <div class="field"><label>Add a player not on the list</label><input id="a-new-player" placeholder="Name"></div>
+          <div class="field" style="flex:0 0 auto;">
+            <label style="display:flex; align-items:center; gap:6px; font-weight:400; font-size:0.8rem;">
+              <input type="checkbox" id="a-save-player" style="width:auto;"> save to group
+            </label>
+          </div>
+          <div class="field" style="flex:0 0 auto;"><button class="btn secondary" id="btn-add-adhoc-player">+ Add</button></div>
+        </div>
+      </div>
+<div class="card" id="a-order-card" hidden>
+  <h2>3. Food & drink orders</h2>
+
+  <div class="row">
+  <div class="field">
+    <label>Item</label>
+    <select id="o-item">
+      <option value="">Select item…</option>
+    </select>
+  </div>
+
+  <div class="field" style="max-width:100px;">
+    <label>Qty per player</label>
+    <input id="o-qty" type="number" value="1" min="1">
+  </div>
+
+  <div class="field" style="max-width:110px;">
+    <label>Split among</label>
+    <input id="o-split" type="number" value="1" min="1" placeholder="1 = whole">
+  </div>
+
+  <div class="field" style="flex:0 0 auto;">
+    <button class="btn secondary" id="btn-add-order">
+      + Add to Selected Players
+    </button>
+  </div>
+</div>
+
+    <div class="field">
+      <label>Qty per player</label>
+      <input id="o-qty" type="number" value="1" min="1">
+    </div>
+
+    <div class="field" style="flex:0 0 auto;">
+      <button class="btn secondary" id="btn-add-order">
+        + Add to Selected Players
+      </button>
+    </div>
+  </div>
+
+  <div style="margin:10px 0 6px;">
+    <strong style="font-size:0.85rem;">Select players for this item</strong>
+    <button class="btn secondary small" id="btn-select-all-players" style="margin-left:8px;">
+      Select All
+    </button>
+    <button class="btn secondary small" id="btn-clear-players">
+      Clear
+    </button>
+  </div>
+
+  <div id="o-player-checks" class="chip-list"></div>
+
+  <div class="row" style="margin-top:12px;">
+    <div class="field">
+      <label>New item name (not on hotel's menu)</label>
+      <input id="o-new-item-name" placeholder="e.g. Xtreme Juice">
+    </div>
+
+    <div class="field">
+      <label>Price</label>
+      <input id="o-new-item-price" type="number" min="0">
+    </div>
+
+    <div class="field" style="flex:0 0 auto;">
+      <button class="btn secondary" id="btn-add-menu-item">
+        + Add to menu
+      </button>
+    </div>
+  </div>
+
+  <p class="status-msg" id="order-status"></p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>Item</th>
+        <th>Qty</th>
+        <th>Unit</th>
+        <th>Total</th>
+        <th></th>
+      </tr>
+    </thead>
+
+    <tbody id="orders-body">
+      <tr>
+        <td colspan="6" style="color:var(--ink-soft); text-align:center;">
+          No orders yet.
+        </td>
+      </tr>
+    </tbody>
+
+    <tfoot>
+      <tr>
+        <td colspan="4">Grand total</td>
+        <td id="orders-total">Rs 0</td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- PAYMENT SECTION -->
+  <div id="payment-section" hidden style="margin-top:20px; border-top:2px solid var(--paper-line); padding-top:16px;">
+    <h2>4. Payment method</h2>
+
+    <p style="font-size:0.8rem; color:var(--ink-soft); margin-bottom:12px;">
+      Select the payment method after all food orders have been entered.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Player</th>
+          <th>Total</th>
+          <th>Payment Method</th>
+        </tr>
+      </thead>
+
+      <tbody id="payment-body"></tbody>
+
+      <tfoot>
+        <tr>
+          <td>Total</td>
+          <td id="payment-grand-total">Rs 0</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="row" style="margin-top:14px;">
+      <button class="btn" id="btn-finalize">
+        Finalize & save activity
+      </button>
+    </div>
+
+    <p class="status-msg" id="finalize-status"></p>
+  </div>
+</div>
+
+      <div class="card" id="a-summary-card" hidden>
+        <h2>Today's summary</h2>
+        <div id="a-summary-body"></div>
+      </div>
+    </section>
+
+    <!-- ================= HISTORY TAB ================= -->
+    <section id="tab-history" hidden>
+      <div class="card">
+        <h2>Past activities</h2>
+        <div id="history-list"></div>
+      </div>
+    </section>
+
+    <!-- ================= DASHBOARD TAB ================= -->
+    <section id="tab-dashboard" hidden>
+      <div class="card">
+        <h2>Overall dashboard</h2>
+        <div class="stat-grid" id="dashboard-stats"></div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+  authDomain: "teacher-resource-hub.firebaseapp.com",
+  projectId: "teacher-resource-hub",
+  storageBucket: "teacher-resource-hub.firebasestorage.app",
+  messagingSenderId: "331374983102",
+  appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
+
+/* ---------- auth ---------- */
+const loginWrap = document.getElementById('login-wrap');
+const app = document.getElementById('app');
+const tabs = document.getElementById('tabs');
+const navWho = document.getElementById('nav-who');
+
+document.getElementById('btn-login').addEventListener('click', () => {
+  const err = document.getElementById('login-error');
+  err.textContent = '';
+  auth.signInWithEmailAndPassword(document.getElementById('login-email').value.trim(), document.getElementById('login-pass').value)
+    .catch(e => err.textContent = e.message);
+});
+document.getElementById('btn-signout').addEventListener('click', () => auth.signOut());
+
+auth.onAuthStateChanged(user => {
+  if(user){
+    loginWrap.hidden = true; app.hidden = false; tabs.hidden = false; navWho.hidden = false;
+    document.getElementById('who-email').textContent = user.email;
+    loadHotels(); loadGroups(); loadHistory();
+    document.getElementById('a-date').value = new Date().toISOString().slice(0,10);
+  } else {
+    loginWrap.hidden = false; app.hidden = true; tabs.hidden = true; navWho.hidden = true;
+  }
+});
+
+document.querySelectorAll('.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ['activity','history','dashboard','hotels','groups'].forEach(t => document.getElementById('tab-'+t).hidden = (t !== btn.dataset.tab));
+    if(btn.dataset.tab === 'history') loadHistory();
+    if(btn.dataset.tab === 'dashboard') loadDashboard();
+  });
+});
+
+/* ================= HOTELS ================= */
+let allHotels = [];
+
+document.getElementById('btn-add-hotel').addEventListener('click', () => {
+  const name = document.getElementById('h-name').value.trim();
+  const location = document.getElementById('h-location').value.trim();
+  const st = document.getElementById('hotel-status');
+  if(!name){ st.textContent = 'Enter a hotel name.'; st.className = 'status-msg err'; return; }
+  db.collection('expenseHotels').add({ name, location, menu: [] }).then(() => {
+    st.textContent = 'Added.'; st.className = 'status-msg ok';
+    document.getElementById('h-name').value = ''; document.getElementById('h-location').value = '';
+    loadHotels();
+  }).catch(e => { st.textContent = e.message; st.className = 'status-msg err'; });
+});
+
+function loadHotels(){
+  db.collection('expenseHotels').orderBy('name').get().then(snap => {
+    allHotels = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderHotelsList();
+    renderHotelSelect();
+  }).catch(err => console.error(err));
+}
+
+function renderHotelsList(){
+  const list = document.getElementById('hotels-list');
+  if(!list) return;
+  if(!allHotels.length){ list.innerHTML = '<p style="color:var(--ink-soft); font-size:0.85rem;">No hotels yet.</p>'; return; }
+  list.innerHTML = allHotels.map(h => `
+    <div class="item-row" style="flex-direction:column; align-items:stretch;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div><strong>${escapeHtml(h.name)}</strong><div class="meta">${escapeHtml(h.location||'')}</div></div>
+        <button class="btn danger small" data-del-hotel="${h.id}">Delete hotel</button>
+      </div>
+      <div class="chip-list" style="margin-top:8px;">
+        ${(h.menu||[]).map(item => `<span class="chip">${escapeHtml(item.name)} — Rs ${item.price} <button data-del-item="${h.id}|${item.id}">&times;</button></span>`).join('') || '<span class="meta">No menu items yet — add one from New Activity, or below.</span>'}
+      </div>
+      <div class="row" style="margin-top:6px;">
+        <input placeholder="Item name" data-menu-name="${h.id}" style="flex:2; padding:6px 8px; border:1.5px solid var(--paper-line); border-radius:6px; font-size:0.82rem;">
+        <input type="number" placeholder="Price" data-menu-price="${h.id}" style="flex:1; padding:6px 8px; border:1.5px solid var(--paper-line); border-radius:6px; font-size:0.82rem;">
+        <button class="btn secondary small" data-menu-add="${h.id}">+ Add item</button>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('[data-del-hotel]').forEach(btn => btn.addEventListener('click', () => {
+    if(confirm('Delete this hotel and its menu?')) db.collection('expenseHotels').doc(btn.dataset.delHotel).delete().then(loadHotels);
+  }));
+  list.querySelectorAll('[data-del-item]').forEach(btn => btn.addEventListener('click', () => {
+    const [hotelId, itemId] = btn.dataset.delItem.split('|');
+    const hotel = allHotels.find(h => h.id === hotelId);
+    const menu = (hotel.menu||[]).filter(m => m.id !== itemId);
+    db.collection('expenseHotels').doc(hotelId).update({ menu }).then(loadHotels);
+  }));
+  list.querySelectorAll('[data-menu-add]').forEach(btn => btn.addEventListener('click', () => {
+    const hotelId = btn.dataset.menuAdd;
+    const nameInput = list.querySelector(`[data-menu-name="${hotelId}"]`);
+    const priceInput = list.querySelector(`[data-menu-price="${hotelId}"]`);
+    const name = nameInput.value.trim();
+    const price = parseFloat(priceInput.value);
+    if(!name || isNaN(price)) return;
+    const hotel = allHotels.find(h => h.id === hotelId);
+    const menu = [...(hotel.menu||[]), { id: 'i'+Date.now(), name, price }];
+    db.collection('expenseHotels').doc(hotelId).update({ menu }).then(loadHotels);
+  }));
+}
+
+function renderHotelSelect(){
+  const sel = document.getElementById('a-hotel');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Select hotel…</option>' + allHotels.map(h => `<option value="${h.id}">${escapeHtml(h.name)}</option>`).join('');
+  sel.value = prev;
+}
+
+/* ================= GROUPS ================= */
+let allGroups = [];
+
+document.getElementById('btn-add-group').addEventListener('click', () => {
+  const name = document.getElementById('g-name').value.trim();
+  const st = document.getElementById('group-status');
+  if(!name){ st.textContent = 'Enter a group name.'; st.className = 'status-msg err'; return; }
+  db.collection('expenseGroups').add({ name, players: [] }).then(() => {
+    st.textContent = 'Added.'; st.className = 'status-msg ok';
+    document.getElementById('g-name').value = '';
+    loadGroups();
+  }).catch(e => { st.textContent = e.message; st.className = 'status-msg err'; });
+});
+
+function loadGroups(){
+  db.collection('expenseGroups').orderBy('name').get().then(snap => {
+    allGroups = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderGroupsList();
+    renderGroupSelect();
+  }).catch(err => console.error(err));
+}
+
+function renderGroupsList(){
+  const list = document.getElementById('groups-list');
+  if(!list) return;
+  if(!allGroups.length){ list.innerHTML = '<p style="color:var(--ink-soft); font-size:0.85rem;">No groups yet.</p>'; return; }
+  list.innerHTML = allGroups.map(g => `
+    <div class="item-row" style="flex-direction:column; align-items:stretch;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong>${escapeHtml(g.name)}</strong>
+        <button class="btn danger small" data-del-group="${g.id}">Delete group</button>
+      </div>
+      <div class="chip-list" style="margin-top:8px;">
+        ${(g.players||[]).map(p => `<span class="chip">${escapeHtml(p)} <button data-rm-player="${g.id}|${escapeHtml(p)}">&times;</button></span>`).join('') || '<span class="meta">No players saved yet.</span>'}
+      </div>
+      <div class="row" style="margin-top:6px;">
+        <input placeholder="Player name" data-player-name="${g.id}" style="padding:6px 8px; border:1.5px solid var(--paper-line); border-radius:6px; font-size:0.82rem;">
+        <button class="btn secondary small" data-player-add="${g.id}">+ Add player</button>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('[data-del-group]').forEach(btn => btn.addEventListener('click', () => {
+    if(confirm('Delete this group?')) db.collection('expenseGroups').doc(btn.dataset.delGroup).delete().then(loadGroups);
+  }));
+  list.querySelectorAll('[data-rm-player]').forEach(btn => btn.addEventListener('click', () => {
+    const [groupId, name] = btn.dataset.rmPlayer.split('|');
+    const group = allGroups.find(g => g.id === groupId);
+    const players = (group.players||[]).filter(p => p !== name);
+    db.collection('expenseGroups').doc(groupId).update({ players }).then(loadGroups);
+  }));
+  list.querySelectorAll('[data-player-add]').forEach(btn => btn.addEventListener('click', () => {
+    const groupId = btn.dataset.playerAdd;
+    const input = list.querySelector(`[data-player-name="${groupId}"]`);
+    const name = input.value.trim();
+    if(!name) return;
+    const group = allGroups.find(g => g.id === groupId);
+    const players = [...new Set([...(group.players||[]), name])];
+    db.collection('expenseGroups').doc(groupId).update({ players }).then(loadGroups);
+  }));
+}
+
+function renderGroupSelect(){
+  const sel = document.getElementById('a-group');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Select group…</option>' + allGroups.map(g => `<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
+  sel.value = prev;
+}
+
+/* ================= NEW ACTIVITY ================= */
+let presentPlayers = []; 
+let currentOrders = [];  
+let playerPayments = {}; 
+let activeHotel = null;
+let activeGroup = null;
+
+document.getElementById('a-hotel').addEventListener('change', () => {
+  activeHotel = allHotels.find(h => h.id === document.getElementById('a-hotel').value) || null;
+  renderItemSelect();
+});
+
+document.getElementById('a-group').addEventListener('change', () => {
+  activeGroup = allGroups.find(g => g.id === document.getElementById('a-group').value) || null;
+  presentPlayers = [];
+  currentOrders = [];
+  playerPayments = {};
+  document.getElementById('a-present-card').hidden = !activeGroup;
+  document.getElementById('a-order-card').hidden = true;
+  document.getElementById('a-summary-card').hidden = true;
+  renderPresentCheck();
+});
+
+function renderPresentCheck(){
+  const wrap = document.getElementById('a-present-check');
+  if(!activeGroup){ wrap.innerHTML = ''; return; }
+  wrap.innerHTML = (activeGroup.players||[]).map(name => `
+    <label class="roster-chip">
+      <input type="checkbox" class="present-box" value="${escapeHtml(name)}">
+      ${escapeHtml(name)}
+    </label>
+  `).join('') || '<span style="font-size:0.82rem; color:var(--ink-soft);">This group has no saved players yet — add some below.</span>';
+
+  wrap.querySelectorAll('.present-box').forEach(box => {
+    box.addEventListener('change', () => {
+      presentPlayers = Array.from(wrap.querySelectorAll('.present-box:checked')).map(b => b.value);
+      renderPlayerChecks();
+      document.getElementById('a-order-card').hidden = presentPlayers.length === 0;
+    });
+  });
+}
+
+document.getElementById('btn-add-adhoc-player').addEventListener('click', () => {
+  const name = document.getElementById('a-new-player').value.trim();
+  if(!name) return;
+  if(document.getElementById('a-save-player').checked && activeGroup){
+    const players = [...new Set([...(activeGroup.players||[]), name])];
+    db.collection('expenseGroups').doc(activeGroup.id).update({ players }).then(() => {
+      activeGroup.players = players;
+      loadGroups();
+      renderPresentCheck();
+      addPresent(name);
+    });
+  } else {
+    addPresent(name);
+  }
+  document.getElementById('a-new-player').value = '';
+});
+
+function addPresent(name){
+  if(!presentPlayers.includes(name)) presentPlayers.push(name);
+  renderPlayerChecks();
+  document.getElementById('a-order-card').hidden = presentPlayers.length === 0;
+  const box = document.querySelector(`.present-box[value="${CSS.escape(name)}"]`);
+  if(box) box.checked = true;
+}
+
+function renderItemSelect(){
+  const sel = document.getElementById('o-item');
+  const menu = activeHotel ? (activeHotel.menu || []) : [];
+  sel.innerHTML = '<option value="">Select item…</option>' +
+    menu.map(m => `
+      <option value="${m.id}" data-price="${m.price}" data-name="${escapeHtml(m.name)}">
+        ${escapeHtml(m.name)} — Rs ${m.price}
+      </option>
+    `).join('');
+}
+
+document.getElementById('btn-add-menu-item').addEventListener('click', () => {
+  const st = document.getElementById('order-status');
+  if(!activeHotel){ st.textContent = 'Pick a hotel first.'; st.className = 'status-msg err'; return; }
+  const name = document.getElementById('o-new-item-name').value.trim();
+  const price = parseFloat(document.getElementById('o-new-item-price').value);
+  if(!name || isNaN(price)){ st.textContent = 'Enter an item name and price.'; st.className = 'status-msg err'; return; }
+  const menu = [...(activeHotel.menu||[]), { id: 'i'+Date.now(), name, price }];
+  db.collection('expenseHotels').doc(activeHotel.id).update({ menu }).then(() => {
+    activeHotel.menu = menu;
+    renderItemSelect();
+    loadHotels();
+    document.getElementById('o-new-item-name').value = '';
+    document.getElementById('o-new-item-price').value = '';
+    st.textContent = 'Added to menu.'; st.className = 'status-msg ok';
+  });
+});
+
+function renderPlayerChecks(){
+  const wrap = document.getElementById('o-player-checks');
+  if(!presentPlayers.length){ wrap.innerHTML = ''; return; }
+  wrap.innerHTML = presentPlayers.map(name => `
+    <label class="roster-chip">
+      <input type="checkbox" class="order-player-box" value="${escapeHtml(name)}">
+      ${escapeHtml(name)}
+    </label>
+  `).join('');
+}
+
+document.getElementById('btn-select-all-players').addEventListener('click', () => {
+  document.querySelectorAll('.order-player-box').forEach(box => box.checked = true);
+});
+
+document.getElementById('btn-clear-players').addEventListener('click', () => {
+  document.querySelectorAll('.order-player-box').forEach(box => box.checked = false);
+});
+
+document.getElementById('btn-add-order').addEventListener('click', () => {
+  const st = document.getElementById('order-status');
+  const itemSel = document.getElementById('o-item');
+  const itemId = itemSel.value;
+  const qty = parseInt(document.getElementById('o-qty').value) || 1;
+  const splitCount = parseInt(document.getElementById('o-split').value) || 1;
+  const selectedPlayers = Array.from(document.querySelectorAll('.order-player-box:checked')).map(box => box.value);
+
+  if(!itemId){
+    st.textContent = 'Please select a food or drink.';
+    st.className = 'status-msg err';
+    return;
+  }
+  if(!selectedPlayers.length){
+    st.textContent = 'Select at least one player.';
+    st.className = 'status-msg err';
+    return;
+  }
+
+  const opt = itemSel.selectedOptions[0];
+  const unitPrice = parseFloat(opt.dataset.price);
+  const baseName = opt.dataset.name || opt.textContent.split(' — ')[0];
+  
+  // Calculate price per player when shared
+  const pricePerPlayer = unitPrice / splitCount;
+  const itemLabel = splitCount > 1 
+    ? `${baseName} (Shared 1/${splitCount})` 
+    : baseName;
+
+  selectedPlayers.forEach(player => {
+    currentOrders.push({
+      player,
+      item: itemLabel,
+      qty,
+      unitPrice: pricePerPlayer,
+      total: Math.round(qty * pricePerPlayer)
+    });
+  });
+
+  renderOrders();
+  renderPaymentSection();
+
+  // Reset inputs and selections
+  document.querySelectorAll('.order-player-box').forEach(box => box.checked = false);
+  document.getElementById('o-split').value = "1";
+
+  st.textContent = splitCount > 1 
+    ? `${baseName} split added for ${selectedPlayers.length} player(s) at Rs ${pricePerPlayer}/each.`
+    : `${baseName} added for ${selectedPlayers.length} player(s).`;
+  st.className = 'status-msg ok';
+});
+
+function renderOrders(){
+  const body = document.getElementById('orders-body');
+  if(!currentOrders.length){
+    body.innerHTML = `<tr><td colspan="6" style="color:var(--ink-soft); text-align:center;">No orders yet.</td></tr>`;
+    document.getElementById('orders-total').textContent = 'Rs 0';
+    document.getElementById('payment-section').hidden = true;
+    return;
+  }
+
+  body.innerHTML = currentOrders.map((o,i) => `
+    <tr>
+      <td>${escapeHtml(o.player)}</td>
+      <td>${escapeHtml(o.item)}</td>
+      <td>${o.qty}</td>
+      <td>Rs ${o.unitPrice}</td>
+      <td>Rs ${o.total}</td>
+      <td><button class="btn danger small" data-rm-order="${i}">&times;</button></td>
+    </tr>
+  `).join('');
+
+  body.querySelectorAll('[data-rm-order]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentOrders.splice(parseInt(btn.dataset.rmOrder), 1);
+      renderOrders();
+      renderPaymentSection();
+    });
+  });
+
+  const total = currentOrders.reduce((sum, order) => sum + order.total, 0);
+  document.getElementById('orders-total').textContent = 'Rs ' + total;
+}
+
+function renderPaymentSection(){
+  const sec = document.getElementById('payment-section');
+  const body = document.getElementById('payment-body');
+  if(!currentOrders.length){
+    sec.hidden = true;
+    return;
+  }
+
+  sec.hidden = false;
+  const playerTotals = {};
+  currentOrders.forEach(o => {
+    playerTotals[o.player] = (playerTotals[o.player] || 0) + o.total;
+  });
+
+  let grandTotal = 0;
+  body.innerHTML = Object.entries(playerTotals).map(([player, total]) => {
+    grandTotal += total;
+    const pMethod = playerPayments[player] || '';
+    return `
+      <tr>
+        <td>${escapeHtml(player)}</td>
+        <td>Rs ${total}</td>
+        <td>
+          <select class="payment-method-select" data-player="${escapeHtml(player)}">
+            <option value="">Select Method...</option>
+            <option value="QR" ${pMethod === 'QR' ? 'selected' : ''}>QR</option>
+            <option value="Cash" ${pMethod === 'Cash' ? 'selected' : ''}>Cash</option>
+          </select>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('payment-grand-total').textContent = 'Rs ' + grandTotal;
+
+  body.querySelectorAll('.payment-method-select').forEach(sel => {
+    sel.addEventListener('change', (e) => {
+      playerPayments[e.target.dataset.player] = e.target.value;
+    });
+  });
+}
+
+document.getElementById('btn-finalize').addEventListener('click', () => {
+  const st = document.getElementById('finalize-status');
+  const date = document.getElementById('a-date').value;
+
+  if(!activeHotel || !activeGroup){
+    st.textContent = 'Pick a hotel and group.'; st.className = 'status-msg err'; return;
+  }
+  if(!currentOrders.length){
+    st.textContent = 'Add at least one order.'; st.className = 'status-msg err'; return;
+  }
+
+  const playerTotals = {};
+  currentOrders.forEach(order => {
+    playerTotals[order.player] = (playerTotals[order.player] || 0) + order.total;
+  });
+
+  const players = Object.keys(playerTotals);
+  const unpaidPlayers = players.filter(player => !playerPayments[player]);
+  if(unpaidPlayers.length){
+    st.textContent = 'Please select payment method for: ' + unpaidPlayers.join(', ');
+    st.className = 'status-msg err'; return;
+  }
+
+  let qrTotal = 0, cashTotal = 0, qrCount = 0, cashCount = 0;
+  players.forEach(player => {
+    const amount = playerTotals[player];
+    if(playerPayments[player] === 'QR'){
+      qrTotal += amount; qrCount++;
+    } else if(playerPayments[player] === 'Cash'){
+      cashTotal += amount; cashCount++;
+    }
+  });
+
+  const totalCost = qrTotal + cashTotal;
+  const entries = Object.entries(playerTotals).sort((a,b) => b[1] - a[1]);
+  const highest = entries[0] || ['—', 0];
+  const lowest = entries[entries.length - 1] || ['—', 0];
+
+  const summary = {
+    totalCost, qrTotal, cashTotal, qrCount, cashCount,
+    playerTotals, playerPayments, eatingCount: players.length,
+    highestPlayer: highest[0], highestAmount: highest[1],
+    lowestPlayer: lowest[0], lowestAmount: lowest[1]
+  };
+
+  const finalOrders = currentOrders.map(o => ({
+    ...o,
+    payment: playerPayments[o.player] || 'Unspecified'
+  }));
+
+  const data = {
+    date,
+    hotelId: activeHotel.id,
+    hotelName: activeHotel.name,
+    groupId: activeGroup.id,
+    groupName: activeGroup.name,
+    totalPlayers: (activeGroup.players || []).length,
+    presentPlayers,
+    orders: finalOrders,
+    summary,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  db.collection('expenseActivities').add(data).then(() => {
+    st.textContent = 'Activity saved successfully!';
+    st.className = 'status-msg ok';
+    renderSummary(data);
+    document.getElementById('a-summary-card').hidden = false;
+    currentOrders = [];
+    playerPayments = {};
+    renderOrders();
+    renderPaymentSection();
+    loadHistory();
+  }).catch(e => {
+    st.textContent = e.message;
+    st.className = 'status-msg err';
+  });
+});
+
+function renderSummary(data){
+  const s = data.summary;
+  const wrap = document.getElementById('a-summary-body');
+  wrap.innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-box"><div class="num">Rs ${s.totalCost}</div><div class="label">Total cost</div></div>
+      <div class="stat-box"><div class="num">Rs ${s.qrTotal}</div><div class="label">QR (${s.qrCount} payments)</div></div>
+      <div class="stat-box"><div class="num">Rs ${s.cashTotal}</div><div class="label">Cash (${s.cashCount} payments)</div></div>
+      <div class="stat-box"><div class="num">${s.eatingCount}</div><div class="label">Players who ate</div></div>
+      <div class="stat-box"><div class="num">${escapeHtml(s.highestPlayer)}</div><div class="label">Highest — Rs ${s.highestAmount}</div></div>
+      <div class="stat-box"><div class="num">${escapeHtml(s.lowestPlayer)}</div><div class="label">Lowest — Rs ${s.lowestAmount}</div></div>
+    </div>
+    <table>
+      <thead><tr><th>Player</th><th>Total</th><th>Payment Method</th></tr></thead>
+      <tbody>
+        ${Object.entries(s.playerTotals).sort((a,b)=>b[1]-a[1]).map(([name,total]) => `<tr><td>${escapeHtml(name)}</td><td>Rs ${total}</td><td>${escapeHtml(s.playerPayments[name] || '—')}</td></tr>`).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+/* ================= HISTORY ================= */
+function loadHistory(){
+  const list = document.getElementById('history-list');
+  if(!list) return;
+  db.collection('expenseActivities').orderBy('date', 'desc').limit(50).get().then(snap => {
+    if(snap.empty){ list.innerHTML = '<p style="color:var(--ink-soft); font-size:0.85rem;">No activities yet.</p>'; return; }
+    list.innerHTML = '';
+    snap.forEach(doc => {
+      const a = doc.data();
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.style.flexDirection = 'column';
+      row.style.alignItems = 'stretch';
+      row.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div><strong>${escapeHtml(a.date)}</strong><div class="meta">${escapeHtml(a.hotelName)} • ${escapeHtml(a.groupName)} • Rs ${a.summary ? a.summary.totalCost : 0}</div></div>
+          <div class="actions">
+            <button class="btn secondary small" data-view="${doc.id}">View details</button>
+            <button class="btn danger small" data-del="${doc.id}">Delete</button>
+          </div>
+        </div>
+        <div class="history-detail" id="detail-${doc.id}" hidden></div>
+      `;
+      row.querySelector('[data-view]').addEventListener('click', () => {
+        const detail = document.getElementById('detail-' + doc.id);
+        if(detail.hidden){
+          detail.innerHTML = historyDetailHtml(a);
+          detail.hidden = false;
+        } else {
+          detail.hidden = true;
+        }
+      });
+      row.querySelector('[data-del]').addEventListener('click', () => {
+        if(confirm('Delete this activity?')) db.collection('expenseActivities').doc(doc.id).delete().then(loadHistory);
+      });
+      list.appendChild(row);
+    });
+  }).catch(err => { list.innerHTML = '<p style="color:var(--margin-red);">' + escapeHtml(err.message) + '</p>'; });
+}
+
+function historyDetailHtml(a){
+  const s = a.summary || {};
+  return `
+    <div class="stat-grid">
+      <div class="stat-box"><div class="num">Rs ${s.totalCost||0}</div><div class="label">Total</div></div>
+      <div class="stat-box"><div class="num">Rs ${s.qrTotal||0}</div><div class="label">QR</div></div>
+      <div class="stat-box"><div class="num">Rs ${s.cashTotal||0}</div><div class="label">Cash</div></div>
+      <div class="stat-box"><div class="num">${escapeHtml(s.highestPlayer||'—')}</div><div class="label">Highest — Rs ${s.highestAmount||0}</div></div>
+    </div>
+    <table>
+      <thead><tr><th>Player</th><th>Item</th><th>Qty</th><th>Total</th><th>Payment</th></tr></thead>
+      <tbody>${(a.orders||[]).map(o => `<tr><td>${escapeHtml(o.player)}</td><td>${escapeHtml(o.item)}</td><td>${o.qty}</td><td>Rs ${o.total}</td><td>${escapeHtml(o.payment||'—')}</td></tr>`).join('')}</tbody>
+    </table>
+  `;
+}
+
+/* ================= DASHBOARD ================= */
+function loadDashboard(){
+  const wrap = document.getElementById('dashboard-stats');
+  wrap.innerHTML = '<p style="color:var(--ink-soft); font-size:0.85rem;">Loading…</p>';
+  db.collection('expenseActivities').get().then(snap => {
+    if(snap.empty){ wrap.innerHTML = '<p style="color:var(--ink-soft); font-size:0.85rem;">No activities yet.</p>'; return; }
+    let totalActivities = 0, totalExpense = 0, totalQr = 0, totalCash = 0, totalEatingPlayerCount = 0;
+    let highestSingleDay = 0;
+    const hotelCounts = {};
+    snap.forEach(doc => {
+      const a = doc.data();
+      const s = a.summary || {};
+      totalActivities++;
+      totalExpense += s.totalCost || 0;
+      totalQr += s.qrTotal || 0;
+      totalCash += s.cashTotal || 0;
+      totalEatingPlayerCount += s.eatingCount || 0;
+      if((s.totalCost||0) > highestSingleDay) highestSingleDay = s.totalCost;
+      hotelCounts[a.hotelName] = (hotelCounts[a.hotelName]||0) + 1;
+    });
+    const mostUsedHotel = Object.entries(hotelCounts).sort((a,b)=>b[1]-a[1])[0];
+    const avgPerPlayer = totalEatingPlayerCount ? Math.round(totalExpense / totalEatingPlayerCount) : 0;
+
+    wrap.innerHTML = `
+      <div class="stat-box"><div class="num">${totalActivities}</div><div class="label">Total activities</div></div>
+      <div class="stat-box"><div class="num">Rs ${totalExpense}</div><div class="label">Total hotel expenses</div></div>
+      <div class="stat-box"><div class="num">Rs ${totalQr}</div><div class="label">Total QR</div></div>
+      <div class="stat-box"><div class="num">Rs ${totalCash}</div><div class="label">Total cash</div></div>
+      <div class="stat-box"><div class="num">Rs ${avgPerPlayer}</div><div class="label">Average per player</div></div>
+      <div class="stat-box"><div class="num">Rs ${highestSingleDay}</div><div class="label">Highest single-day expense</div></div>
+      <div class="stat-box"><div class="num">${mostUsedHotel ? escapeHtml(mostUsedHotel[0]) : '—'}</div><div class="label">Most used hotel</div></div>
+    `;
+  }).catch(err => { wrap.innerHTML = '<p style="color:var(--margin-red);">' + escapeHtml(err.message) + '</p>'; });
+}
+</script>
+</body>
+</html>

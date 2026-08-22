@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Futsal — Admin | Lovely Angels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --chalk-green:#1F3B33; --chalk-green-dark:#152A25;
+    --paper:#F4F1E6; --paper-line:#DCD6C2;
+    --margin-red:#C1443B; --ink:#26302C; --ink-soft:#5B6660;
+    --teal:#2C7A73; --radius:10px; --shadow:0 6px 18px rgba(21,42,37,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif;}
+  h1,h2{font-family:'Fraunces',serif; font-weight:600; margin:0 0 8px;}
+  .hand{font-family:'Caveat',cursive; color:var(--margin-red); font-weight:700;}
+  :focus-visible{outline:3px solid var(--teal); outline-offset:2px;}
+
+  nav.main{background:var(--chalk-green); color:#F4F1E6; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  nav.main .brand{font-family:'Fraunces',serif; font-size:1.2rem; font-weight:700; color:#F4F1E6;}
+  .tabs{display:flex; gap:6px;}
+  .tabs button{background:transparent; border:1px solid rgba(255,255,255,0.3); color:#DCE6DF; padding:7px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;}
+  .tabs button.active{background:#fff; color:var(--chalk-green); border-color:#fff;}
+  nav.main .who{font-size:0.85rem; color:#DCE6DF; display:flex; align-items:center; gap:12px;}
+  nav.main .who button{background:transparent; border:1px solid #DCE6DF; color:#F4F1E6; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:0.8rem;}
+
+  main{max-width:1000px; margin:0 auto; padding:24px 18px 60px;}
+  .card{background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:20px; margin-bottom:18px;}
+  .card h2{font-size:1.05rem;}
+  .login-wrap{max-width:380px; margin:80px auto; background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:32px 28px; border-top:5px solid var(--margin-red);}
+  .field{margin-bottom:10px;}
+  .field label{display:block; font-size:0.78rem; font-weight:600; color:var(--ink-soft); margin-bottom:3px;}
+  .field input, .field select, .field textarea{width:100%; padding:7px 9px; border:1.5px solid var(--paper-line); border-radius:6px; font-size:0.85rem;}
+  .row{display:flex; gap:10px; flex-wrap:wrap;}
+  .row > *{flex:1; min-width:130px;}
+  .btn{border:none; border-radius:6px; padding:9px 16px; background:var(--chalk-green); color:#fff; font-weight:600; font-size:0.85rem; cursor:pointer;}
+  .btn:hover{background:var(--chalk-green-dark);}
+  .btn.secondary{background:#fff; color:var(--chalk-green); border:1.5px solid var(--chalk-green);}
+  .btn.danger{background:var(--margin-red);}
+  .status-msg{font-size:0.8rem; margin-top:6px; min-height:1.1em;}
+  .status-msg.ok{color:var(--teal);} .status-msg.err{color:var(--margin-red);}
+  .error{color:var(--margin-red); font-size:0.85rem; margin-top:8px; min-height:1em;}
+
+  .item-row{border:1.5px solid var(--paper-line); border-radius:8px; padding:12px 14px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;}
+  .item-row .meta{font-size:0.78rem; color:var(--ink-soft);}
+  .item-row .actions{display:flex; gap:6px;}
+  .item-row .actions button{font-size:0.75rem; padding:5px 10px;}
+
+  .md-dropzone{
+    min-width:190px; min-height:220px; background:var(--paper); border:2px dashed var(--paper-line);
+    border-radius:8px; padding:8px; display:flex; flex-direction:column; gap:6px;
+  }
+  .md-dropzone.drag-over{ border-color:var(--teal); background:#EAF3F1; }
+  .md-player-card{
+    background:#fff; border:1px solid var(--paper-line); border-radius:6px; padding:6px 8px;
+    font-size:0.8rem; cursor:grab; display:flex; align-items:center; gap:8px;
+  }
+  .md-player-card:active{ cursor:grabbing; }
+  .md-player-card img{ width:26px; height:26px; border-radius:50%; object-fit:cover; }
+  .md-player-card .jersey{ font-family:'Fraunces',serif; font-weight:700; color:var(--ink-soft); font-size:0.75rem; }
+  .md-roster-chip{
+    display:flex; align-items:center; gap:5px; font-size:0.8rem; background:var(--paper);
+    border:1.5px solid var(--paper-line); border-radius:999px; padding:5px 10px 5px 6px; cursor:pointer;
+  }
+  .md-roster-chip input{ width:auto; margin:0; }
+
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+<nav class="main">
+  <span class="brand">⚽ Futsal — Admin</span>
+  <div class="tabs" id="tabs" hidden>
+    <button data-tab="players" class="active">Players</button>
+    <button data-tab="matchday">Match Day</button>
+    <button data-tab="matches">Matches</button>
+    <button data-tab="facts">Quick Facts</button>
+  </div>
+  <div class="who" id="nav-who" hidden>
+    <span id="who-email"></span>
+    <button id="btn-signout">Sign out</button>
+  </div>
+</nav>
+
+<main>
+  <div class="login-wrap" id="login-wrap">
+    <span class="hand">private —</span>
+    <h1 style="font-size:1.4rem;">Teacher sign in</h1>
+    <p style="color:var(--ink-soft); font-size:0.88rem; margin-bottom:20px;">Same account as your other admin pages.</p>
+    <div class="field"><label for="login-email">Email</label><input id="login-email" type="email" autocomplete="username"></div>
+    <div class="field"><label for="login-pass">Password</label><input id="login-pass" type="password" autocomplete="current-password"></div>
+    <button class="btn" id="btn-login" style="width:100%;">Sign in</button>
+    <p class="error" id="login-error"></p>
+  </div>
+
+  <div id="app" hidden>
+
+    <!-- PLAYERS TAB -->
+    <section id="tab-players">
+      <div class="card">
+        <h2>Add / edit a player</h2>
+        <input type="hidden" id="p-id">
+        <div class="row">
+          <div class="field"><label>Name</label><input id="p-name" placeholder="e.g. Prakash Sir"></div>
+          <div class="field"><label>Jersey #</label><input id="p-jersey" type="number" placeholder="e.g. 7"></div>
+          <div class="field"><label>Position</label><input id="p-position" placeholder="e.g. Midfielder"></div>
+          <div class="field"><label>Photo URL</label><input id="p-photo" placeholder="img/prakash.jpg or Drive link"></div>
+          <div class="field"><label>Order (lower = first)</label><input id="p-order" type="number" value="1"></div>
+        </div>
+        <div class="field">
+          <label>Skills (comma-separated, e.g. "Fast, Good passer, Left-footed")</label>
+          <input id="p-skills" placeholder="Fast, Good passer, Left-footed">
+        </div>
+        <div class="row">
+          <div class="field"><label>Facebook link</label><input id="p-fb" placeholder="optional"></div>
+          <div class="field"><label>Twitter link</label><input id="p-tw" placeholder="optional"></div>
+          <div class="field"><label>Instagram link</label><input id="p-ig" placeholder="optional"></div>
+          <div class="field"><label>LinkedIn link</label><input id="p-li" placeholder="optional"></div>
+        </div>
+        <h2 style="font-size:0.9rem; margin-top:14px;">Season stats</h2>
+        <div class="row">
+          <div class="field"><label>Matches played</label><input id="p-matches" type="number"></div>
+          <div class="field"><label>Wins</label><input id="p-wins" type="number"></div>
+          <div class="field"><label>Losses</label><input id="p-losses" type="number"></div>
+          <div class="field"><label>Draws</label><input id="p-draws" type="number"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Goals scored</label><input id="p-goals" type="number"></div>
+          <div class="field"><label>Clean sheets</label><input id="p-cleansheets" type="number"></div>
+          <div class="field"><label>Assists</label><input id="p-assists" type="number"></div>
+          <div class="field"><label>Note / status</label><input id="p-note" placeholder="optional"></div>
+        </div>
+        <div class="row">
+          <button class="btn" id="btn-save-player">Save player</button>
+          <button class="btn secondary" id="btn-clear-player" type="button">Clear form / new player</button>
+        </div>
+        <p class="status-msg" id="player-status"></p>
+      </div>
+
+      <div class="card">
+        <h2>Players</h2>
+        <div id="players-list"></div>
+      </div>
+    </section>
+
+    <!-- MATCH DAY TAB -->
+    <section id="tab-matchday" hidden>
+      <div class="card">
+        <h2>New match day</h2>
+        <div class="row">
+          <div class="field"><label>Date</label><input id="md-date" type="date"></div>
+          <div class="field"><label>Players per team</label><input id="md-team-size" type="number" value="5" min="1"></div>
+        </div>
+        <div class="field">
+          <label>Who's here today? (tick everyone available)</label>
+          <div id="md-roster-check" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+        </div>
+        <button class="btn" id="btn-generate-teams">Generate teams</button>
+        <p class="status-msg" id="md-generate-status"></p>
+      </div>
+
+      <div class="card" id="md-teams-card" hidden>
+        <h2>Adjust lineups <span style="font-weight:400; font-size:0.78rem; color:var(--ink-soft);">— drag players between columns</span></h2>
+        <div class="row" style="align-items:flex-start;">
+          <div>
+            <h3 style="font-size:0.9rem; color:var(--teal);">Team A</h3>
+            <div class="md-dropzone" id="md-team-a" data-zone="teamA"></div>
+          </div>
+          <div>
+            <h3 style="font-size:0.9rem; color:var(--margin-red);">Team B</h3>
+            <div class="md-dropzone" id="md-team-b" data-zone="teamB"></div>
+          </div>
+          <div>
+            <h3 style="font-size:0.9rem; color:var(--ink-soft);">Bench</h3>
+            <div class="md-dropzone" id="md-bench" data-zone="bench"></div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:14px;">
+          <button class="btn secondary" id="btn-save-lineup">Save lineup</button>
+        </div>
+        <p class="status-msg" id="md-lineup-status"></p>
+
+        <div id="md-score-block" hidden>
+          <h2 style="font-size:0.95rem; margin-top:18px;">Final score</h2>
+          <div class="row" style="align-items:end;">
+            <div class="field"><label>Team A score</label><input id="md-score-a" type="number" min="0"></div>
+            <div class="field"><label>Team B score</label><input id="md-score-b" type="number" min="0"></div>
+            <div class="field" style="flex:0 0 auto;">
+              <label style="display:flex; align-items:center; gap:6px; font-weight:400;">
+                <input type="checkbox" id="md-update-stats" style="width:auto;" checked> Also update player stats
+              </label>
+            </div>
+            <div class="field" style="flex:0 0 auto;"><button class="btn" id="btn-save-score">Save final score</button></div>
+          </div>
+          <p class="status-msg" id="md-score-status"></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Past match days</h2>
+        <div id="md-history-list"></div>
+      </div>
+    </section>
+
+    <!-- MATCHES TAB -->
+    <section id="tab-matches" hidden>
+      <div class="card">
+        <h2>Add / edit a match</h2>
+        <input type="hidden" id="m-id">
+        <div class="row">
+          <div class="field"><label>Date (as you want it shown, e.g. 2081-01-08)</label><input id="m-date"></div>
+          <div class="field"><label>Cup / event name</label><input id="m-cup" placeholder="e.g. १२ वर्षे पिण्डेश्वर Cup 🏆"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Team(s) — e.g. "Lovely FC vs Jogiyare FC"</label><input id="m-team"></div>
+          <div class="field"><label>Score</label><input id="m-score" placeholder="e.g. 7-7"></div>
+          <div class="field"><label>Status</label><input id="m-status" placeholder="e.g. Draw / Lovely FC Won"></div>
+        </div>
+        <div class="field">
+          <label>Image URLs (one per line, optional)</label>
+          <textarea id="m-images" rows="3" placeholder="img/match1.jpg
+https://drive.google.com/..."></textarea>
+        </div>
+        <div class="row">
+          <button class="btn" id="btn-save-match">Save match</button>
+          <button class="btn secondary" id="btn-clear-match" type="button">Clear form / new match</button>
+        </div>
+        <p class="status-msg" id="match-status"></p>
+      </div>
+
+      <div class="card">
+        <h2>Matches</h2>
+        <div id="matches-list"></div>
+      </div>
+    </section>
+
+    <!-- FACTS TAB -->
+    <section id="tab-facts" hidden>
+      <div class="card">
+        <h2>Quick facts (the 4 counters at the top of the page)</h2>
+        <div class="row">
+          <div class="field"><label>Wins of Lovely FC (number)</label><input id="f-wins" type="number"></div>
+          <div class="field"><label>Losses (number)</label><input id="f-losses" type="number"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Top assist — name</label><input id="f-assist-name"></div>
+          <div class="field"><label>Top assist — count</label><input id="f-assist-count" type="number"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Highest scorer — name</label><input id="f-scorer-name"></div>
+          <div class="field"><label>Highest scorer — count</label><input id="f-scorer-count" type="number"></div>
+        </div>
+        <button class="btn" id="btn-save-facts">Save quick facts</button>
+        <p class="status-msg" id="facts-status"></p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* PASTE the SAME firebaseConfig used everywhere else */
+ const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+const loginWrap = document.getElementById('login-wrap');
+const app = document.getElementById('app');
+const tabs = document.getElementById('tabs');
+const navWho = document.getElementById('nav-who');
+const whoEmail = document.getElementById('who-email');
+
+document.getElementById('btn-login').addEventListener('click', () => {
+  const err = document.getElementById('login-error');
+  err.textContent = '';
+  auth.signInWithEmailAndPassword(document.getElementById('login-email').value.trim(), document.getElementById('login-pass').value)
+    .catch(e => err.textContent = e.message);
+});
+document.getElementById('btn-signout').addEventListener('click', () => auth.signOut());
+
+auth.onAuthStateChanged(user => {
+  if(user){
+    loginWrap.hidden = true; app.hidden = false; tabs.hidden = false; navWho.hidden = false;
+    whoEmail.textContent = user.email;
+    loadPlayers(); loadMatches(); loadFacts(); loadMatchDayHistory();
+  } else {
+    loginWrap.hidden = false; app.hidden = true; tabs.hidden = true; navWho.hidden = true;
+  }
+});
+
+document.querySelectorAll('.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ['players','matchday','matches','facts'].forEach(t => document.getElementById('tab-'+t).hidden = (t !== btn.dataset.tab));
+  });
+});
+
+/* ---------- Players ---------- */
+function clearPlayerForm(){
+  document.getElementById('p-id').value = '';
+  ['p-name','p-jersey','p-position','p-photo','p-fb','p-tw','p-ig','p-li','p-note','p-skills'].forEach(id => document.getElementById(id).value = '');
+  ['p-matches','p-wins','p-losses','p-draws','p-goals','p-cleansheets','p-assists'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('p-order').value = 1;
+}
+document.getElementById('btn-clear-player').addEventListener('click', clearPlayerForm);
+
+document.getElementById('btn-save-player').addEventListener('click', () => {
+  const id = document.getElementById('p-id').value;
+  const name = document.getElementById('p-name').value.trim();
+  const st = document.getElementById('player-status');
+  if(!name){ st.textContent = 'Name is required.'; st.className = 'status-msg err'; return; }
+  const data = {
+    name,
+    jerseyNumber: document.getElementById('p-jersey').value.trim(),
+    position: document.getElementById('p-position').value.trim(),
+    photoUrl: document.getElementById('p-photo').value.trim(),
+    order: parseInt(document.getElementById('p-order').value) || 1,
+    skills: document.getElementById('p-skills').value.split(',').map(s => s.trim()).filter(Boolean),
+    socials: {
+      facebook: document.getElementById('p-fb').value.trim() || '#',
+      twitter: document.getElementById('p-tw').value.trim() || '#',
+      instagram: document.getElementById('p-ig').value.trim() || '#',
+      linkedin: document.getElementById('p-li').value.trim() || '#'
+    },
+    stats: {
+      matches: numOrNull('p-matches'), wins: numOrNull('p-wins'), losses: numOrNull('p-losses'),
+      draws: numOrNull('p-draws'), goals: numOrNull('p-goals'), cleanSheets: numOrNull('p-cleansheets'),
+      assists: numOrNull('p-assists'), note: document.getElementById('p-note').value.trim()
+    }
+  };
+  const ref = id ? db.collection('futsalPlayers').doc(id) : db.collection('futsalPlayers').doc();
+  ref.set(data, { merge: true }).then(() => {
+    st.textContent = 'Saved.'; st.className = 'status-msg ok';
+    clearPlayerForm(); loadPlayers();
+  }).catch(e => { st.textContent = e.message; st.className = 'status-msg err'; });
+});
+
+function numOrNull(id){ const v = document.getElementById(id).value; return v === '' ? null : parseFloat(v); }
+
+let allPlayers = [];
+
+function loadPlayers(){
+  db.collection('futsalPlayers').orderBy('order').get().then(snap => {
+    const list = document.getElementById('players-list');
+    allPlayers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderRosterCheck();
+    if(snap.empty){ list.innerHTML = '<p style="color:var(--ink-soft); font-size:0.85rem;">No players yet.</p>'; return; }
+    list.innerHTML = '';
+    snap.forEach(doc => {
+      const p = doc.data();
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `
+        <div><strong>${escapeHtml(p.name)}</strong> ${p.jerseyNumber ? '<span class="meta">#'+escapeHtml(String(p.jerseyNumber))+'</span>' : ''}<div class="meta">${escapeHtml(p.position||'')}${p.skills && p.skills.length ? ' • ' + escapeHtml(p.skills.join(', ')) : ''}</div></div>
+        <div class="actions">
+          <button class="btn secondary" data-edit="${doc.id}">Edit</button>
+          <button class="btn danger" data-del="${doc.id}">Delete</button>
+        </div>
+      `;
+      row.querySelector('[data-edit]').addEventListener('click', () => editPlayer(doc.id, p));
+      row.querySelector('[data-del]').addEventListener('click', () => {
+        if(confirm('Delete ' + p.name + '?')) db.collection('futsalPlayers').doc(doc.id).delete().then(loadPlayers);
+      });
+      list.appendChild(row);
+    });
+  }).catch(err => {
+    document.getElementById('players-list').innerHTML = '<p style="color:var(--margin-red);">' + escapeHtml(err.message) + '</p>';
+  });
+}
+
+function editPlayer(id, p){
+  document.getElementById('p-id').value = id;
+  document.getElementById('p-name').value = p.name || '';
+  document.getElementById('p-jersey').value = p.jerseyNumber || '';
+  document.getElementById('p-position').value = p.position || '';
+  document.getElementById('p-photo').value = p.photoUrl || '';
+  document.getElementById('p-order').value = p.order || 1;
+  document.getElementById('p-skills').value = (p.skills || []).join(', ');
+  document.getElementById('p-fb').value = (p.socials && p.socials.facebook !== '#') ? p.socials.facebook : '';
+  document.getElementById('p-tw').value = (p.socials && p.socials.twitter !== '#') ? p.socials.twitter : '';
+  document.getElementById('p-ig').value = (p.socials && p.socials.instagram !== '#') ? p.socials.instagram : '';
+  document.getElementById('p-li').value = (p.socials && p.socials.linkedin !== '#') ? p.socials.linkedin : '';
+  const s = p.stats || {};
+  document.getElementById('p-matches').value = s.matches ?? '';
+  document.getElementById('p-wins').value = s.wins ?? '';
+  document.getElementById('p-losses').value = s.losses ?? '';
+  document.getElementById('p-draws').value = s.draws ?? '';
+  document.getElementById('p-goals').value = s.goals ?? '';
+  document.getElementById('p-cleansheets').value = s.cleanSheets ?? '';
+  document.getElementById('p-assists').value = s.assists ?? '';
+  document.getElementById('p-note').value = s.note || '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ---------- Matches ---------- */
+function clearMatchForm(){
+  document.getElementById('m-id').value = '';
+  ['m-date','m-cup','m-team','m-score','m-status','m-images'].forEach(id => document.getElementById(id).value = '');
+}
+document.getElementById('btn-clear-match').addEventListener('click', clearMatchForm);
+
+document.getElementById('btn-save-match').addEventListener('click', () => {
+  const id = document.getElementById('m-id').value;
+  const date = document.getElementById('m-date').value.trim();
+  const st = document.getElementById('match-status');
+  if(!date){ st.textContent = 'Date is required.'; st.className = 'status-msg err'; return; }
+  const images = document.getElementById('m-images').value.split('\n').map(s => s.trim()).filter(Boolean);
+  const data = {
+    date,
+    cupName: document.getElementById('m-cup').value.trim(),
+    team: document.getElementById('m-team').value.trim(),
+    score: document.getElementById('m-score').value.trim(),
+    status: document.getElementById('m-status').value.trim(),
+    images
+  };
+  const ref = id ? db.collection('futsalMatches').doc(id) : db.collection('futsalMatches').doc();
+  ref.set(data, { merge: true }).then(() => {
+    st.textContent = 'Saved.'; st.className = 'status-msg ok';
+    clearMatchForm(); loadMatches();
+  }).catch(e => { st.textContent = e.message; st.className = 'status-msg err'; });
+});
+
+function loadMatches(){
+  db.collection('futsalMatches').orderBy('date', 'desc').get().then(snap => {
+    const list = document.getElementById('matches-list');
+    if(snap.empty){ list.innerHTML = '<p style="color:var(--ink-soft); font-size:0.85rem;">No matches yet.</p>'; return; }
+    list.innerHTML = '';
+    snap.forEach(doc => {
+      const m = doc.data();
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `
+        <div><strong>${escapeHtml(m.cupName)}</strong><div class="meta">${escapeHtml(m.date)} • ${escapeHtml(m.team)} • ${escapeHtml(m.score)}</div></div>
+        <div class="actions">
+          <button class="btn secondary" data-edit="${doc.id}">Edit</button>
+          <button class="btn danger" data-del="${doc.id}">Delete</button>
+        </div>
+      `;
+      row.querySelector('[data-edit]').addEventListener('click', () => editMatch(doc.id, m));
+      row.querySelector('[data-del]').addEventListener('click', () => {
+        if(confirm('Delete this match?')) db.collection('futsalMatches').doc(doc.id).delete().then(loadMatches);
+      });
+      list.appendChild(row);
+    });
+  }).catch(err => {
+    document.getElementById('matches-list').innerHTML = '<p style="color:var(--margin-red);">' + escapeHtml(err.message) + '</p>';
+  });
+}
+
+function editMatch(id, m){
+  document.getElementById('m-id').value = id;
+  document.getElementById('m-date').value = m.date || '';
+  document.getElementById('m-cup').value = m.cupName || '';
+  document.getElementById('m-team').value = m.team || '';
+  document.getElementById('m-score').value = m.score || '';
+  document.getElementById('m-status').value = m.status || '';
+  document.getElementById('m-images').value = (m.images || []).join('\n');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ---------- Quick facts ---------- */
+function loadFacts(){
+  db.collection('futsalConfig').doc('facts').get().then(doc => {
+    const f = doc.exists ? doc.data() : {};
+    document.getElementById('f-wins').value = f.winsOfLovelyFC ?? '';
+    document.getElementById('f-losses').value = f.losses ?? '';
+    document.getElementById('f-assist-name').value = f.topAssistName ?? '';
+    document.getElementById('f-assist-count').value = f.topAssistCount ?? '';
+    document.getElementById('f-scorer-name').value = f.topScorerName ?? '';
+    document.getElementById('f-scorer-count').value = f.topScorerCount ?? '';
+  });
+}
+document.getElementById('btn-save-facts').addEventListener('click', () => {
+  const st = document.getElementById('facts-status');
+  const data = {
+    winsOfLovelyFC: numOrNull('f-wins'),
+    losses: numOrNull('f-losses'),
+    topAssistName: document.getElementById('f-assist-name').value.trim(),
+    topAssistCount: numOrNull('f-assist-count'),
+    topScorerName: document.getElementById('f-scorer-name').value.trim(),
+    topScorerCount: numOrNull('f-scorer-count')
+  };
+  db.collection('futsalConfig').doc('facts').set(data, { merge: true }).then(() => {
+    st.textContent = 'Saved.'; st.className = 'status-msg ok';
+  }).catch(e => { st.textContent = e.message; st.className = 'status-msg err'; });
+});
+
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
+
+/* ================= MATCH DAY ================= */
+let mdCurrentSessionId = null;
+let mdTeams = { teamA: [], teamB: [], bench: [] }; // arrays of player objects
+
+function renderRosterCheck(){
+  const wrap = document.getElementById('md-roster-check');
+  if(!wrap) return;
+  wrap.innerHTML = allPlayers.map(p => `
+    <label class="md-roster-chip">
+      <input type="checkbox" value="${p.id}" class="md-roster-box">
+      ${escapeHtml(p.name)}${p.jerseyNumber ? ' #'+escapeHtml(String(p.jerseyNumber)) : ''}
+    </label>
+  `).join('');
+}
+
+document.getElementById('btn-generate-teams').addEventListener('click', () => {
+  const st = document.getElementById('md-generate-status');
+  const teamSize = parseInt(document.getElementById('md-team-size').value) || 5;
+  const checkedIds = Array.from(document.querySelectorAll('.md-roster-box:checked')).map(cb => cb.value);
+  if(checkedIds.length < 2){
+    st.textContent = 'Tick at least a couple of players.'; st.className = 'status-msg err'; return;
+  }
+  const available = allPlayers.filter(p => checkedIds.includes(p.id));
+
+  // Try to spread goalkeepers across teams first, then shuffle the rest
+  const isGK = p => (p.position || '').toLowerCase().includes('goal');
+  const keepers = available.filter(isGK);
+  const others = shuffle(available.filter(p => !isGK(p)));
+
+  const teamA = [], teamB = [], bench = [];
+  if(keepers[0]) teamA.push(keepers[0]);
+  if(keepers[1]) teamB.push(keepers[1]);
+  bench.push(...keepers.slice(2));
+
+  others.forEach(p => {
+    if(teamA.length < teamSize) teamA.push(p);
+    else if(teamB.length < teamSize) teamB.push(p);
+    else bench.push(p);
+  });
+
+  mdTeams = { teamA, teamB, bench };
+  mdCurrentSessionId = null;
+  document.getElementById('md-teams-card').hidden = false;
+  document.getElementById('md-score-block').hidden = true;
+  renderTeams();
+  st.textContent = 'Teams generated — drag to adjust if needed.'; st.className = 'status-msg ok';
+});
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function playerCardHtml(p){
+  return `
+    <div class="md-player-card" draggable="true" data-player="${p.id}">
+      <img src="${escapeHtml(p.photoUrl || 'img/default-player.jpg')}" alt="">
+      <span class="jersey">${p.jerseyNumber ? '#'+escapeHtml(String(p.jerseyNumber)) : ''}</span>
+      <span>${escapeHtml(p.name)}</span>
+    </div>
+  `;
+}
+
+function renderTeams(){
+  const zones = { teamA: document.getElementById('md-team-a'), teamB: document.getElementById('md-team-b'), bench: document.getElementById('md-bench') };
+  Object.keys(zones).forEach(key => {
+    zones[key].innerHTML = mdTeams[key].map(playerCardHtml).join('');
+  });
+  attachDragHandlers();
+}
+
+function attachDragHandlers(){
+  document.querySelectorAll('.md-player-card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', card.dataset.player);
+    });
+  });
+  document.querySelectorAll('.md-dropzone').forEach(zone => {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      const playerId = e.dataTransfer.getData('text/plain');
+      const targetKey = zone.dataset.zone;
+      // remove player from whichever array currently holds them
+      let moved = null;
+      ['teamA','teamB','bench'].forEach(key => {
+        const idx = mdTeams[key].findIndex(p => p.id === playerId);
+        if(idx !== -1) moved = mdTeams[key].splice(idx, 1)[0];
+      });
+      if(moved) mdTeams[targetKey].push(moved);
+      renderTeams();
+    });
+  });
+}
+
+document.getElementById('btn-save-lineup').addEventListener('click', () => {
+  const st = document.getElementById('md-lineup-status');
+  const date = document.getElementById('md-date').value;
+  if(!date){ st.textContent = 'Pick a date first.'; st.className = 'status-msg err'; return; }
+  const data = {
+    date,
+    teamSize: parseInt(document.getElementById('md-team-size').value) || 5,
+    teamAIds: mdTeams.teamA.map(p => p.id),
+    teamBIds: mdTeams.teamB.map(p => p.id),
+    benchIds: mdTeams.bench.map(p => p.id),
+    teamAScore: null, teamBScore: null,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  const ref = mdCurrentSessionId ? db.collection('futsalMatchDays').doc(mdCurrentSessionId) : db.collection('futsalMatchDays').doc();
+  mdCurrentSessionId = ref.id;
+  ref.set(data, { merge: true }).then(() => {
+    st.textContent = 'Lineup saved.'; st.className = 'status-msg ok';
+    document.getElementById('md-score-block').hidden = false;
+    loadMatchDayHistory();
+  }).catch(e => { st.textContent = e.message; st.className = 'status-msg err'; });
+});
+
+document.getElementById('btn-save-score').addEventListener('click', () => {
+  const st = document.getElementById('md-score-status');
+  if(!mdCurrentSessionId){ st.textContent = 'Save the lineup first.'; st.className = 'status-msg err'; return; }
+  const scoreA = parseInt(document.getElementById('md-score-a').value);
+  const scoreB = parseInt(document.getElementById('md-score-b').value);
+  if(isNaN(scoreA) || isNaN(scoreB)){ st.textContent = 'Enter both scores.'; st.className = 'status-msg err'; return; }
+
+  db.collection('futsalMatchDays').doc(mdCurrentSessionId).set({ teamAScore: scoreA, teamBScore: scoreB }, { merge: true })
+    .then(() => {
+      if(document.getElementById('md-update-stats').checked){
+        return applyResultToStats(scoreA, scoreB);
+      }
+    })
+    .then(() => {
+      st.textContent = 'Score saved.' + (document.getElementById('md-update-stats').checked ? ' Player stats updated.' : '');
+      st.className = 'status-msg ok';
+      loadMatchDayHistory();
+    })
+    .catch(e => { st.textContent = e.message; st.className = 'status-msg err'; });
+});
+
+function applyResultToStats(scoreA, scoreB){
+  const outcome = scoreA === scoreB ? 'draw' : (scoreA > scoreB ? 'A' : 'B');
+  const batch = db.batch();
+  const bump = (p, field) => {
+    const ref = db.collection('futsalPlayers').doc(p.id);
+    const current = p.stats || {};
+    const newStats = { ...current };
+    newStats.matches = (current.matches || 0) + 1;
+    if(field) newStats[field] = (current[field] || 0) + 1;
+    batch.set(ref, { stats: newStats }, { merge: true });
+  };
+  mdTeams.teamA.forEach(p => bump(p, outcome === 'A' ? 'wins' : outcome === 'draw' ? 'draws' : 'losses'));
+  mdTeams.teamB.forEach(p => bump(p, outcome === 'B' ? 'wins' : outcome === 'draw' ? 'draws' : 'losses'));
+  return batch.commit().then(loadPlayers);
+}
+
+function loadMatchDayHistory(){
+  const list = document.getElementById('md-history-list');
+  if(!list) return;
+  db.collection('futsalMatchDays').orderBy('date', 'desc').limit(20).get().then(snap => {
+    if(snap.empty){ list.innerHTML = '<p style="color:var(--ink-soft); font-size:0.85rem;">No match days yet.</p>'; return; }
+    list.innerHTML = '';
+    snap.forEach(doc => {
+      const m = doc.data();
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      const scoreText = (m.teamAScore !== null && m.teamAScore !== undefined) ? `Team A ${m.teamAScore} — ${m.teamBScore} Team B` : 'Score not entered yet';
+      row.innerHTML = `
+        <div><strong>${escapeHtml(m.date)}</strong><div class="meta">${escapeHtml(scoreText)}</div></div>
+        <div class="actions"><button class="btn danger" data-del="${doc.id}">Delete</button></div>
+      `;
+      row.querySelector('[data-del]').addEventListener('click', () => {
+        if(confirm('Delete this match day?')) db.collection('futsalMatchDays').doc(doc.id).delete().then(loadMatchDayHistory);
+      });
+      list.appendChild(row);
+    });
+  }).catch(err => {
+    list.innerHTML = '<p style="color:var(--margin-red);">' + escapeHtml(err.message) + '</p>';
+  });
+}
+</script>
+</body>
+</html>

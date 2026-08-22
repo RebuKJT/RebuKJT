@@ -112,6 +112,18 @@
     border-radius:999px; background:#E8E2CC; color:var(--ink-soft);
   }
   .empty-row td{text-align:center; color:var(--ink-soft); padding:26px 10px;}
+  th.sortable{cursor:pointer; user-select:none; white-space:nowrap;}
+  th.sortable:hover{color:var(--teal);}
+  th.sortable .arrow{font-size:0.7em; margin-left:2px; opacity:0.6;}
+  .row-input{width:70px; padding:4px 6px; border:1px solid var(--paper-line); border-radius:5px; font-size:0.82rem; text-align:right;}
+  .due-cell{font-weight:700;}
+  .due-cell.zero{color:var(--teal); font-weight:400;}
+  .due-cell.owed{color:var(--margin-red);}
+
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin-bottom:16px;}
+  .stat-box{background:var(--paper); border-radius:8px; padding:10px 12px; text-align:center;}
+  .stat-box .num{font-family:'Fraunces',serif; font-weight:700; font-size:1.15rem; color:var(--chalk-green);}
+  .stat-box .label{font-size:0.7rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.03em;}
 
   /* ---- settings modal ---- */
   .modal-overlay{
@@ -203,17 +215,37 @@
 
     <div class="card">
       <h2>Students in this session</h2>
+      <div class="stat-strip" id="stat-strip"></div>
+      <div style="overflow-x:auto;">
       <table>
         <thead>
-          <tr><th>Name</th><th>Grade</th><th>Arrival</th><th>Days</th><th>Fee (Rs)</th><th></th></tr>
+          <tr>
+            <th data-sort="name" class="sortable">Name</th>
+            <th data-sort="grade" class="sortable">Grade</th>
+            <th data-sort="arrivalDate" class="sortable">Arrival</th>
+            <th data-sort="days" class="sortable">Days</th>
+            <th data-sort="feeAmount" class="sortable">Fee (Rs)</th>
+            <th data-sort="discount" class="sortable">Discount</th>
+            <th data-sort="paidAmount" class="sortable">Paid</th>
+            <th data-sort="due" class="sortable">Due</th>
+            <th></th>
+          </tr>
         </thead>
         <tbody id="students-body">
-          <tr class="empty-row"><td colspan="6">No students yet.</td></tr>
+          <tr class="empty-row"><td colspan="9">No students yet.</td></tr>
         </tbody>
         <tfoot>
-          <tr><td colspan="4">Total</td><td id="total-fee">Rs 0</td><td></td></tr>
+          <tr>
+            <td colspan="4">Totals</td>
+            <td id="total-fee">Rs 0</td>
+            <td id="total-discount">Rs 0</td>
+            <td id="total-paid">Rs 0</td>
+            <td id="total-due">Rs 0</td>
+            <td></td>
+          </tr>
         </tfoot>
       </table>
+      </div>
     </div>
   </div>
 </main>
@@ -264,7 +296,7 @@
    This must be the SAME config object your Teacher Portal
    already uses (same project, same Auth users).
    ========================================================= */
-const firebaseConfig = {
+  const firebaseConfig = {
     apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
     authDomain: "teacher-resource-hub.firebaseapp.com",
     projectId: "teacher-resource-hub",
@@ -529,43 +561,120 @@ document.getElementById('btn-add-student').addEventListener('click', () => {
 });
 
 /* ---------- students list (live) ---------- */
+let currentStudents = [];
+let sortState = { field: 'name', dir: 'asc' };
+
+document.querySelectorAll('th.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const field = th.dataset.sort;
+    if(sortState.field === field){
+      sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortState.field = field;
+      sortState.dir = 'asc';
+    }
+    renderStudentsTable();
+  });
+});
+
 function watchStudents(){
   if(unsubStudents) unsubStudents();
-  studentsBody.innerHTML = '<tr class="empty-row"><td colspan="6">Loading…</td></tr>';
+  studentsBody.innerHTML = '<tr class="empty-row"><td colspan="9">Loading…</td></tr>';
   unsubStudents = db.collection('tuitionStudents')
     .where('sessionId', '==', activeSessionId)
-    .orderBy('createdAt', 'desc')
     .onSnapshot(snap => {
-      if(snap.empty){
-        studentsBody.innerHTML = '<tr class="empty-row"><td colspan="6">No students yet.</td></tr>';
-        totalFeeEl.textContent = 'Rs 0';
-        return;
-      }
-      let total = 0;
-      studentsBody.innerHTML = '';
-      snap.forEach(doc => {
-        const d = doc.data();
-        total += d.feeAmount || 0;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${escapeHtml(d.name)}</td>
-          <td><span class="grade-pill">${escapeHtml(d.grade)}</span></td>
-          <td>${fmtDate(d.arrivalDate)}</td>
-          <td>${d.days}</td>
-          <td>Rs ${d.feeAmount}</td>
-          <td><button class="rm" title="Delete" data-id="${doc.id}">&times;</button></td>
-        `;
-        tr.querySelector('.rm').addEventListener('click', () => {
-          if(confirm('Remove ' + d.name + ' from this session?')){
-            db.collection('tuitionStudents').doc(doc.id).delete();
-          }
-        });
-        studentsBody.appendChild(tr);
-      });
-      totalFeeEl.textContent = 'Rs ' + total;
+      currentStudents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderStudentsTable();
     }, err => {
-      studentsBody.innerHTML = '<tr class="empty-row"><td colspan="6">' + err.message + '</td></tr>';
+      studentsBody.innerHTML = '<tr class="empty-row"><td colspan="9">' + err.message + '</td></tr>';
     });
+}
+
+function dueFor(d){
+  return (d.feeAmount || 0) - (d.discount || 0) - (d.paidAmount || 0);
+}
+
+function renderStudentsTable(){
+  document.querySelectorAll('th.sortable .arrow').forEach(a => a.remove());
+  const activeTh = document.querySelector(`th.sortable[data-sort="${sortState.field}"]`);
+  if(activeTh){
+    const arrow = document.createElement('span');
+    arrow.className = 'arrow';
+    arrow.textContent = sortState.dir === 'asc' ? '▲' : '▼';
+    activeTh.appendChild(arrow);
+  }
+
+  if(!currentStudents.length){
+    studentsBody.innerHTML = '<tr class="empty-row"><td colspan="9">No students yet.</td></tr>';
+    renderStatStrip([]);
+    updateFooter([]);
+    return;
+  }
+
+  const sorted = [...currentStudents].sort((a,b) => {
+    let av, bv;
+    if(sortState.field === 'due'){ av = dueFor(a); bv = dueFor(b); }
+    else if(sortState.field === 'arrivalDate'){ av = a.arrivalDate || ''; bv = b.arrivalDate || ''; }
+    else if(['days','feeAmount','discount','paidAmount'].includes(sortState.field)){ av = a[sortState.field] || 0; bv = b[sortState.field] || 0; }
+    else { av = (a[sortState.field] || '').toString().toLowerCase(); bv = (b[sortState.field] || '').toString().toLowerCase(); }
+    if(av < bv) return sortState.dir === 'asc' ? -1 : 1;
+    if(av > bv) return sortState.dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  studentsBody.innerHTML = '';
+  sorted.forEach(d => {
+    const due = dueFor(d);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(d.name)}</td>
+      <td><span class="grade-pill">${escapeHtml(d.grade)}</span></td>
+      <td>${fmtDate(d.arrivalDate)}</td>
+      <td>${d.days}</td>
+      <td>Rs ${d.feeAmount}</td>
+      <td><input type="number" class="row-input" data-field="discount" data-id="${d.id}" value="${d.discount || 0}"></td>
+      <td><input type="number" class="row-input" data-field="paidAmount" data-id="${d.id}" value="${d.paidAmount || 0}"></td>
+      <td class="due-cell ${due <= 0 ? 'zero' : 'owed'}">Rs ${due}</td>
+      <td><button class="rm" title="Delete" data-id="${d.id}">&times;</button></td>
+    `;
+    tr.querySelector('.rm').addEventListener('click', () => {
+      if(confirm('Remove ' + d.name + ' from this session?')){
+        db.collection('tuitionStudents').doc(d.id).delete();
+      }
+    });
+    tr.querySelectorAll('.row-input').forEach(inp => {
+      inp.addEventListener('change', () => {
+        const val = parseFloat(inp.value) || 0;
+        db.collection('tuitionStudents').doc(inp.dataset.id).update({ [inp.dataset.field]: val });
+      });
+    });
+    studentsBody.appendChild(tr);
+  });
+
+  renderStatStrip(currentStudents);
+  updateFooter(currentStudents);
+}
+
+function renderStatStrip(students){
+  const strip = document.getElementById('stat-strip');
+  const totalFee = students.reduce((s,d) => s + (d.feeAmount||0), 0);
+  const totalDue = students.reduce((s,d) => s + dueFor(d), 0);
+  strip.innerHTML = `
+    <div class="stat-box"><div class="num">${students.length}</div><div class="label">Students</div></div>
+    <div class="stat-box"><div class="num">Rs ${totalFee}</div><div class="label">Total fee</div></div>
+    <div class="stat-box"><div class="num">Rs ${totalDue}</div><div class="label">Total due</div></div>
+  `;
+}
+
+function updateFooter(students){
+  const totalFee = students.reduce((s,d) => s + (d.feeAmount||0), 0);
+  const totalDiscount = students.reduce((s,d) => s + (d.discount||0), 0);
+  const totalPaid = students.reduce((s,d) => s + (d.paidAmount||0), 0);
+  const totalDue = students.reduce((s,d) => s + dueFor(d), 0);
+  totalFeeEl.textContent = 'Rs ' + totalFee;
+  document.getElementById('total-discount').textContent = 'Rs ' + totalDiscount;
+  document.getElementById('total-paid').textContent = 'Rs ' + totalPaid;
+  document.getElementById('total-due').textContent = 'Rs ' + totalDue;
 }
 
 /* ---------- helpers ---------- */

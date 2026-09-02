@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matter — Ch.13 Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10161d;
+    --panel: #171f28;
+    --panel-2: #1d2732;
+    --line: #2a3542;
+    --ink: #e9edf1;
+    --muted: #8fa0af;
+    --accent: #5fd3c4;
+    --accent-dim: #2f4a47;
+    --amber: #e8b04b;
+    --good: #7fb069;
+    --good-bg: rgba(127,176,105,0.14);
+    --bad: #e2725b;
+    --bad-bg: rgba(226,114,91,0.14);
+    --nabina: #5fd3c4;
+    --mansoon: #e8b04b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Source Sans 3', -apple-system, sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{
+    max-width:640px;
+    margin:0 auto;
+    padding:28px 18px 60px;
+    min-height:100vh;
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom:26px;
+  }
+  .brand .tile{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:13px;
+    color:var(--bg);
+    background:var(--accent);
+    padding:5px 9px;
+    border-radius:5px;
+    letter-spacing:0.02em;
+  }
+  .brand h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:20px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .brand .sub{
+    color:var(--muted);
+    font-size:13px;
+    margin-left:auto;
+  }
+
+  /* ---------- Screen: student select ---------- */
+  .hero{
+    padding:8px 0 6px;
+  }
+  .hero h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-style:italic;
+    font-size:30px;
+    line-height:1.25;
+    margin:0 0 10px;
+    max-width:19ch;
+  }
+  .hero p{
+    color:var(--muted);
+    font-size:15px;
+    line-height:1.6;
+    margin:0 0 30px;
+    max-width:46ch;
+  }
+  .student-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-bottom:10px;
+  }
+  .student-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px 16px;
+    text-align:left;
+    cursor:pointer;
+    transition:border-color .15s ease, transform .1s ease;
+    color:var(--ink);
+    font-family:inherit;
+  }
+  .student-card:hover{ border-color:var(--accent); transform:translateY(-1px); }
+  .student-card:active{ transform:translateY(0); }
+  .student-card .avatar{
+    width:40px;height:40px;
+    border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:17px;
+    margin-bottom:14px;
+    color:#0d1318;
+  }
+  .student-card[data-student="Nabina"] .avatar{ background:var(--nabina); }
+  .student-card[data-student="Mansoon"] .avatar{ background:var(--mansoon); }
+  .student-card .name{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:19px;
+    margin-bottom:4px;
+  }
+  .student-card .meta{
+    color:var(--muted);
+    font-size:13px;
+  }
+  .other-name{
+    background:none;border:1px dashed var(--line);border-radius:12px;
+    width:100%;padding:14px;color:var(--muted);font-size:14px;
+    cursor:pointer;margin-top:6px;font-family:inherit;
+  }
+  .other-name:hover{ border-color:var(--muted); color:var(--ink); }
+
+  .history{
+    margin-top:34px;
+    border-top:1px solid var(--line);
+    padding-top:20px;
+  }
+  .history h3{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--muted);
+    font-weight:600;
+    margin:0 0 12px;
+  }
+  .history-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .history-row:last-child{ border-bottom:none; }
+  .history-row .dot{ width:8px;height:8px;border-radius:50%; flex-shrink:0; }
+  .history-row .who{ font-weight:600; width:72px; flex-shrink:0; }
+  .history-row .when{ color:var(--muted); flex:1; font-size:13px; }
+  .history-row .sc{ font-family:'IBM Plex Mono',monospace; color:var(--ink); }
+  .history-empty{ color:var(--muted); font-size:13px; }
+
+  /* ---------- Screen: quiz ---------- */
+  .quiz-head{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:22px;
+  }
+  .who-badge{
+    display:flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .who-badge .dot{width:8px;height:8px;border-radius:50%;}
+  .progress-track{
+    flex:1;
+    height:6px;
+    background:var(--panel-2);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--accent);
+    border-radius:4px;
+    transition:width .25s ease;
+  }
+  .qcount{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--muted);
+    white-space:nowrap;
+  }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:26px 22px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:attr(data-num);
+    position:absolute;
+    top:14px; right:18px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--muted);
+    opacity:0.6;
+  }
+  .topic-tag{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.04em;
+    color:var(--accent);
+    background:var(--accent-dim);
+    padding:4px 9px;
+    border-radius:6px;
+    margin-bottom:14px;
+  }
+  .qtext{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:19px;
+    line-height:1.45;
+    margin:0 0 20px;
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .opt{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    text-align:left;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:13px 14px;
+    color:var(--ink);
+    font-size:15px;
+    font-family:inherit;
+    cursor:pointer;
+    transition:border-color .12s ease, background .12s ease;
+    line-height:1.4;
+  }
+  .opt:hover:not(:disabled){ border-color:var(--accent); }
+  .opt .letter{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--muted);
+    flex-shrink:0;
+    width:18px;
+    padding-top:1px;
+  }
+  .opt:disabled{ cursor:default; }
+  .opt.correct{ border-color:var(--good); background:var(--good-bg); }
+  .opt.correct .letter{ color:var(--good); }
+  .opt.wrong{ border-color:var(--bad); background:var(--bad-bg); }
+  .opt.wrong .letter{ color:var(--bad); }
+  .opt.dim{ opacity:0.45; }
+
+  .feedback{
+    margin-top:18px;
+    padding:16px 16px;
+    border-radius:12px;
+    border:1px solid var(--line);
+    background:var(--panel-2);
+    display:none;
+  }
+  .feedback.show{ display:block; }
+  .feedback .verdict{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.04em;
+    font-weight:600;
+    margin-bottom:8px;
+    display:flex;align-items:center;gap:7px;
+  }
+  .feedback.correct .verdict{ color:var(--good); }
+  .feedback.wrong .verdict{ color:var(--bad); }
+  .feedback p{
+    margin:0;
+    font-size:14.5px;
+    line-height:1.6;
+    color:var(--ink);
+  }
+  .next-btn{
+    margin-top:18px;
+    width:100%;
+    padding:14px;
+    background:var(--accent);
+    color:#0d1318;
+    border:none;
+    border-radius:10px;
+    font-family:inherit;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    display:none;
+  }
+  .next-btn.show{ display:block; }
+  .next-btn:hover{ filter:brightness(1.06); }
+
+  /* ---------- Screen: results ---------- */
+  .results-hero{
+    text-align:center;
+    padding:20px 0 8px;
+  }
+  .score-ring{
+    width:150px;height:150px;
+    margin:0 auto 20px;
+    position:relative;
+  }
+  .score-ring svg{ transform:rotate(-90deg); }
+  .score-ring .track{ fill:none; stroke:var(--panel-2); stroke-width:10; }
+  .score-ring .fill{ fill:none; stroke:var(--accent); stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset 1s ease; }
+  .score-ring .num{
+    position:absolute; inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+  .score-ring .num .big{ font-family:'Fraunces',serif; font-weight:600; font-size:32px; }
+  .score-ring .num .lbl{ font-size:12px; color:var(--muted); margin-top:2px; }
+  .results-hero h2{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:22px;
+    margin:0 0 6px;
+  }
+  .results-hero .verdict-line{ color:var(--muted); font-size:14px; margin-bottom:26px; }
+
+  .stat-row{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:10px;
+    margin-bottom:26px;
+  }
+  .stat{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px 10px;
+    text-align:center;
+  }
+  .stat .v{ font-family:'IBM Plex Mono',monospace; font-size:20px; font-weight:600; }
+  .stat.good .v{ color:var(--good); }
+  .stat.bad .v{ color:var(--bad); }
+  .stat .l{ font-size:11px; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.05em; }
+
+  .topic-breakdown{
+    margin-bottom:26px;
+  }
+  .topic-breakdown h3{
+    font-size:12px; text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--muted); font-weight:600; margin:0 0 12px;
+  }
+  .tb-row{
+    display:flex; align-items:center; gap:10px;
+    padding:8px 0;
+    font-size:13.5px;
+  }
+  .tb-row .tb-name{ width:150px; flex-shrink:0; color:var(--ink); }
+  .tb-bar-track{ flex:1; height:6px; background:var(--panel-2); border-radius:4px; overflow:hidden; }
+  .tb-bar-fill{ height:100%; background:var(--accent); border-radius:4px; }
+  .tb-row .tb-frac{ font-family:'IBM Plex Mono',monospace; color:var(--muted); width:36px; text-align:right; flex-shrink:0; }
+
+  .review-list{ margin-bottom:26px; }
+  .review-item{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:10px;
+  }
+  .review-item .rq{ font-size:14.5px; font-weight:600; margin-bottom:8px; line-height:1.4; }
+  .review-item .ra{ font-size:13.5px; color:var(--bad); margin-bottom:3px; }
+  .review-item .rb{ font-size:13.5px; color:var(--good); margin-bottom:8px; }
+  .review-item .rex{ font-size:13.5px; color:var(--muted); line-height:1.55; }
+
+  .btn-row{ display:flex; gap:10px; }
+  .btn{
+    flex:1;
+    padding:14px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:var(--panel);
+    color:var(--ink);
+    font-family:inherit;
+    font-weight:600;
+    font-size:14.5px;
+    cursor:pointer;
+  }
+  .btn.primary{ background:var(--accent); color:#0d1318; border:none; }
+  .btn:hover{ filter:brightness(1.08); }
+
+  .hidden{ display:none !important; }
+
+  @media (max-width:400px){
+    .qtext{ font-size:17.5px; }
+    .hero h2{ font-size:25px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="brand">
+    <span class="tile">Ch.13</span>
+    <h1>Matter</h1>
+    <span class="sub" id="headerSub"></span>
+  </div>
+
+  <!-- SCREEN 1: student select -->
+  <div id="screenStart">
+    <div class="hero">
+      <h2>100 questions on Matter, atoms &amp; the periodic table.</h2>
+      <p>Pick your name to begin. Every answer gets checked instantly, with a full explanation of the right choice — and a results page waits at the end.</p>
+    </div>
+    <div class="student-grid">
+      <button class="student-card" data-student="Nabina" onclick="startQuiz('Nabina')">
+        <div class="avatar">N</div>
+        <div class="name">Nabina</div>
+        <div class="meta">Start attempt</div>
+      </button>
+      <button class="student-card" data-student="Mansoon" onclick="startQuiz('Mansoon')">
+        <div class="avatar">M</div>
+        <div class="name">Mansoon</div>
+        <div class="meta">Start attempt</div>
+      </button>
+    </div>
+
+    <div class="history">
+      <h3>Past results</h3>
+      <div id="historyList"><div class="history-empty">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: quiz -->
+  <div id="screenQuiz" class="hidden">
+    <div class="quiz-head">
+      <div class="who-badge"><span class="dot" id="quizDot"></span><span id="quizWho"></span></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="qcount" id="qcount"></div>
+    </div>
+    <div class="card" id="qcard" data-num="">
+      <span class="topic-tag" id="topicTag"></span>
+      <p class="qtext" id="qtext"></p>
+      <div class="options" id="optionsWrap"></div>
+      <div class="feedback" id="feedback">
+        <div class="verdict" id="verdict"></div>
+        <p id="explanation"></p>
+      </div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next question</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: results -->
+  <div id="screenResults" class="hidden">
+    <div class="results-hero">
+      <div class="score-ring">
+        <svg width="150" height="150" viewBox="0 0 150 150">
+          <circle class="track" cx="75" cy="75" r="65"></circle>
+          <circle class="fill" id="ringFill" cx="75" cy="75" r="65" stroke-dasharray="408" stroke-dashoffset="408"></circle>
+        </svg>
+        <div class="num"><span class="big" id="scorePct">0%</span><span class="lbl">score</span></div>
+      </div>
+      <h2 id="resultName"></h2>
+      <div class="verdict-line" id="resultLine"></div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat good"><div class="v" id="statCorrect">0</div><div class="l">Correct</div></div>
+      <div class="stat bad"><div class="v" id="statWrong">0</div><div class="l">Missed</div></div>
+      <div class="stat"><div class="v" id="statTotal">100</div><div class="l">Total</div></div>
+    </div>
+
+    <div class="topic-breakdown">
+      <h3>By topic</h3>
+      <div id="topicBreakdown"></div>
+    </div>
+
+    <div class="review-list" id="reviewWrap">
+      <h3 style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:600;margin:0 0 12px;">Questions to revisit</h3>
+      <div id="reviewList"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="goHome()">Back to start</button>
+      <button class="btn primary" onclick="retakeSame()">Retake quiz</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ===================== QUESTION BANK (Ch.13 Matter) ===================== */
+const QUESTIONS = [
+{t:"Matter", q:"Which of these is NOT a characteristic of matter?", o:["It has mass","It occupies space","It can be perceived by senses","It always has a fixed shape"], c:3, ex:"Matter is anything that has mass and occupies space and can usually be perceived by our senses. Having a fixed shape is not universal — liquids and gases take the shape of their container, so a 'fixed shape' is not a defining property of matter itself."},
+{t:"Matter", q:"Matter that has a definite volume but no definite shape is in which state?", o:["Solid","Liquid","Gas","Plasma"], c:1, ex:"A liquid has a fixed volume (it doesn't expand or shrink to fill any container) but takes the shape of whatever container holds it, because its particles can move past one another while still staying close together."},
+{t:"Matter", q:"On the basis of chemical composition, matter is classified into elements, compounds and:", o:["Mixtures","Molecules","Radicals","Isotopes"], c:0, ex:"Chemically, matter is divided into pure substances (elements and compounds) and mixtures. A mixture contains two or more substances that are physically combined, not chemically bonded, so it can be separated by physical methods."},
+{t:"Matter", q:"Which state of matter has particles that are most loosely packed?", o:["Solid","Liquid","Gas","All are equal"], c:2, ex:"In a gas, particles have the greatest amount of space between them and move freely at high speed in all directions, which is why gases expand to fill any container and are easily compressed."},
+{t:"Elements", q:"An element is a pure substance that:", o:["Can be broken down into simpler substances by chemical means","Cannot be broken down into simpler substances by ordinary chemical means","Is always made of two or more different atoms","Is always found as a gas"], c:1, ex:"An element is the simplest form of matter — it is made up of only one type of atom and cannot be split into any simpler substance using ordinary chemical reactions. Compounds, by contrast, can be broken down because they consist of two or more elements chemically joined."},
+{t:"Elements", q:"How many elements are naturally occurring, approximately, according to what is commonly taught at this level?", o:["About 92","About 118","About 50","About 200"], c:0, ex:"About 92 elements occur naturally on Earth (hydrogen to uranium in the periodic table), while the remaining known elements have been created artificially in laboratories."},
+{t:"Elements", q:"Oxygen, Nitrogen and Hydrogen are examples of:", o:["Compounds","Mixtures","Elements","Radicals"], c:2, ex:"Oxygen (O), Nitrogen (N) and Hydrogen (H) are each made of only one kind of atom, so they are elements, not compounds or mixtures."},
+{t:"Metals, nonmetals and metalloids", q:"Which property is generally TRUE for metals?", o:["Poor conductors of heat and electricity","Malleable and ductile","Dull surface","Low density always"], c:1, ex:"Metals are typically malleable (can be hammered into sheets) and ductile (can be drawn into wires) because of the way their atoms are bonded with a 'sea' of free-moving electrons, which also makes them good conductors of heat and electricity — the opposite of options a and c."},
+{t:"Metals, nonmetals and metalloids", q:"Which of the following is a nonmetal?", o:["Iron","Sulphur","Copper","Silver"], c:1, ex:"Sulphur is a nonmetal — it is brittle in solid form, a poor conductor of heat and electricity, and typically forms negative ions. Iron, copper and silver are all metals known for their conductivity and metallic lustre."},
+{t:"Metals, nonmetals and metalloids", q:"Elements that show properties of both metals and nonmetals are called:", o:["Isotopes","Radicals","Metalloids","Alloys"], c:2, ex:"Metalloids (like silicon and boron) sit on the borderline between metals and nonmetals in the periodic table and show a mix of both types of properties — for example, they can conduct electricity somewhat, but not as well as true metals."},
+{t:"Metals, nonmetals and metalloids", q:"Which of these best describes nonmetals in terms of electrical conductivity?", o:["Excellent conductors","Generally poor conductors (except graphite)","Always superconductors","Conduct only when heated"], c:1, ex:"Most nonmetals are poor conductors of electricity because they lack the freely moving electrons that metals have. Graphite, a form of carbon, is a well-known exception because its structure allows electrons to move freely along its layers."},
+{t:"Metals, nonmetals and metalloids", q:"Which of the following is classified as a metalloid?", o:["Silicon","Sodium","Chlorine","Gold"], c:0, ex:"Silicon is a classic metalloid — it looks somewhat metallic but is brittle like a nonmetal, and it conducts electricity moderately, a property that makes it essential in semiconductors used in electronics."},
+{t:"Metals, nonmetals and metalloids", q:"Metals generally have a ______ number of electrons in their outermost shell.", o:["High (5–8)", "Low (1–3)", "Exactly 4", "Zero"], c:1, ex:"Metals usually have 1 to 3 electrons in their outermost (valence) shell, which they tend to lose easily to form positive ions — this is exactly why metals are good conductors and reactive in characteristic ways."},
+{t:"Compounds", q:"A compound is formed when:", o:["Two or more elements are physically mixed", "Two or more elements combine chemically in a fixed ratio", "A single element changes its physical state", "Two compounds are dissolved in water"], c:1, ex:"A compound forms only through a chemical combination of two or more elements in a fixed, definite proportion by mass — for example, water is always exactly 2 parts hydrogen to 1 part oxygen by atoms. This is different from a mixture, where the ratio can vary."},
+{t:"Compounds", q:"Which of the following is a compound?", o:["Oxygen gas (O2)", "Iron (Fe)", "Carbon dioxide (CO2)", "Nitrogen gas (N2)"], c:2, ex:"Carbon dioxide (CO2) is a compound because it is made of two different elements — carbon and oxygen — chemically bonded together. The other three options are each made of only one type of atom, so they are elements."},
+{t:"Compounds", q:"Which statement correctly distinguishes a compound from a mixture?", o:["A compound can be separated only by physical methods; a mixture needs chemical methods", "A compound has fixed composition and new properties; a mixture has variable composition and retains original properties", "A compound has variable composition; a mixture has fixed composition", "There is no real difference between them"], c:1, ex:"In a compound, the combining elements lose their individual properties and form a new substance with fixed composition (e.g., sodium and chlorine, both dangerous alone, form safe table salt). In a mixture, the components keep their own properties and can be present in any proportion."},
+{t:"Compounds", q:"Table salt (sodium chloride) is an example of a:", o:["Mixture", "Compound", "Element", "Alloy"], c:1, ex:"Sodium chloride (NaCl) is a compound formed by the chemical combination of the metal sodium and the nonmetal chlorine in a fixed 1:1 ratio, producing a substance with completely different properties from either starting element."},
+{t:"Compounds", q:"Which of these substances CANNOT be separated into simpler substances by physical means alone?", o:["Salt water", "Sand and iron filings", "Carbon dioxide", "Air"], c:2, ex:"Carbon dioxide is a compound, so its elements (carbon and oxygen) are chemically bonded and can only be separated by a chemical reaction, not by physical methods like filtering or evaporation, which work for mixtures such as salt water, sand-iron filings, or air."},
+{t:"Molecules", q:"A molecule is defined as:", o:["The smallest unit of an element that retains its identity as a single atom", "The smallest particle of an element or compound that can exist independently and shows all its properties", "A charged particle formed by loss of electrons", "A mixture of two elements"], c:1, ex:"A molecule is the smallest particle of a substance (element or compound) that can exist freely on its own while still showing all the chemical properties of that substance. It is formed when two or more atoms combine."},
+{t:"Molecules", q:"Which of the following is a molecule of an element (not a compound)?", o:["H2O", "O2", "CO2", "NaCl"], c:1, ex:"O2 (oxygen gas) is a molecule of an element because both atoms joined together are the same kind of atom (oxygen). H2O, CO2 and NaCl are molecules/formula units of compounds since they contain more than one type of element."},
+{t:"Molecules", q:"How many atoms are present in one molecule of water (H2O)?", o:["2", "3", "4", "1"], c:1, ex:"A water molecule (H2O) is made of 2 hydrogen atoms and 1 oxygen atom chemically bonded together, giving a total of 3 atoms per molecule."},
+{t:"Molecules", q:"A molecule made up of only one atom is called a:", o:["Diatomic molecule", "Triatomic molecule", "Monatomic molecule", "Polyatomic molecule"], c:2, ex:"A monatomic molecule consists of just a single atom acting independently, such as the noble gases (helium, neon, argon) which exist as single atoms rather than bonding into pairs or groups."},
+{t:"Molecules", q:"Ozone (O3) is an example of a:", o:["Diatomic molecule", "Monatomic molecule", "Triatomic molecule of an element", "Compound molecule"], c:2, ex:"Ozone (O3) is a triatomic molecule because it contains three atoms, but since all three atoms are oxygen (the same element), it is classified as a molecule of an element, not a compound."},
+{t:"Atom", q:"According to Dalton's atomic theory as taught at this level, an atom is:", o:["Divisible into smaller charged particles", "The smallest indivisible particle of matter that takes part in a chemical reaction", "Always negatively charged", "The same as a molecule"], c:1, ex:"An atom is defined as the smallest particle of an element that can take part in a chemical reaction. While we now know atoms contain even smaller sub-atomic particles, an atom itself cannot be split by ordinary chemical means and still keep the element's identity."},
+{t:"Atom", q:"Which scientist proposed that the atom is mostly empty space with a small, dense, positively charged nucleus at its centre?", o:["J.J. Thomson", "Ernest Rutherford", "John Dalton", "Neils Bohr"], c:1, ex:"Ernest Rutherford's gold foil experiment showed that most alpha particles passed straight through the foil while a few deflected sharply, leading him to conclude that an atom's mass and positive charge are concentrated in a tiny central nucleus, with the rest of the atom being largely empty space."},
+{t:"Atom", q:"In an atom, electrons revolve around the nucleus in fixed paths called:", o:["Shells or orbits", "Radicals", "Isotopes", "Valencies"], c:0, ex:"Electrons move around the nucleus in specific energy levels known as shells or orbits (labelled K, L, M, N and so on), a model refined by Neils Bohr to explain why electrons don't simply spiral into the nucleus."},
+{t:"Atom", q:"Which part of the atom carries a positive charge and is located at the centre?", o:["Electron", "Neutron", "Nucleus (protons)", "Shell"], c:2, ex:"The nucleus sits at the centre of the atom and contains protons (positively charged) and neutrons (neutral), giving the nucleus an overall positive charge and almost all of the atom's mass."},
+{t:"Atom", q:"An atom is electrically neutral overall because:", o:["It contains no charged particles", "The number of protons equals the number of electrons", "It has no nucleus", "Neutrons cancel out protons"], c:1, ex:"An atom is neutral because the number of positively charged protons in the nucleus exactly equals the number of negatively charged electrons orbiting it, so their charges cancel each other out overall."},
+{t:"Atom", q:"Who suggested the plum pudding model, where electrons are embedded in a sphere of positive charge?", o:["Ernest Rutherford", "Neils Bohr", "J.J. Thomson", "James Chadwick"], c:2, ex:"J.J. Thomson, after discovering the electron, proposed the 'plum pudding model' in which negatively charged electrons were thought to be scattered throughout a positively charged sphere, like plums in a pudding — a model later disproved by Rutherford's experiment."},
+{t:"Sub-atomic particles", q:"The three main sub-atomic particles found in an atom are:", o:["Proton, neutron, radical", "Proton, electron, neutron", "Molecule, atom, ion", "Nucleus, shell, valency"], c:1, ex:"Every atom (except simple hydrogen, which has no neutron) is made up of three fundamental sub-atomic particles: protons and neutrons inside the nucleus, and electrons moving around it in shells."},
+{t:"Sub-atomic particles", q:"Which sub-atomic particle has no electric charge?", o:["Proton", "Electron", "Neutron", "Ion"], c:2, ex:"The neutron is electrically neutral — it carries no charge at all, unlike the proton (positive) and electron (negative). Neutrons contribute to the mass of the atom without affecting its overall charge."},
+{t:"Sub-atomic particles", q:"Who discovered the neutron?", o:["J.J. Thomson", "James Chadwick", "Ernest Rutherford", "John Dalton"], c:1, ex:"James Chadwick discovered the neutron in 1932 through experiments bombarding beryllium with alpha particles, confirming the existence of a neutral particle in the nucleus alongside the proton."},
+{t:"Sub-atomic particles", q:"Which sub-atomic particle is found revolving outside the nucleus?", o:["Proton", "Neutron", "Electron", "Both proton and neutron"], c:2, ex:"The electron is the only sub-atomic particle that moves outside the nucleus, orbiting it in shells at various energy levels, while protons and neutrons stay packed together inside the nucleus."},
+{t:"Sub-atomic particles", q:"Which sub-atomic particle has the smallest mass, considered almost negligible compared to the others?", o:["Proton", "Neutron", "Electron", "All have equal mass"], c:2, ex:"The electron's mass is roughly 1/1836th of a proton's mass, which is so small that it is often considered negligible when calculating the overall mass of an atom — almost all the mass comes from protons and neutrons in the nucleus."},
+{t:"Sub-atomic particles", q:"A proton carries what kind of charge?", o:["Negative", "Positive", "Neutral", "Variable"], c:1, ex:"A proton carries one unit of positive charge. Along with the neutral neutron, it makes up the nucleus, giving the nucleus its overall positive charge, which is balanced by the negatively charged electrons around it."},
+{t:"Atomic mass unit", q:"The atomic mass unit (amu) is defined based on which element's atom?", o:["Hydrogen", "Oxygen", "Carbon-12", "Helium"], c:2, ex:"One atomic mass unit (amu) is defined as exactly 1/12th of the mass of a carbon-12 atom. This standard allows scientists to compare the relative masses of different atoms on a consistent scale."},
+{t:"Atomic mass unit", q:"The mass of a proton is approximately:", o:["1 amu", "1/1836 amu", "12 amu", "0 amu"], c:0, ex:"A proton has a mass of approximately 1 atomic mass unit (amu), which is roughly the same as a neutron's mass, and both are far heavier than the negligible mass of an electron."},
+{t:"Atomic mass unit", q:"Why is the atomic mass unit useful in chemistry?", o:["It measures electric charge", "It gives a convenient relative scale to compare very tiny atomic masses", "It only applies to compounds", "It measures the volume of atoms"], c:1, ex:"Actual atomic masses are extremely tiny (a fraction of a gram), so scientists use the amu as a relative, convenient unit to compare how heavy one atom is compared to another, without dealing with impossibly small numbers."},
+{t:"Electric charge", q:"Which combination correctly matches particle to charge?", o:["Proton – negative, Electron – positive", "Proton – positive, Electron – negative", "Both proton and electron – positive", "Both proton and electron – negative"], c:1, ex:"A proton carries a positive charge and an electron carries an equal but opposite negative charge. This opposite charge is what allows electrons to be attracted to and held around the positively charged nucleus."},
+{t:"Electric charge", q:"When an atom loses one electron, it becomes:", o:["A negative ion (anion)", "A positive ion (cation)", "Neutral", "A different element"], c:1, ex:"Losing a negatively charged electron leaves the atom with more protons than electrons, giving it an overall positive charge — this charged particle is called a cation (positive ion). The atom's identity (its element) does not change, only its charge."},
+{t:"Electric charge", q:"When an atom gains an extra electron, it becomes:", o:["A cation", "Neutral", "An anion (negative ion)", "A neutron"], c:2, ex:"Gaining an extra negatively charged electron makes the total negative charge greater than the positive charge from protons, so the atom becomes negatively charged overall — this is called an anion (negative ion)."},
+{t:"Importance of atom", q:"Why is the study of the atom considered important in chemistry?", o:["Atoms have no real significance in daily life", "All matter is built from atoms, so understanding them explains chemical behaviour and reactions", "Atoms only matter in physics, not chemistry", "Atoms cannot combine to form anything useful"], c:1, ex:"Since every element, compound, and all matter around us is ultimately built from atoms, understanding atomic structure explains why substances react the way they do, how bonds form, and why elements have the properties they do — making it foundational to all of chemistry."},
+{t:"Importance of atom", q:"Knowledge of atomic structure helps explain which of the following?", o:["Why elements combine in fixed ratios to form compounds", "The weather patterns of a region", "The boiling point of water only", "The speed of vehicles"], c:0, ex:"Understanding how many electrons an atom has and how they are arranged explains its valency, which in turn explains why elements combine in fixed, predictable ratios to form specific compounds."},
+{t:"Atomic number", q:"The atomic number of an element represents:", o:["The number of neutrons in the nucleus", "The number of protons in the nucleus", "The total mass of the atom", "The number of shells in the atom"], c:1, ex:"The atomic number (denoted Z) equals the number of protons present in the nucleus of an atom. Since atoms are neutral, this also equals the number of electrons, and it is unique to each element, effectively serving as its identity number."},
+{t:"Atomic number", q:"What is the atomic number of Hydrogen?", o:["1", "2", "0", "6"], c:0, ex:"Hydrogen has an atomic number of 1, meaning it has just 1 proton in its nucleus (and 1 electron orbiting it), making it the simplest and lightest element on the periodic table."},
+{t:"Atomic number", q:"What is the atomic number of Carbon?", o:["12", "14", "6", "8"], c:2, ex:"Carbon has an atomic number of 6, meaning every carbon atom has exactly 6 protons in its nucleus. Its atomic mass, 12, is a separate value representing protons plus neutrons."},
+{t:"Atomic number", q:"Two atoms with the same atomic number will always be:", o:["The same element", "Different elements", "Isotopes of different elements", "Ions of different charge"], c:0, ex:"The atomic number defines what element an atom is, since it equals the fixed number of protons. Any two atoms sharing the same atomic number must therefore be atoms of the same element, even if their neutron count (and hence mass) differs."},
+{t:"Atomic number", q:"What is the atomic number of Oxygen?", o:["16", "8", "6", "18"], c:1, ex:"Oxygen has atomic number 8, meaning it has 8 protons in its nucleus. Its atomic mass of 16 comes from adding its 8 protons and 8 neutrons together."},
+{t:"Molecular Weight", q:"Molecular weight (molecular mass) of a compound is calculated as:", o:["The mass of only the heaviest atom in the molecule", "The sum of the atomic masses of all atoms present in one molecule", "The number of atoms in the molecule", "The atomic number of the compound"], c:1, ex:"Molecular weight is found by adding up the atomic masses of every atom that makes up one molecule of a substance. For example, water's molecular weight is (2 × mass of H) + (1 × mass of O)."},
+{t:"Molecular Weight", q:"What is the molecular weight of water (H2O), given H = 1 and O = 16?", o:["17", "18", "16", "19"], c:1, ex:"Water contains 2 hydrogen atoms and 1 oxygen atom: (2 × 1) + (1 × 16) = 2 + 16 = 18. So the molecular weight of water is 18 amu."},
+{t:"Molecular Weight", q:"What is the molecular weight of carbon dioxide (CO2), given C = 12 and O = 16?", o:["28", "44", "32", "16"], c:1, ex:"CO2 has 1 carbon and 2 oxygen atoms: (1 × 12) + (2 × 16) = 12 + 32 = 44. So its molecular weight is 44 amu."},
+{t:"Molecular Weight", q:"Molecular weight is expressed in which unit?", o:["Grams", "Kilograms", "Atomic mass units (amu)", "Litres"], c:2, ex:"Like atomic mass, molecular weight is expressed in atomic mass units (amu), since it is essentially the sum of individual atomic masses, which are themselves measured on the amu scale."},
+{t:"Atomic mass", q:"The atomic mass of an atom is approximately equal to the sum of:", o:["Protons and electrons", "Protons and neutrons", "Electrons and neutrons", "Only the number of shells"], c:1, ex:"Atomic mass is essentially the sum of the number of protons and neutrons in the nucleus, since these two particles account for nearly all the atom's mass — the electrons' mass is negligible by comparison."},
+{t:"Atomic mass", q:"If an atom has 6 protons and 6 neutrons, what is its atomic mass?", o:["6", "12", "18", "0"], c:1, ex:"Atomic mass = number of protons + number of neutrons = 6 + 6 = 12. This matches carbon's well-known atomic mass of 12."},
+{t:"Atomic mass", q:"Why don't electrons contribute meaningfully to an atom's atomic mass?", o:["Electrons have no charge", "Electrons have an extremely small mass compared to protons and neutrons", "Electrons are outside the atom entirely", "Electrons are heavier than protons"], c:1, ex:"An electron's mass is about 1836 times smaller than a proton's, so even though electrons are real particles with real mass, their contribution is so tiny that atomic mass calculations only count protons and neutrons."},
+{t:"Atomic mass", q:"How can you find the number of neutrons in an atom if you know its atomic mass and atomic number?", o:["Neutrons = atomic mass + atomic number", "Neutrons = atomic mass − atomic number", "Neutrons = atomic number − atomic mass", "Neutrons = atomic mass × atomic number"], c:1, ex:"Since atomic mass = protons + neutrons, and atomic number = protons, rearranging gives neutrons = atomic mass − atomic number. For example, sodium (mass 23, atomic number 11) has 23 − 11 = 12 neutrons."},
+{t:"Atomic number and mass of first 20 elements", q:"What are the atomic number and atomic mass of Helium?", o:["Number 2, Mass 4", "Number 4, Mass 2", "Number 2, Mass 2", "Number 1, Mass 4"], c:0, ex:"Helium has atomic number 2 (2 protons) and atomic mass 4 (2 protons + 2 neutrons), making it the second lightest element and a noble gas with a completely filled outer shell of 2 electrons."},
+{t:"Atomic number and mass of first 20 elements", q:"Which element has atomic number 11 and atomic mass 23?", o:["Magnesium", "Sodium", "Potassium", "Aluminium"], c:1, ex:"Sodium (Na) has atomic number 11 (11 protons) and atomic mass 23 (11 protons + 12 neutrons). It is a highly reactive alkali metal found in Group 1 of the periodic table."},
+{t:"Atomic number and mass of first 20 elements", q:"What is the atomic number of Chlorine?", o:["16", "17", "18", "35"], c:1, ex:"Chlorine has atomic number 17, meaning it has 17 protons. Its atomic mass of about 35.5 (an average due to naturally occurring isotopes) is often rounded differently, but its atomic number is fixed at 17."},
+{t:"Atomic number and mass of first 20 elements", q:"Which element among the first 20 has atomic number 20 and atomic mass 40?", o:["Argon", "Potassium", "Calcium", "Sulphur"], c:2, ex:"Calcium (Ca) has atomic number 20 (20 protons) and atomic mass 40 (20 protons + 20 neutrons). It is an important alkaline earth metal, essential for bones and teeth in living organisms."},
+{t:"Atomic number and mass of first 20 elements", q:"What is the atomic number of Neon, a noble gas?", o:["8", "10", "18", "2"], c:1, ex:"Neon has atomic number 10, meaning it has 10 protons and, being a noble gas, a completely filled outer electron shell (2,8), which makes it chemically inert and unreactive."},
+{t:"Atomic number and mass of first 20 elements", q:"Which element has atomic number 15 and is important in fertilisers?", o:["Sulphur", "Silicon", "Phosphorus", "Sodium"], c:2, ex:"Phosphorus has atomic number 15 (15 protons) and atomic mass 31. It is a key nutrient for plant growth and is a major ingredient in agricultural fertilisers."},
+{t:"Electronic configuration of an atom", q:"The maximum number of electrons that can be held in the first shell (K shell) is:", o:["2", "8", "18", "32"], c:0, ex:"The first shell (K shell), closest to the nucleus, can hold a maximum of 2 electrons, following the rule that the maximum electrons in a shell is given by 2n², where n is the shell number (here n=1, so 2×1²=2)."},
+{t:"Electronic configuration of an atom", q:"The maximum number of electrons that can be held in the second shell (L shell) is:", o:["2", "8", "18", "6"], c:1, ex:"Using the 2n² rule with n=2, the L shell can hold up to 2×2² = 8 electrons. This is why elements with atomic number up to 10 (like neon) fill their K and L shells with 2 and 8 electrons respectively."},
+{t:"Electronic configuration of an atom", q:"What is the electronic configuration of Sodium (atomic number 11)?", o:["2,8,1", "2,8,8", "1,8,2", "2,9"], c:0, ex:"Sodium has 11 electrons. Filling shells in order: 2 in the K shell, 8 in the L shell, leaving 1 electron for the M shell — giving the configuration 2,8,1."},
+{t:"Electronic configuration of an atom", q:"What is the electronic configuration of Chlorine (atomic number 17)?", o:["2,8,7", "2,7,8", "2,8,8", "8,8,1"], c:0, ex:"Chlorine has 17 electrons. The K shell fills with 2, the L shell fills with 8, leaving 17 − 2 − 8 = 7 electrons in the M shell — giving the configuration 2,8,7."},
+{t:"Electronic configuration of an atom", q:"An atom with the electronic configuration 2,8,8 belongs to which element?", o:["Sodium", "Argon", "Neon", "Chlorine"], c:1, ex:"Adding 2+8+8 gives 18 electrons, matching Argon's atomic number of 18. Argon is a noble gas with a completely filled outer shell, which is why it is chemically stable and unreactive."},
+{t:"Electronic configuration of an atom", q:"The outermost shell of an atom is also called the:", o:["Nucleus", "Valence shell", "Core shell", "Radical shell"], c:1, ex:"The outermost occupied shell of an atom is called the valence shell, and the electrons in it (valence electrons) are the ones directly involved in chemical bonding, since they are farthest from the nucleus and most loosely held."},
+{t:"Radicals", q:"A radical is defined as:", o:["A single neutral atom", "A group of atoms that behaves as a single unit and carries a charge", "A compound with no charge", "Another name for an element"], c:1, ex:"A radical is a group of two or more atoms bonded together that acts as a single unit in a chemical reaction and carries an overall electric charge (positive or negative), such as the hydroxide radical (OH⁻)."},
+{t:"Radicals", q:"Which of the following is an example of a radical?", o:["Na⁺", "OH⁻", "Cl⁻", "Both OH⁻ is a radical, Na⁺ and Cl⁻ are simple ions"], c:3, ex:"OH⁻ (hydroxide) is a radical because it is a group of two different atoms (oxygen and hydrogen) acting together with one charge. Na⁺ and Cl⁻, on the other hand, are simple ions formed from single atoms, not groups of atoms, so they aren't classified as radicals."},
+{t:"Radicals", q:"What is the charge on the sulphate radical (SO4)?", o:["1+", "1−", "2−", "3−"], c:2, ex:"The sulphate radical, SO4, carries a charge of 2− (written SO4²⁻), meaning it needs to gain or combine with something providing 2 units of positive charge to become a neutral compound, such as in Na2SO4."},
+{t:"Radicals", q:"Which radical is written as NO3 and carries a charge of 1−?", o:["Nitrate", "Nitrite", "Carbonate", "Phosphate"], c:0, ex:"NO3⁻ is the nitrate radical, carrying a single negative charge. It is commonly found in fertiliser compounds like potassium nitrate (KNO3) and is one of the most frequently used radicals in chemistry problems."},
+{t:"Radicals", q:"Which of these is an example of an electropositive radical?", o:["OH⁻ (hydroxide)", "NH4⁺ (ammonium)", "CO3²⁻ (carbonate)", "SO4²⁻ (sulphate)"], c:1, ex:"NH4⁺ (ammonium) is an electropositive radical because it carries a positive charge, behaving like a metal ion in forming compounds. The other three options are electronegative radicals since they carry negative charges."},
+{t:"Valency", q:"Valency of an element is defined as:", o:["The number of neutrons in its nucleus", "The combining capacity of an atom, based on electrons it can lose, gain, or share", "The mass number of the atom", "The number of shells present"], c:1, ex:"Valency refers to how many electrons an atom can lose, gain, or share while forming a chemical bond — essentially its 'combining power'. It determines how many atoms of another element it can bond with to form a stable compound."},
+{t:"Valency", q:"An atom that loses electrons to form a bond is said to be:", o:["Electronegative", "Electropositive", "Neutral", "Isotopic"], c:1, ex:"An atom that loses one or more electrons to achieve stability becomes positively charged and is described as electropositive — typically true of metals, which tend to lose their few outer electrons easily."},
+{t:"Valency", q:"An atom that gains electrons to form a bond is said to be:", o:["Electropositive", "Electronegative", "Radical", "Neutral"], c:1, ex:"An atom that gains electrons to complete its outer shell becomes negatively charged and is described as electronegative — this behaviour is common among nonmetals, which need only a few more electrons to become stable."},
+{t:"Valency", q:"What is the valency of Sodium (electronic configuration 2,8,1)?", o:["1", "2", "7", "8"], c:0, ex:"Sodium has only 1 electron in its outermost shell. It is easier for it to lose this single electron (becoming stable like neon) rather than gain 7 more, so its valency is 1, and it forms ions like Na⁺."},
+{t:"Valency", q:"What is the valency of Chlorine (electronic configuration 2,8,7)?", o:["7", "1", "8", "2"], c:1, ex:"Chlorine has 7 electrons in its outer shell, so it needs just 1 more electron to complete a stable octet of 8. It is easier to gain 1 electron than lose 7, so chlorine's valency is 1, forming ions like Cl⁻."},
+{t:"Valency of electropositive radicals", q:"What is the valency of the Ammonium radical (NH4⁺)?", o:["1", "2", "3", "0"], c:0, ex:"Ammonium (NH4⁺) carries a single positive charge, giving it a valency of 1. It behaves much like a metal ion (similar to Na⁺ or K⁺) when forming compounds such as ammonium chloride (NH4Cl)."},
+{t:"Valency of electropositive radicals", q:"What is the valency of Calcium ion (Ca²⁺)?", o:["1", "2", "3", "4"], c:1, ex:"Calcium loses 2 electrons to form the Ca²⁺ ion, so its valency is 2. This is why calcium combines with two univalent (valency 1) radicals, such as in CaCl2 or Ca(OH)2."},
+{t:"Valency of electronegative radicals", q:"What is the valency of the Hydroxide radical (OH⁻)?", o:["1", "2", "3", "0"], c:0, ex:"The hydroxide radical (OH⁻) carries a single negative charge, giving it a valency of 1. It combines with univalent metal ions in a 1:1 ratio, such as in sodium hydroxide (NaOH)."},
+{t:"Valency of electronegative radicals", q:"What is the valency of the Carbonate radical (CO3²⁻)?", o:["1", "2", "3", "4"], c:1, ex:"The carbonate radical (CO3²⁻) carries a charge of 2−, giving it a valency of 2. This is why it needs two univalent metal ions (like in Na2CO3) or one divalent metal ion (like in CaCO3) to form a neutral compound."},
+{t:"Molecular formula of Elements", q:"The molecular formula of an element shows:", o:["The number and type of atoms combined to form one molecule of that element", "Only the atomic mass of the element", "The valency of a compound", "The charge on an ion"], c:0, ex:"The molecular formula of an element indicates how many atoms of that single element combine to form one molecule — for example, O2 shows that oxygen exists as molecules of 2 oxygen atoms bonded together."},
+{t:"Molecular formula of Elements", q:"What is the molecular formula for Nitrogen gas as it commonly exists in the atmosphere?", o:["N", "N2", "N3", "N4"], c:1, ex:"Nitrogen exists in nature as a diatomic molecule, N2, meaning two nitrogen atoms are triple-bonded together. This strong bond is why nitrogen gas is so stable and unreactive under normal conditions."},
+{t:"Molecular formula of compounds", q:"To write the molecular formula of a compound, you need to know:", o:["Only the names of the elements involved", "The valencies of the combining elements or radicals", "The colour of the elements", "The state of matter only"], c:1, ex:"Writing a correct molecular formula requires knowing the valency of each combining element or radical, since the valencies determine how many atoms of each are needed to balance the total positive and negative charges to zero."},
+{t:"Molecular formula of compounds", q:"What is the correct molecular formula for a compound formed between Calcium (valency 2) and Chlorine (valency 1)?", o:["CaCl", "CaCl2", "Ca2Cl", "Ca2Cl2"], c:1, ex:"To balance calcium's valency of 2 with chlorine's valency of 1, we need 2 chlorine atoms for every 1 calcium atom, giving the formula CaCl2 (calcium chloride)."},
+{t:"Molecular formula of compounds", q:"What is the molecular formula formed between Aluminium (valency 3) and Oxygen (valency 2)?", o:["AlO", "Al2O3", "Al3O2", "AlO2"], c:1, ex:"Using the criss-cross method, aluminium's valency (3) becomes the subscript for oxygen, and oxygen's valency (2) becomes the subscript for aluminium, giving Al2O3 (aluminium oxide) — the smallest whole-number ratio that balances the charges."},
+{t:"Molecular formula of compounds", q:"What is the molecular formula for sodium sulphate, formed from Sodium (valency 1) and Sulphate radical, SO4 (valency 2)?", o:["NaSO4", "Na2SO4", "Na(SO4)2", "Na2(SO4)2"], c:1, ex:"Since sodium has valency 1 and sulphate has valency 2, we need 2 sodium atoms to balance 1 sulphate radical, giving Na2SO4. This ensures the total positive charge (2 × 1+) equals the total negative charge (1 × 2−)."},
+{t:"Steps of writing molecular formula of compounds", q:"What is the FIRST step in writing the molecular formula of a compound?", o:["Simplify the ratio of atoms", "Write the symbols of the elements/radicals involved, with the positive part first", "Balance the chemical equation", "Calculate the molecular weight"], c:1, ex:"The first step is to correctly write the symbols or formulas of the combining elements/radicals, with the electropositive part written first and the electronegative part written second — this sets up the formula before valencies are cross-applied."},
+{t:"Steps of writing molecular formula of compounds", q:"After writing the symbols with their valencies, the next step in the criss-cross method is to:", o:["Add the valencies together", "Cross the valency numbers to become subscripts of the other symbol", "Divide the valencies by 2", "Ignore the valencies entirely"], c:1, ex:"In the criss-cross method, the valency number of the first element becomes the subscript of the second element, and vice versa — this exchange is why it's called 'criss-crossing', and it ensures the compound is electrically neutral overall."},
+{t:"Steps of writing molecular formula of compounds", q:"After criss-crossing valencies, why might the resulting subscripts need to be simplified?", o:["To make the formula longer", "To express the ratio in the smallest whole numbers, if the valencies share a common factor", "Simplification is never needed", "To change the elements involved"], c:1, ex:"If both valencies share a common factor (for example, 2 and 4), the resulting subscripts should be divided down to the simplest whole-number ratio, since a molecular formula should represent the smallest possible ratio of atoms."},
+{t:"Word equation", q:"A word equation represents a chemical reaction using:", o:["Only chemical symbols and formulas", "The names of reactants and products written in words", "Only numbers", "Graphs"], c:1, ex:"A word equation describes a chemical reaction by writing out the full names of the substances involved — for example, 'hydrogen + oxygen → water' — rather than using chemical symbols and formulas as in a chemical equation."},
+{t:"Word equation", q:"In a word equation, the substances written on the left side (before the arrow) are called:", o:["Products", "Reactants", "Radicals", "Catalysts"], c:1, ex:"The substances written before the arrow in an equation are the reactants — the starting materials that undergo the chemical change — while the substances formed after the arrow are called the products."},
+{t:"Word equation", q:"Write the word equation for the reaction: hydrogen gas burns in oxygen to form water.", o:["Water → Hydrogen + Oxygen", "Hydrogen + Oxygen → Water", "Hydrogen + Water → Oxygen", "Oxygen → Hydrogen + Water"], c:1, ex:"In a correctly written word equation, the reactants (hydrogen and oxygen) are placed before the arrow, and the product formed (water) is placed after the arrow, showing the direction of the chemical change: Hydrogen + Oxygen → Water."},
+{t:"Chemical equation", q:"A chemical equation represents a reaction using:", o:["Only words", "Chemical symbols and formulas of reactants and products", "Pictures only", "Percentages"], c:1, ex:"A chemical equation is the shorthand version of a word equation, using chemical symbols and formulas instead of full names — for example, 2H2 + O2 → 2H2O represents the same reaction as the word equation but more concisely."},
+{t:"Chemical equation", q:"Why must a chemical equation be balanced?", o:["To make it look neat", "To satisfy the Law of Conservation of Mass — atoms cannot be created or destroyed in a reaction", "Because reactants must always outnumber products", "It is not actually necessary"], c:1, ex:"A balanced chemical equation ensures the same number of atoms of each element appear on both sides of the equation, in line with the Law of Conservation of Mass, which states matter is neither created nor destroyed during a chemical reaction."},
+{t:"Chemical equation", q:"In the unbalanced equation H2 + O2 → H2O, what coefficient must be placed to balance it correctly?", o:["H2 + O2 → H2O (already balanced)", "2H2 + O2 → 2H2O", "H2 + 2O2 → H2O", "2H2 + 2O2 → 2H2O"], c:1, ex:"On the left, there are 2 oxygen atoms (from O2) but only 1 on the right (from H2O), so we double the water molecules to 2H2O, giving 4 hydrogen and 2 oxygen atoms on the right — then double H2 on the left to match the 4 hydrogens, giving the balanced equation 2H2 + O2 → 2H2O."},
+{t:"Some clues for balancing chemical equation", q:"Which of these is a useful strategy when balancing chemical equations?", o:["Balance elements that appear in only one compound on each side first", "Always balance oxygen first, regardless of the equation", "Change the subscripts within a chemical formula", "Randomly guess numbers until it looks balanced"], c:0, ex:"A reliable strategy is to first balance elements that appear in only one reactant and one product, since changing their coefficient has fewer knock-on effects; elements appearing in multiple compounds (like oxygen and hydrogen) are usually balanced later."},
+{t:"Some clues for balancing chemical equation", q:"When balancing equations, which of the following is NOT allowed?", o:["Placing a whole number coefficient in front of a formula", "Changing the subscripts inside a chemical formula", "Balancing one element at a time", "Using the smallest whole-number ratio of coefficients"], c:1, ex:"Subscripts inside a formula (like the '2' in H2O) can never be changed to balance an equation, because doing so would change the actual chemical formula and turn the substance into something else entirely. Only the coefficients placed in front of formulas may be adjusted."},
+{t:"Some clues for balancing chemical equation", q:"A useful final check after balancing a chemical equation is to:", o:["Count and compare the total number of each type of atom on both sides", "Count only the number of compounds", "Ignore the number of atoms", "Check the colour of the substances"], c:0, ex:"The final and most important check is to count each type of atom individually on both the reactant side and the product side, confirming they match exactly — this verifies the equation truly obeys the Law of Conservation of Mass."},
+{t:"Common names and molecular formula of some substances", q:"What is the common name of the compound with molecular formula NaHCO3?", o:["Washing soda", "Baking soda", "Table salt", "Caustic soda"], c:1, ex:"NaHCO3 is commonly known as baking soda (sodium bicarbonate/sodium hydrogen carbonate), widely used in baking and as an antacid. It should not be confused with washing soda (Na2CO3) or table salt (NaCl)."},
+{t:"Common names and molecular formula of some substances", q:"What is the molecular formula of common table salt?", o:["NaOH", "NaCl", "Na2CO3", "NaHCO3"], c:1, ex:"Table salt is sodium chloride, with the molecular formula NaCl, formed from sodium (valency 1) and chlorine (valency 1) combining in a simple 1:1 ratio."},
+{t:"Common names and molecular formula of some substances", q:"Caustic soda, used in soap-making, has which molecular formula?", o:["NaOH", "Na2CO3", "NaCl", "NaHCO3"], c:0, ex:"Caustic soda is the common name for sodium hydroxide, NaOH, formed from sodium (valency 1) and the hydroxide radical, OH (valency 1). It is a strong base widely used in soap and detergent manufacturing."},
+{t:"Common names and molecular formula of some substances", q:"What is the common name for Na2CO3?", o:["Baking soda", "Washing soda", "Caustic soda", "Table salt"], c:1, ex:"Na2CO3 is sodium carbonate, commonly called washing soda, and is used in cleaning products and glass manufacturing. Its formula reflects sodium's valency (1) needing 2 atoms to balance the carbonate radical's valency (2)."},
+{t:"Classification of elements (colon here) Periodic table", q:"Who proposed the first widely accepted periodic table, arranging elements by increasing atomic mass?", o:["Neils Bohr", "Dmitri Mendeleev", "John Dalton", "Ernest Rutherford"], c:1, ex:"Dmitri Mendeleev arranged the known elements of his time in order of increasing atomic mass and grouped elements with similar properties together, creating the first widely accepted periodic table and even successfully predicting undiscovered elements."},
+{t:"Classification of elements (colon here) Periodic table", q:"On what basis did Mendeleev primarily arrange the elements in his periodic table?", o:["Increasing atomic number", "Increasing atomic mass", "Alphabetical order", "Decreasing reactivity"], c:1, ex:"Mendeleev's periodic table was based on arranging elements in order of increasing atomic mass, and grouping those with similar chemical properties into the same column, even though atomic number was not yet a known concept at the time."},
+{t:"Classification of elements (colon here) Periodic table", q:"What was one major achievement of Mendeleev's periodic table?", o:["It had no gaps at all", "It successfully predicted the properties of elements not yet discovered", "It placed all metals and nonmetals randomly", "It ignored atomic mass entirely"], c:1, ex:"Mendeleev left gaps in his table for elements that had not yet been discovered and accurately predicted their properties based on the trends in that part of the table — a prediction later confirmed when elements like gallium and germanium were actually found."},
+{t:"Demerits of Mendeleev's Periodic table", q:"Which of the following is a recognized demerit (weakness) of Mendeleev's periodic table?", o:["It could not accommodate isotopes properly within a single position", "It correctly placed every element with no exceptions", "It was based on atomic number", "It had no gaps for undiscovered elements"], c:0, ex:"One weakness of Mendeleev's table was that it could not properly explain the position of isotopes (atoms of the same element with different masses), since his table was based on atomic mass, and isotopes have different masses despite being the same element."},
+{t:"Demerits of Mendeleev's Periodic table", q:"Why did Mendeleev's table sometimes place a heavier element before a lighter one, going against strict atomic mass order?", o:["He made a random error with no justification", "To keep elements with similar chemical properties together in the same group", "Atomic mass was not known at the time", "He avoided this problem entirely"], c:1, ex:"In a few cases, Mendeleev deliberately placed a slightly heavier element before a lighter one so that elements with genuinely similar chemical properties stayed together in the same group — prioritising chemical behaviour over strict mass order, which was seen as an inconsistency in the arrangement's logic."},
+{t:"Modern periodic table", q:"The modern periodic table arranges elements based on increasing:", o:["Atomic mass", "Atomic number", "Molecular weight", "Valency"], c:1, ex:"Unlike Mendeleev's table, the modern periodic table arranges elements in order of increasing atomic number (number of protons), which correctly resolves the inconsistencies that atomic-mass-based ordering had caused."},
+{t:"Modern periodic table", q:"Who is credited with proposing the modern periodic law based on atomic number?", o:["Henry Moseley", "John Dalton", "J.J. Thomson", "James Chadwick"], c:0, ex:"Henry Moseley's X-ray experiments revealed that atomic number, not atomic mass, was the more fundamental property for ordering elements, leading to the modern periodic law: properties of elements are a periodic function of their atomic number."},
+{t:"Modern periodic table", q:"How does the modern periodic table resolve the isotope problem faced by Mendeleev's table?", o:["It ignores isotopes completely", "Since isotopes of an element share the same atomic number, they can be placed in the same single position", "It creates a separate table for isotopes", "It uses atomic mass instead of atomic number"], c:1, ex:"Because isotopes of the same element have identical atomic numbers (same number of protons) despite differing masses, arranging elements by atomic number allows all isotopes of an element to correctly occupy just one single position in the table."},
+{t:"Modern periodic table", q:"The modern periodic table is divided into horizontal rows and vertical columns known respectively as:", o:["Groups and periods", "Periods and groups", "Shells and orbits", "Blocks and radicals"], c:1, ex:"The horizontal rows of the periodic table are called periods, and the vertical columns are called groups. Elements are organized this way so that those with similar properties and electron arrangements line up together."},
+{t:"Periods", q:"How many periods are there in the modern periodic table?", o:["5", "6", "7", "8"], c:2, ex:"The modern periodic table has 7 periods (horizontal rows), each representing a new principal shell being filled with electrons as atomic number increases across the table."},
+{t:"Periods", q:"What do all elements within the same period have in common?", o:["The same number of valence electrons", "The same number of electron shells", "Identical chemical properties", "The same atomic mass"], c:1, ex:"Elements in the same period all have the same number of electron shells, because moving across a period simply adds electrons to the same outermost shell until it's time to start a new one in the next period."},
+{t:"Periods", q:"As you move from left to right across a period, what generally happens to atomic size?", o:["It increases", "It decreases", "It stays the same", "It becomes zero"], c:1, ex:"Moving left to right across a period, atomic size generally decreases because the increasing number of protons pulls the electrons in the same shell more strongly toward the nucleus, even though the number of shells stays the same."},
+{t:"Periods", q:"Which period contains only 2 elements (Hydrogen and Helium)?", o:["Period 1", "Period 2", "Period 3", "Period 7"], c:0, ex:"Period 1 is the shortest period, containing only Hydrogen and Helium, because the first shell (K shell) can hold a maximum of just 2 electrons before a new shell must begin."},
+{t:"Groups", q:"How many groups are there in the modern periodic table?", o:["7", "18", "8", "20"], c:1, ex:"The modern periodic table has 18 groups (vertical columns), each containing elements that share the same number of valence electrons and therefore display similar chemical behaviour."},
+{t:"Groups", q:"What do elements within the same group have in common?", o:["The same number of shells", "The same number of valence electrons", "Identical atomic mass", "The same period number"], c:1, ex:"Elements in the same group have the same number of electrons in their outermost (valence) shell, which is why they display similar chemical properties and tend to form similar types of compounds."},
+{t:"Groups", q:"Which group is known as the alkali metals?", o:["Group 1", "Group 17", "Group 18", "Group 2"], c:0, ex:"Group 1 elements (excluding hydrogen) are known as alkali metals — such as sodium and potassium — and are characterised by having just 1 valence electron, making them highly reactive metals."},
+{t:"Groups", q:"Which group contains the noble gases, known for being largely unreactive?", o:["Group 1", "Group 18", "Group 17", "Group 2"], c:1, ex:"Group 18 contains the noble gases (like helium, neon, and argon), which have completely filled outer shells, making them extremely stable and generally unreactive under normal conditions."},
+{t:"Valence Shell and Electrons", q:"Valence electrons are:", o:["Electrons found in the nucleus", "Electrons in the innermost shell", "Electrons present in the outermost shell of an atom", "Electrons that have no charge"], c:2, ex:"Valence electrons are the electrons located in an atom's outermost occupied shell (the valence shell). These are the electrons directly involved in chemical bonding since they are the farthest from the nucleus and least tightly held."},
+{t:"Valence Shell and Electrons", q:"Why are valence electrons important in determining an element's chemical behaviour?", o:["They determine the element's colour", "They are involved in forming chemical bonds with other atoms", "They are found deep inside the nucleus", "They never interact with other atoms"], c:1, ex:"Valence electrons are the ones that participate in chemical bonding — being lost, gained, or shared with other atoms — so the number of valence electrons directly determines an element's valency and how it reacts chemically."},
+{t:"Valence Shell and Electrons", q:"An atom with a completely filled valence shell (like a noble gas) is generally:", o:["Highly reactive", "Chemically stable and unreactive", "Radioactive", "A metal"], c:1, ex:"A completely filled valence shell represents the most stable electron arrangement an atom can have, which is why noble gases with full outer shells rarely react with other elements under normal conditions."},
+{t:"Chemical Reaction", q:"A chemical reaction is a process in which:", o:["Only the physical state of a substance changes", "New substances with different properties are formed from reactants", "No new bonds are formed or broken", "Mass is created or destroyed"], c:1, ex:"A chemical reaction involves breaking and forming chemical bonds between atoms, resulting in entirely new substances (products) with different properties from the original reactants — unlike a physical change, where no new substance is formed."},
+{t:"Chemical Reaction", q:"Which of the following is evidence that a chemical reaction has occurred?", o:["Melting of ice into water", "Formation of a gas, colour change, or precipitate", "Cutting paper into pieces", "Dissolving sugar in water"], c:1, ex:"Signs like gas bubble formation, a colour change, a temperature change, or a solid precipitate forming are all strong indications that a new substance has been created, meaning a chemical reaction (not just a physical change) has taken place."},
+{t:"Chemical Reaction", q:"During a chemical reaction, according to the Law of Conservation of Mass:", o:["Mass can be created but not destroyed", "Total mass of reactants equals total mass of products", "Mass is always destroyed", "Mass has no relevance to reactions"], c:1, ex:"The Law of Conservation of Mass states that matter cannot be created or destroyed in a chemical reaction — the total mass of all reactants before the reaction must exactly equal the total mass of all products formed, which is exactly what a correctly balanced chemical equation represents."}
+];
+
+/* ===================== APP STATE & LOGIC ===================== */
+let currentStudent = null;
+let order = [];
+let idx = 0;
+let score = 0;
+let answered = false;
+let wrongList = [];
+let topicStats = {};
+
+const STORAGE_KEY = "matter-quiz-results";
+
+function shuffledOrder(n){
+  const arr = Array.from({length:n}, (_,i)=>i);
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+async function loadHistory(){
+  const wrap = document.getElementById('historyList');
+  try{
+    const res = await window.storage.get(STORAGE_KEY, true);
+    const data = res && res.value ? JSON.parse(res.value) : {};
+    const rows = [];
+    ['Nabina','Mansoon'].forEach(name=>{
+      const attempts = data[name] || [];
+      attempts.slice(-3).reverse().forEach(a=>{
+        rows.push({name, ...a});
+      });
+    });
+    if(rows.length === 0){
+      wrap.innerHTML = '<div class="history-empty">No attempts yet — pick a name above to start the first one.</div>';
+      return;
+    }
+    rows.sort((a,b)=> new Date(b.date) - new Date(a.date));
+    wrap.innerHTML = rows.slice(0,6).map(r=>{
+      const color = r.name === 'Nabina' ? 'var(--nabina)' : 'var(--mansoon)';
+      const d = new Date(r.date);
+      const when = d.toLocaleDateString(undefined,{month:'short', day:'numeric'}) + ' · ' + d.toLocaleTimeString(undefined,{hour:'numeric', minute:'2-digit'});
+      return `<div class="history-row">
+        <span class="dot" style="background:${color}"></span>
+        <span class="who">${r.name}</span>
+        <span class="when">${when}</span>
+        <span class="sc">${r.score}/${r.total}</span>
+      </div>`;
+    }).join('');
+  }catch(e){
+    wrap.innerHTML = '<div class="history-empty">No attempts yet — pick a name above to start the first one.</div>';
+  }
+}
+
+async function saveResult(name, sc, total){
+  try{
+    let data = {};
+    try{
+      const res = await window.storage.get(STORAGE_KEY, true);
+      if(res && res.value) data = JSON.parse(res.value);
+    }catch(e){ data = {}; }
+    if(!data[name]) data[name] = [];
+    data[name].push({date: new Date().toISOString(), score: sc, total: total});
+    if(data[name].length > 20) data[name] = data[name].slice(-20);
+    await window.storage.set(STORAGE_KEY, JSON.stringify(data), true);
+  }catch(e){
+    console.error('Could not save result', e);
+  }
+}
+
+function startQuiz(name){
+  currentStudent = name;
+  order = shuffledOrder(QUESTIONS.length);
+  idx = 0;
+  score = 0;
+  answered = false;
+  wrongList = [];
+  topicStats = {};
+  document.getElementById('screenStart').classList.add('hidden');
+  document.getElementById('screenResults').classList.add('hidden');
+  document.getElementById('screenQuiz').classList.remove('hidden');
+  document.getElementById('quizWho').textContent = name;
+  document.getElementById('quizDot').style.background = name === 'Nabina' ? 'var(--nabina)' : 'var(--mansoon)';
+  document.getElementById('headerSub').textContent = name + "'s attempt";
+  renderQuestion();
+}
+
+function retakeSame(){
+  startQuiz(currentStudent);
+}
+
+function goHome(){
+  document.getElementById('screenResults').classList.add('hidden');
+  document.getElementById('screenQuiz').classList.add('hidden');
+  document.getElementById('screenStart').classList.remove('hidden');
+  document.getElementById('headerSub').textContent = '';
+  loadHistory();
+}
+
+function renderQuestion(){
+  answered = false;
+  const qi = order[idx];
+  const item = QUESTIONS[qi];
+  document.getElementById('topicTag').textContent = item.t;
+  document.getElementById('qtext').textContent = item.q;
+  document.getElementById('qcard').setAttribute('data-num', 'Q' + String(idx+1).padStart(3,'0'));
+  document.getElementById('qcount').textContent = (idx+1) + ' / ' + QUESTIONS.length;
+  document.getElementById('progressFill').style.width = (((idx)/QUESTIONS.length)*100) + '%';
+
+  const wrap = document.getElementById('optionsWrap');
+  wrap.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  item.o.forEach((optText, i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="letter">${letters[i]}</span><span>${optText}</span>`;
+    btn.onclick = () => selectOption(i);
+    wrap.appendChild(btn);
+  });
+
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('nextBtn').classList.remove('show');
+}
+
+function selectOption(choiceIdx){
+  if(answered) return;
+  answered = true;
+  const qi = order[idx];
+  const item = QUESTIONS[qi];
+  const opts = document.querySelectorAll('.opt');
+  const isCorrect = choiceIdx === item.c;
+
+  opts.forEach((btn, i)=>{
+    btn.disabled = true;
+    if(i === item.c) btn.classList.add('correct');
+    if(i === choiceIdx && !isCorrect) btn.classList.add('wrong');
+    if(i !== item.c && i !== choiceIdx) btn.classList.add('dim');
+  });
+
+  const fb = document.getElementById('feedback');
+  const verdict = document.getElementById('verdict');
+  fb.classList.add('show');
+  if(isCorrect){
+    fb.className = 'feedback show correct';
+    verdict.textContent = '✓ Correct';
+    score++;
+  } else {
+    fb.className = 'feedback show wrong';
+    verdict.textContent = "✗ Not quite — here's why:";
+    wrongList.push({q: item.q, chosen: item.o[choiceIdx], correct: item.o[item.c], ex: item.ex, t: item.t});
+  }
+  document.getElementById('explanation').textContent = item.ex;
+
+  if(!topicStats[item.t]) topicStats[item.t] = {correct:0, total:0};
+  topicStats[item.t].total++;
+  if(isCorrect) topicStats[item.t].correct++;
+
+  document.getElementById('progressFill').style.width = (((idx+1)/QUESTIONS.length)*100) + '%';
+
+  const nextBtn = document.getElementById('nextBtn');
+  nextBtn.textContent = (idx === QUESTIONS.length-1) ? 'See results' : 'Next question';
+  nextBtn.classList.add('show');
+}
+
+function nextQuestion(){
+  idx++;
+  if(idx >= QUESTIONS.length){
+    showResults();
+  } else {
+    renderQuestion();
+  }
+}
+
+async function showResults(){
+  document.getElementById('screenQuiz').classList.add('hidden');
+  document.getElementById('screenResults').classList.remove('hidden');
+  document.getElementById('headerSub').textContent = currentStudent + "'s results";
+
+  const total = QUESTIONS.length;
+  const pct = Math.round((score/total)*100);
+  document.getElementById('resultName').textContent = currentStudent + "'s result";
+  document.getElementById('scorePct').textContent = pct + '%';
+  document.getElementById('statCorrect').textContent = score;
+  document.getElementById('statWrong').textContent = total - score;
+  document.getElementById('statTotal').textContent = total;
+
+  let line = '';
+  if(pct >= 90) line = 'Outstanding grasp of Matter — nearly everything landed.';
+  else if(pct >= 75) line = 'Strong performance — just a few topics to tighten up.';
+  else if(pct >= 50) line = 'Good effort — a solid revision round would help.';
+  else line = 'Worth another pass through the chapter before the next attempt.';
+  document.getElementById('resultLine').textContent = line;
+
+  const circumference = 2 * Math.PI * 65;
+  const ring = document.getElementById('ringFill');
+  ring.style.strokeDasharray = circumference;
+  ring.style.strokeDashoffset = circumference;
+  setTimeout(()=>{
+    ring.style.strokeDashoffset = circumference - (pct/100)*circumference;
+  }, 80);
+
+  const tb = document.getElementById('topicBreakdown');
+  const topics = Object.keys(topicStats);
+  tb.innerHTML = topics.map(t=>{
+    const s = topicStats[t];
+    const p = Math.round((s.correct/s.total)*100);
+    return `<div class="tb-row">
+      <span class="tb-name">${t}</span>
+      <span class="tb-bar-track"><span class="tb-bar-fill" style="width:${p}%"></span></span>
+      <span class="tb-frac">${s.correct}/${s.total}</span>
+    </div>`;
+  }).join('');
+
+  const reviewWrap = document.getElementById('reviewList');
+  const reviewSection = document.getElementById('reviewWrap');
+  if(wrongList.length === 0){
+    reviewSection.classList.add('hidden');
+  } else {
+    reviewSection.classList.remove('hidden');
+    reviewWrap.innerHTML = wrongList.map(w=>`
+      <div class="review-item">
+        <div class="rq">${w.q}</div>
+        <div class="ra">Your answer: ${w.chosen}</div>
+        <div class="rb">Correct answer: ${w.correct}</div>
+        <div class="rex">${w.ex}</div>
+      </div>
+    `).join('');
+  }
+
+  await saveResult(currentStudent, score, total);
+}
+
+loadHistory();
+</script>
+</body>
+</html>

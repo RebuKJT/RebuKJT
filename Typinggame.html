@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Typing Attack - School Practice</title>
+  <style>
+    :root {
+      --bg-color: #0b0e14;
+      --card-bg: #161b22;
+      --primary: #58a6ff;
+      --accent: #238636;
+      --danger: #da3633;
+      --text: #f0f6fc;
+      --text-muted: #8b949e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1 { margin-bottom: 20px; color: var(--primary); }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      border: 1px solid #30363d;
+    }
+
+    /* Modal / Form Styling */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text-muted);
+    }
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #30363d;
+      background: #0d1117;
+      color: var(--text);
+      font-size: 1rem;
+    }
+    button {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background-color: #2ea043; }
+
+    /* Mode Selection Tabs on Leaderboard */
+    .tab-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #000;
+      font-weight: bold;
+      border-color: var(--primary);
+    }
+
+    /* Game Screen */
+    #game-container {
+      display: none;
+      position: relative;
+    }
+
+    .stats-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      background: #0d1117;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+
+    canvas {
+      background: #05070a;
+      border-radius: 6px;
+      border: 1px solid #30363d;
+      display: block;
+      width: 100%;
+    }
+
+    #current-input {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 1.2rem;
+      letter-spacing: 2px;
+      color: var(--primary);
+      height: 30px;
+    }
+
+    /* Leaderboard */
+    #leaderboard-section {
+      margin-top: 10px;
+      display: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #30363d;
+    }
+    th { color: var(--primary); }
+    .rank-cell { font-weight: bold; color: #e3b341; }
+  </style>
+</head>
+<body>
+
+  <h1>🚀 Space Typing Shooter</h1>
+
+  <div class="container">
+    <!-- STUDENT SETUP FORM -->
+    <div id="setup-screen">
+      <h2 style="margin-bottom: 16px;">Student Registration</h2>
+      <div class="form-group">
+        <label for="student-name">Full Name</label>
+        <input type="text" id="student-name" placeholder="Enter student name..." required>
+      </div>
+      <div class="form-group">
+        <label for="student-class">Class / Grade</label>
+        <select id="student-class">
+          <option value="Class 5">Class 5</option>
+          <option value="Class 6">Class 6</option>
+          <option value="Class 7">Class 7</option>
+          <option value="Class 8">Class 8</option>
+          <option value="Class 9">Class 9</option>
+          <option value="Class 10">Class 10</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="game-mode">Difficulty Mode</label>
+        <select id="game-mode">
+          <option value="Easy">Easy (10 Seconds Fall Time)</option>
+          <option value="Normal" selected>Normal (6 Seconds Fall Time)</option>
+          <option value="Expert">Expert (3 Seconds Fall Time)</option>
+        </select>
+      </div>
+      <button onclick="startGame()">Start Typing Game</button>
+    </div>
+
+    <!-- GAME CANVAS SCREEN -->
+    <div id="game-container">
+      <div class="stats-bar">
+        <span>Mode: <span id="mode-val" style="color:var(--primary);">Normal</span></span>
+        <span>Score: <span id="score-val" style="color:var(--primary);">0</span></span>
+        <span>WPM: <span id="wpm-val" style="color:#e3b341;">0</span></span>
+        <span>Lives: <span id="lives-val" style="color:var(--danger);">❤️❤️❤️</span></span>
+      </div>
+      <canvas id="gameCanvas" width="750" height="400"></canvas>
+      <div id="current-input">Typed: <span id="typed-text" style="text-decoration: underline;"></span></div>
+    </div>
+
+    <!-- LEADERBOARD SECTION -->
+    <div id="leaderboard-section">
+      <h2 style="margin-bottom: 12px;">📊 Class Scoreboard</h2>
+      
+      <!-- MODE FILTER TABS -->
+      <div class="tab-container">
+        <button class="tab-btn" onclick="switchLeaderboardTab('Easy', this)">Easy Mode</button>
+        <button class="tab-btn active" onclick="switchLeaderboardTab('Normal', this)">Normal Mode</button>
+        <button class="tab-btn" onclick="switchLeaderboardTab('Expert', this)">Expert Mode</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Class</th>
+            <th>Score</th>
+            <th>WPM</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard-body">
+        </tbody>
+      </table>
+      <button onclick="resetGame()" style="margin-top: 20px;">Play Again</button>
+    </div>
+  </div>
+
+  <script>
+    // Word Repository
+    const WORD_LIST = [
+      "space", "planet", "galaxy", "rocket", "comet", "orbit", "meteor", "stars",
+      "keyboard", "typing", "nepal", "student", "computer", "logic", "coding",
+      "laser", "attack", "shield", "speed", "accuracy", "window", "screen"
+    ];
+
+    // Difficulty Fall Speeds (In Seconds to reach bottom)
+    const SPEED_CONFIG = {
+      "Easy": 10,
+      "Normal": 6,
+      "Expert": 3
+    };
+
+    // System States
+    let studentData = { name: "", class: "", mode: "Normal" };
+    let score = 0;
+    let lives = 3;
+    let totalCharsTyped = 0;
+    let startTime = null;
+    let activeEnemies = [];
+    let currentInput = "";
+    let gameLoopId = null;
+    let spawnIntervalId = null;
+    let scoresDatabase = [];
+    let currentLeaderboardTab = "Normal";
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function startGame() {
+      const nameInput = document.getElementById('student-name').value.trim();
+      if (!nameInput) {
+        alert("Please enter student name.");
+        return;
+      }
+
+      studentData.name = nameInput;
+      studentData.class = document.getElementById('student-class').value;
+      studentData.mode = document.getElementById('game-mode').value;
+
+      // Reset State
+      score = 0;
+      lives = 3;
+      totalCharsTyped = 0;
+      activeEnemies = [];
+      currentInput = "";
+      startTime = Date.now();
+
+      // UI Swaps
+      document.getElementById('setup-screen').style.display = 'none';
+      document.getElementById('leaderboard-section').style.display = 'none';
+      document.getElementById('game-container').style.display = 'block';
+
+      document.getElementById('mode-val').innerText = studentData.mode;
+      updateStatsUI();
+      
+      // Start Engine (Spawn interval adjusts based on difficulty)
+      clearInterval(spawnIntervalId);
+      const spawnRate = studentData.mode === "Expert" ? 1200 : (studentData.mode === "Normal" ? 2000 : 2800);
+      spawnIntervalId = setInterval(spawnEnemy, spawnRate);
+      
+      gameLoop();
+    }
+
+    function spawnEnemy() {
+      const word = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+      const x = Math.random() * (canvas.width - 120) + 20;
+      
+      // Calculate pixel speed per frame (60 FPS base) based on total drop seconds
+      const dropDurationSeconds = SPEED_CONFIG[studentData.mode];
+      const targetDistance = canvas.height - 35;
+      const speedPerFrame = targetDistance / (dropDurationSeconds * 60);
+
+      activeEnemies.push({
+        word: word,
+        x: x,
+        y: 0,
+        speed: speedPerFrame
+      });
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw Spaceship Player at bottom center
+      ctx.fillStyle = "#58a6ff";
+      ctx.beginPath();
+      ctx.moveTo(canvas.width / 2, canvas.height - 30);
+      ctx.lineTo(canvas.width / 2 - 20, canvas.height - 5);
+      ctx.lineTo(canvas.width / 2 + 20, canvas.height - 5);
+      ctx.fill();
+
+      // Render & Move Enemies
+      for (let i = activeEnemies.length - 1; i >= 0; i--) {
+        let enemy = activeEnemies[i];
+        enemy.y += enemy.speed;
+
+        // Draw Enemy Alien Block
+        ctx.fillStyle = studentData.mode === "Expert" ? "#da3633" : (studentData.mode === "Normal" ? "#e3b341" : "#238636");
+        ctx.fillRect(enemy.x, enemy.y, 100, 25);
+
+        // Draw Enemy Text
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "16px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(enemy.word, enemy.x + 50, enemy.y + 18);
+
+        // Collision with bottom line
+        if (enemy.y >= canvas.height - 35) {
+          activeEnemies.splice(i, 1);
+          lives--;
+          updateStatsUI();
+          if (lives <= 0) {
+            endGame();
+            return;
+          }
+        }
+      }
+
+      calculateWPM();
+      gameLoopId = requestAnimationFrame(gameLoop);
+    }
+
+    // Keydown Listener
+    window.addEventListener('keydown', (e) => {
+      if (lives <= 0 || document.getElementById('game-container').style.display !== 'block') return;
+
+      if (e.key === 'Backspace') {
+        currentInput = currentInput.slice(0, -1);
+      } else if (e.key.length === 1 && e.key.match(/[a-z]/i)) {
+        currentInput += e.key.toLowerCase();
+        totalCharsTyped++;
+        checkTypingMatch();
+      }
+      document.getElementById('typed-text').innerText = currentInput;
+    });
+
+    function checkTypingMatch() {
+      for (let i = 0; i < activeEnemies.length; i++) {
+        if (activeEnemies[i].word === currentInput) {
+          // Score multiplier based on mode difficulty
+          const multiplier = studentData.mode === "Expert" ? 20 : (studentData.mode === "Normal" ? 10 : 5);
+          score += activeEnemies[i].word.length * multiplier;
+          
+          activeEnemies.splice(i, 1);
+          currentInput = "";
+          updateStatsUI();
+          break;
+        }
+      }
+    }
+
+    function calculateWPM() {
+      const timeElapsedMinutes = (Date.now() - startTime) / 60000;
+      if (timeElapsedMinutes > 0) {
+        const wpm = Math.round((totalCharsTyped / 5) / timeElapsedMinutes);
+        document.getElementById('wpm-val').innerText = isNaN(wpm) ? 0 : wpm;
+      }
+    }
+
+    function updateStatsUI() {
+      document.getElementById('score-val').innerText = score;
+      document.getElementById('lives-val').innerText = "❤️".repeat(Math.max(0, lives));
+    }
+
+    function endGame() {
+      cancelAnimationFrame(gameLoopId);
+      clearInterval(spawnIntervalId);
+
+      const finalWpm = document.getElementById('wpm-val').innerText;
+
+      // Record score entry with selected mode
+      scoresDatabase.push({
+        name: studentData.name,
+        class: studentData.class,
+        mode: studentData.mode,
+        score: score,
+        wpm: finalWpm
+      });
+
+      // Show Leaderboard pre-selected to played mode
+      currentLeaderboardTab = studentData.mode;
+      updateTabButtons();
+      renderLeaderboard();
+
+      document.getElementById('game-container').style.display = 'none';
+      document.getElementById('leaderboard-section').style.display = 'block';
+    }
+
+    function switchLeaderboardTab(mode, btnElement) {
+      currentLeaderboardTab = mode;
+      
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      renderLeaderboard();
+    }
+
+    function updateTabButtons() {
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(btn => {
+        if (btn.innerText.includes(currentLeaderboardTab)) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    function renderLeaderboard() {
+      const tbody = document.getElementById('leaderboard-body');
+      tbody.innerHTML = "";
+
+      // Filter scores by mode and sort high-to-low
+      const filteredScores = scoresDatabase
+        .filter(entry => entry.mode === currentLeaderboardTab)
+        .sort((a, b) => b.score - a.score);
+
+      if (filteredScores.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No records found for ${currentLeaderboardTab} mode.</td></tr>`;
+        return;
+      }
+
+      filteredScores.forEach((entry, index) => {
+        const rank = index + 1;
+        const medal = rank === 1 ? "🥇 " : (rank === 2 ? "🥈 " : (rank === 3 ? "🥉 " : ""));
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="rank-cell">${medal}#${rank}</td>
+          <td>${entry.name}</td>
+          <td>${entry.class}</td>
+          <td><strong>${entry.score}</strong></td>
+          <td>${entry.wpm} WPM</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function resetGame() {
+      document.getElementById('leaderboard-section').style.display = 'none';
+      document.getElementById('setup-screen').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

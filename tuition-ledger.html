@@ -204,6 +204,10 @@
           <input id="s-arrival" type="date" />
         </div>
         <div class="field" style="margin:0;">
+          <label for="s-phone">Guardian phone (optional, with country code)</label>
+          <input id="s-phone" type="tel" placeholder="e.g. 9779802701683" />
+        </div>
+        <div class="field" style="margin:0;">
           <button class="btn" id="btn-add-student" style="width:100%;">Add student</button>
         </div>
         <div class="preview" id="calc-preview">
@@ -216,6 +220,9 @@
     <div class="card">
       <h2>Students in this session</h2>
       <div class="stat-strip" id="stat-strip"></div>
+      <div style="margin-bottom:10px;">
+        <button class="btn secondary small" id="btn-print-all">🖨 Print all bills</button>
+      </div>
       <div style="overflow-x:auto;">
       <table>
         <thead>
@@ -229,10 +236,11 @@
             <th data-sort="paidAmount" class="sortable">Paid</th>
             <th data-sort="due" class="sortable">Due</th>
             <th></th>
+            <th></th>
           </tr>
         </thead>
         <tbody id="students-body">
-          <tr class="empty-row"><td colspan="9">No students yet.</td></tr>
+          <tr class="empty-row"><td colspan="10">No students yet.</td></tr>
         </tbody>
         <tfoot>
           <tr>
@@ -241,6 +249,7 @@
             <td id="total-discount">Rs 0</td>
             <td id="total-paid">Rs 0</td>
             <td id="total-due">Rs 0</td>
+            <td></td>
             <td></td>
           </tr>
         </tfoot>
@@ -285,7 +294,50 @@
   </div>
 </div>
 
-<!-- Firebase compat SDK -->
+<!-- BILL MODAL -->
+<div class="modal-overlay" id="bill-overlay">
+  <div class="modal" style="max-width:420px;">
+    <h2>Bill <button class="close" id="close-bill">&times;</button></h2>
+    <div id="bill-content"></div>
+    <div class="btn-row" style="margin-top:16px;" id="bill-actions">
+      <button class="btn" id="btn-bill-print">🖨 Print</button>
+      <button class="btn secondary" id="btn-bill-whatsapp">💬 WhatsApp</button>
+      <button class="btn secondary" id="btn-bill-sms">✉ SMS</button>
+    </div>
+  </div>
+</div>
+
+<!-- hidden container used only when printing all bills at once -->
+<div id="print-all-container" style="display:none;"></div>
+
+<style>
+  .bill-paper{ background:#fff; border:1px solid var(--paper-line); border-radius:8px; padding:18px 20px; }
+  .bill-paper h3{ font-size:1.1rem; margin-bottom:2px; }
+  .bill-paper .sub{ font-size:0.78rem; color:var(--ink-soft); margin-bottom:14px; }
+  .bill-paper table{ width:100%; font-size:0.85rem; border-collapse:collapse; }
+  .bill-paper td{ padding:5px 0; border-bottom:1px dashed var(--paper-line); }
+  .bill-paper td:last-child{ text-align:right; font-weight:600; }
+  .bill-paper .bill-total-row td{ border-top:2px solid var(--ink); border-bottom:none; font-weight:700; font-family:'Fraunces',serif; font-size:1rem; padding-top:8px; }
+  @media print{
+    body *{ visibility:hidden; }
+    #bill-overlay.print-mode, #bill-overlay.print-mode *{ visibility:visible; }
+    #bill-overlay.print-mode{ position:absolute; inset:0; background:#fff; display:block; padding:20px; }
+    #bill-overlay.print-mode .close, #bill-overlay.print-mode #bill-actions{ display:none; }
+    #print-all-container.printing{ visibility:visible; position:absolute; top:0; left:0; width:100%; display:block !important; }
+    #print-all-container.printing *{ visibility:visible; }
+    .print-page-group{ page-break-after:always; padding:8mm 10mm 0; }
+    .print-page-group:last-child{ page-break-after:auto; }
+    .bill-slot{ border-bottom:1px dashed #999; padding-bottom:6px; margin-bottom:6px; }
+    .bill-slot:last-child{ border-bottom:none; }
+    .bill-slot .bill-paper{ padding:8px 12px; }
+    .bill-slot .bill-paper h3{ font-size:0.88rem; margin-bottom:1px; }
+    .bill-slot .bill-paper .sub{ font-size:0.62rem; margin-bottom:5px; }
+    .bill-slot .bill-paper table{ font-size:0.7rem; }
+    .bill-slot .bill-paper td{ padding:1.5px 0; }
+    .bill-slot .bill-paper .bill-total-row td{ padding-top:3px; font-size:0.78rem; }
+  }
+</style>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -296,7 +348,7 @@
    This must be the SAME config object your Teacher Portal
    already uses (same project, same Auth users).
    ========================================================= */
-  const firebaseConfig = {
+ const firebaseConfig = {
     apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
     authDomain: "teacher-resource-hub.firebaseapp.com",
     projectId: "teacher-resource-hub",
@@ -550,10 +602,11 @@ document.getElementById('btn-add-student').addEventListener('click', () => {
     name, grade, arrivalDate: arrival,
     sessionId: activeSessionId,
     days, feeAmount: fee,
+    phone: document.getElementById('s-phone').value.trim(),
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     createdBy: auth.currentUser.email
   }).then(() => {
-    sName.value = ''; sArrival.value = '';
+    sName.value = ''; sArrival.value = ''; document.getElementById('s-phone').value = '';
     updatePreview();
     addStatus.textContent = 'Student added.';
     addStatus.className = 'status-msg ok';
@@ -579,14 +632,14 @@ document.querySelectorAll('th.sortable').forEach(th => {
 
 function watchStudents(){
   if(unsubStudents) unsubStudents();
-  studentsBody.innerHTML = '<tr class="empty-row"><td colspan="9">Loading…</td></tr>';
+  studentsBody.innerHTML = '<tr class="empty-row"><td colspan="10">Loading…</td></tr>';
   unsubStudents = db.collection('tuitionStudents')
     .where('sessionId', '==', activeSessionId)
     .onSnapshot(snap => {
       currentStudents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderStudentsTable();
     }, err => {
-      studentsBody.innerHTML = '<tr class="empty-row"><td colspan="9">' + err.message + '</td></tr>';
+      studentsBody.innerHTML = '<tr class="empty-row"><td colspan="10">' + err.message + '</td></tr>';
     });
 }
 
@@ -605,7 +658,7 @@ function renderStudentsTable(){
   }
 
   if(!currentStudents.length){
-    studentsBody.innerHTML = '<tr class="empty-row"><td colspan="9">No students yet.</td></tr>';
+    studentsBody.innerHTML = '<tr class="empty-row"><td colspan="10">No students yet.</td></tr>';
     renderStatStrip([]);
     updateFooter([]);
     return;
@@ -635,8 +688,10 @@ function renderStudentsTable(){
       <td><input type="number" class="row-input" data-field="discount" data-id="${d.id}" value="${d.discount || 0}"></td>
       <td><input type="number" class="row-input" data-field="paidAmount" data-id="${d.id}" value="${d.paidAmount || 0}"></td>
       <td class="due-cell ${due <= 0 ? 'zero' : 'owed'}">Rs ${due}</td>
+      <td><button class="btn secondary small" data-bill="${d.id}">Bill</button></td>
       <td><button class="rm" title="Delete" data-id="${d.id}">&times;</button></td>
     `;
+    tr.querySelector('[data-bill]').addEventListener('click', () => openBill(d));
     tr.querySelector('.rm').addEventListener('click', () => {
       if(confirm('Remove ' + d.name + ' from this session?')){
         db.collection('tuitionStudents').doc(d.id).delete();
@@ -676,6 +731,88 @@ function updateFooter(students){
   document.getElementById('total-paid').textContent = 'Rs ' + totalPaid;
   document.getElementById('total-due').textContent = 'Rs ' + totalDue;
 }
+
+/* ---------- bills ---------- */
+const billOverlay = document.getElementById('bill-overlay');
+const billContent = document.getElementById('bill-content');
+let billCurrentStudent = null;
+
+function billHtml(d){
+  const session = sessions.find(x => x.id === activeSessionId);
+  const due = dueFor(d);
+  return `
+    <div class="bill-paper">
+      <h3>Lovely Angels English Boarding School</h3>
+      <div class="sub">Tuition Bill • ${session ? escapeHtml(session.label) : ''} • Generated ${new Date().toLocaleDateString('en-GB')}</div>
+      <table>
+        <tr><td>Student name</td><td>${escapeHtml(d.name)}</td></tr>
+        <tr><td>Grade</td><td>${escapeHtml(d.grade)}</td></tr>
+        <tr><td>Arrival date</td><td>${fmtDate(d.arrivalDate)}</td></tr>
+        <tr><td>Days</td><td>${d.days}</td></tr>
+        <tr><td>Fee</td><td>Rs ${d.feeAmount}</td></tr>
+        <tr><td>Discount</td><td>Rs ${d.discount || 0}</td></tr>
+        <tr><td>Paid</td><td>Rs ${d.paidAmount || 0}</td></tr>
+        <tr class="bill-total-row"><td>Due</td><td>Rs ${due}</td></tr>
+      </table>
+    </div>
+  `;
+}
+
+function billText(d){
+  const session = sessions.find(x => x.id === activeSessionId);
+  const due = dueFor(d);
+  return `Lovely Angels English Boarding School — Tuition Bill\n` +
+    `Student: ${d.name}\nGrade: ${d.grade}\nSession: ${session ? session.label : ''}\n` +
+    `Arrival: ${fmtDate(d.arrivalDate)}\nDays: ${d.days}\n` +
+    `Fee: Rs ${d.feeAmount}\nDiscount: Rs ${d.discount || 0}\nPaid: Rs ${d.paidAmount || 0}\n` +
+    `Due: Rs ${due}`;
+}
+
+function openBill(d){
+  billCurrentStudent = d;
+  billContent.innerHTML = billHtml(d);
+  billOverlay.classList.add('open');
+}
+document.getElementById('close-bill').addEventListener('click', () => billOverlay.classList.remove('open'));
+billOverlay.addEventListener('click', e => { if(e.target === billOverlay) billOverlay.classList.remove('open'); });
+
+document.getElementById('btn-bill-print').addEventListener('click', () => {
+  billOverlay.classList.add('print-mode');
+  window.print();
+  setTimeout(() => billOverlay.classList.remove('print-mode'), 300);
+});
+
+document.getElementById('btn-bill-whatsapp').addEventListener('click', () => {
+  if(!billCurrentStudent) return;
+  const text = encodeURIComponent(billText(billCurrentStudent));
+  const phone = (billCurrentStudent.phone || '').replace(/[^0-9]/g, '');
+  const url = phone ? `https://wa.me/${phone}?text=${text}` : `https://wa.me/?text=${text}`;
+  window.open(url, '_blank');
+});
+
+document.getElementById('btn-bill-sms').addEventListener('click', () => {
+  if(!billCurrentStudent) return;
+  const text = encodeURIComponent(billText(billCurrentStudent));
+  const phone = (billCurrentStudent.phone || '').replace(/[^0-9]/g, '');
+  window.location.href = phone ? `sms:${phone}?body=${text}` : `sms:?body=${text}`;
+});
+
+document.getElementById('btn-print-all').addEventListener('click', () => {
+  if(!currentStudents.length){ alert('No students in this session yet.'); return; }
+  const container = document.getElementById('print-all-container');
+  const perPage = 4;
+  let html = '';
+  for(let i = 0; i < currentStudents.length; i += perPage){
+    const group = currentStudents.slice(i, i + perPage);
+    html += '<div class="print-page-group">' +
+      group.map(d => `<div class="bill-slot">${billHtml(d)}</div>`).join('') +
+      '</div>';
+  }
+  container.innerHTML = html;
+  container.classList.add('printing');
+  window.print();
+  setTimeout(() => { container.classList.remove('printing'); container.innerHTML = ''; }, 300);
+});
 
 /* ---------- helpers ---------- */
 function fmtDate(str){

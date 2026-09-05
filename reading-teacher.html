@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reading Log — Teacher | Lovely Angels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --chalk-green:#1F3B33; --chalk-green-dark:#152A25;
+    --paper:#F4F1E6; --paper-line:#DCD6C2;
+    --margin-red:#C1443B; --ink:#26302C; --ink-soft:#5B6660;
+    --mustard:#C99A1E; --teal:#2C7A73; --radius:10px; --shadow:0 6px 18px rgba(21,42,37,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif;}
+  h1,h2{font-family:'Fraunces',serif; font-weight:600; margin:0 0 8px;}
+  .hand{font-family:'Caveat',cursive; color:var(--margin-red); font-weight:700;}
+  :focus-visible{outline:3px solid var(--teal); outline-offset:2px;}
+
+  nav.main{background:var(--chalk-green); color:#F4F1E6; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  nav.main .brand{font-family:'Fraunces',serif; font-size:1.2rem; font-weight:700;}
+  .tabs{display:flex; gap:6px;}
+  .tabs button{background:transparent; border:1px solid rgba(255,255,255,0.3); color:#DCE6DF; padding:7px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600;}
+  .tabs button.active{background:#fff; color:var(--chalk-green); border-color:#fff;}
+  .who{font-size:0.85rem; color:#DCE6DF; display:flex; align-items:center; gap:12px;}
+  .who button{background:transparent; border:1px solid #DCE6DF; color:#F4F1E6; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:0.8rem;}
+
+  main{max-width:1000px; margin:0 auto; padding:24px 18px 60px;}
+  .card{background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:20px; margin-bottom:18px;}
+  .card h2{font-size:1.05rem;}
+  .login-wrap{max-width:380px; margin:80px auto; background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:32px 28px; border-top:5px solid var(--margin-red);}
+  .field{margin-bottom:10px;}
+  .field label{display:block; font-size:0.78rem; font-weight:600; color:var(--ink-soft); margin-bottom:3px;}
+  .field input, .field select{width:100%; padding:7px 9px; border:1.5px solid var(--paper-line); border-radius:6px; font-size:0.85rem;}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:end;}
+  .row > *{flex:1; min-width:130px;}
+  .btn{border:none; border-radius:6px; padding:9px 16px; background:var(--chalk-green); color:#fff; font-weight:600; font-size:0.85rem; cursor:pointer;}
+  .btn.secondary{background:#fff; color:var(--chalk-green); border:1.5px solid var(--chalk-green);}
+  .btn.small{padding:5px 10px; font-size:0.75rem;}
+  .error{color:var(--margin-red); font-size:0.85rem; margin-top:8px; min-height:1em;}
+
+  table{width:100%; border-collapse:collapse; font-size:0.83rem;}
+  thead th{text-align:left; font-size:0.68rem; text-transform:uppercase; color:var(--ink-soft); border-bottom:2px solid var(--paper-line); padding:6px; white-space:nowrap;}
+  tbody td{padding:6px; border-bottom:1px solid var(--paper-line);}
+  .status-pill{font-size:0.7rem; padding:2px 8px; border-radius:999px; font-weight:600;}
+  .status-pill.pending{background:#FCEFC7; color:var(--mustard);}
+  .status-pill.approved{background:#D9EDE9; color:var(--teal);}
+  .status-pill.flagged{background:#F6D8D5; color:var(--margin-red);}
+  .note-text{font-size:0.75rem; color:var(--ink-soft); font-style:italic;}
+
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+<nav class="main">
+  <span class="brand">📖 Reading Log — Teacher</span>
+  <div class="tabs" id="tabs" hidden>
+    <button data-tab="today" class="active">Today's Activity</button>
+    <button data-tab="leaderboard">Points Leaderboard</button>
+  </div>
+  <div class="who" id="nav-who" hidden>
+    <span id="who-email"></span>
+    <button id="btn-signout">Sign out</button>
+  </div>
+</nav>
+
+<main>
+  <div class="login-wrap" id="login-wrap">
+    <span class="hand">private —</span>
+    <h1 style="font-size:1.4rem;">Teacher sign in</h1>
+    <p style="color:var(--ink-soft); font-size:0.88rem; margin-bottom:20px;">Same account as your other admin pages.</p>
+    <div class="field"><label>Email</label><input id="login-email" type="email" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input id="login-pass" type="password" autocomplete="current-password"></div>
+    <button class="btn" id="btn-login" style="width:100%;">Sign in</button>
+    <p class="error" id="login-error"></p>
+  </div>
+
+  <div id="app" hidden>
+
+    <section id="tab-today">
+      <div class="card">
+        <h2>Filter</h2>
+        <div class="row">
+          <div class="field"><label>Session</label><select id="f-session"><option value="">All sessions</option></select></div>
+          <div class="field"><label>Date</label><input id="f-date" type="date"></div>
+          <div class="field" style="flex:0 0 auto;"><button class="btn secondary" id="btn-clear-date">Show all dates</button></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Reading entries</h2>
+        <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>Date</th><th>Student</th><th>Duration</th><th>Subject / Topic</th><th>Points</th><th>Status</th><th></th></tr></thead>
+          <tbody id="entries-body"><tr><td colspan="7" style="text-align:center; color:var(--ink-soft); padding:20px;">Loading…</td></tr></tbody>
+        </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-leaderboard" hidden>
+      <div class="card">
+        <h2>Points by period</h2>
+        <div class="row">
+          <div class="field"><label>Period</label>
+            <select id="lb-period">
+              <option value="week">This week</option>
+              <option value="month">This month</option>
+              <option value="all">All time</option>
+            </select>
+          </div>
+          <div class="field"><label>Session</label><select id="lb-session"><option value="">All sessions</option></select></div>
+        </div>
+        <table>
+          <thead><tr><th>Rank</th><th>Student</th><th>Sessions Read</th><th>Total Points</th></tr></thead>
+          <tbody id="leaderboard-body"><tr><td colspan="4" style="text-align:center; color:var(--ink-soft); padding:20px;">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* PASTE the SAME firebaseConfig used everywhere else */
+ const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
+function fmtDuration(mins){
+  const h = Math.floor(mins/60), m = mins % 60;
+  if(h && m) return `${h} hr ${m} min`;
+  if(h) return `${h} hr`;
+  return `${m} min`;
+}
+
+/* ---------- auth ---------- */
+const loginWrap = document.getElementById('login-wrap');
+const app = document.getElementById('app');
+const tabs = document.getElementById('tabs');
+const navWho = document.getElementById('nav-who');
+
+document.getElementById('btn-login').addEventListener('click', () => {
+  const err = document.getElementById('login-error');
+  err.textContent = '';
+  auth.signInWithEmailAndPassword(document.getElementById('login-email').value.trim(), document.getElementById('login-pass').value)
+    .catch(e => err.textContent = e.message);
+});
+document.getElementById('btn-signout').addEventListener('click', () => auth.signOut());
+
+auth.onAuthStateChanged(user => {
+  if(user){
+    loginWrap.hidden = true; app.hidden = false; tabs.hidden = false; navWho.hidden = false;
+    document.getElementById('who-email').textContent = user.email;
+    loadSessions();
+    loadEntries();
+  } else {
+    loginWrap.hidden = false; app.hidden = true; tabs.hidden = true; navWho.hidden = true;
+  }
+});
+
+document.querySelectorAll('.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ['today','leaderboard'].forEach(t => document.getElementById('tab-'+t).hidden = (t !== btn.dataset.tab));
+    if(btn.dataset.tab === 'leaderboard') loadLeaderboard();
+  });
+});
+
+/* ---------- sessions for filters ---------- */
+function loadSessions(){
+  db.collection('tuitionSessions').orderBy('startDate','desc').get().then(snap => {
+    const opts = '<option value="">All sessions</option>' + snap.docs.map(d => `<option value="${d.id}">${escapeHtml(d.data().label)}</option>`).join('');
+    document.getElementById('f-session').innerHTML = opts;
+    document.getElementById('lb-session').innerHTML = opts;
+  });
+}
+
+/* ---------- today's activity ---------- */
+let allEntries = [];
+
+function loadEntries(){
+  const tbody = document.getElementById('entries-body');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--ink-soft); padding:20px;">Loading…</td></tr>';
+  db.collection('readingLogs').orderBy('createdAt','desc').limit(300).get().then(snap => {
+    allEntries = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    renderEntries();
+  }).catch(err => {
+    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--margin-red);">' + escapeHtml(err.message) + '</td></tr>';
+  });
+}
+
+document.getElementById('f-session').addEventListener('change', renderEntries);
+document.getElementById('f-date').addEventListener('change', renderEntries);
+document.getElementById('btn-clear-date').addEventListener('click', () => {
+  document.getElementById('f-date').value = '';
+  renderEntries();
+});
+
+function renderEntries(){
+  const sessionFilter = document.getElementById('f-session').value;
+  const dateFilter = document.getElementById('f-date').value;
+  let filtered = allEntries;
+  if(sessionFilter) filtered = filtered.filter(e => e.sessionId === sessionFilter);
+  if(dateFilter) filtered = filtered.filter(e => e.date === dateFilter);
+
+  const tbody = document.getElementById('entries-body');
+  if(!filtered.length){ tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--ink-soft); padding:20px;">No entries.</td></tr>'; return; }
+
+  tbody.innerHTML = filtered.map(e => `
+    <tr>
+      <td>${e.date}</td>
+      <td>${escapeHtml(e.studentName)}</td>
+      <td>${fmtDuration(e.durationMinutes)}</td>
+      <td>${escapeHtml(e.subject)} — ${escapeHtml(e.topic)}${e.note ? '<div class="note-text">"'+escapeHtml(e.note)+'"</div>' : ''}${e.flagReason ? '<div class="note-text" style="color:var(--margin-red);">'+escapeHtml(e.flagReason)+'</div>' : ''}</td>
+      <td>${e.points}</td>
+      <td><span class="status-pill ${e.status}">${e.status}</span></td>
+      <td>
+        ${e.status !== 'approved' ? '<button class="btn small" data-approve="'+e.id+'">Approve</button>' : ''}
+        ${e.status !== 'flagged' ? '<button class="btn secondary small" data-flag="'+e.id+'">Flag</button>' : ''}
+        <button class="btn secondary small" data-del="${e.id}" style="color:var(--margin-red); border-color:var(--margin-red);">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('[data-approve]').forEach(btn => btn.addEventListener('click', () => {
+    db.collection('readingLogs').doc(btn.dataset.approve).update({ status:'approved', flagReason:null }).then(loadEntries);
+  }));
+  tbody.querySelectorAll('[data-flag]').forEach(btn => btn.addEventListener('click', () => {
+    db.collection('readingLogs').doc(btn.dataset.flag).update({ status:'flagged' }).then(loadEntries);
+  }));
+  tbody.querySelectorAll('[data-del]').forEach(btn => btn.addEventListener('click', () => {
+    if(confirm('Delete this reading entry?')) db.collection('readingLogs').doc(btn.dataset.del).delete().then(loadEntries);
+  }));
+}
+
+/* ---------- leaderboard ---------- */
+document.getElementById('lb-period').addEventListener('change', loadLeaderboard);
+document.getElementById('lb-session').addEventListener('change', loadLeaderboard);
+
+function loadLeaderboard(){
+  const period = document.getElementById('lb-period').value;
+  const sessionFilter = document.getElementById('lb-session').value;
+  const tbody = document.getElementById('leaderboard-body');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--ink-soft); padding:20px;">Loading…</td></tr>';
+
+  db.collection('readingLogs').get().then(snap => {
+    let entries = snap.docs.map(d => d.data());
+    if(sessionFilter) entries = entries.filter(e => e.sessionId === sessionFilter);
+
+    const today = new Date().toISOString().slice(0,10);
+    if(period === 'week'){
+      const weekAgo = new Date(Date.now() - 6*86400000).toISOString().slice(0,10);
+      entries = entries.filter(e => e.date >= weekAgo);
+    } else if(period === 'month'){
+      const monthStart = today.slice(0,7) + '-01';
+      entries = entries.filter(e => e.date >= monthStart);
+    }
+
+    const byStudent = {};
+    entries.forEach(e => {
+      if(!byStudent[e.studentName]) byStudent[e.studentName] = { points:0, sessions:0 };
+      byStudent[e.studentName].points += e.points;
+      byStudent[e.studentName].sessions += 1;
+    });
+    const ranked = Object.entries(byStudent).sort((a,b) => b[1].points - a[1].points);
+
+    if(!ranked.length){ tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--ink-soft); padding:20px;">No entries for this period.</td></tr>'; return; }
+
+    tbody.innerHTML = ranked.map(([name,d],i) => `
+      <tr>
+        <td>${i+1}</td>
+        <td>${escapeHtml(name)}</td>
+        <td>${d.sessions}</td>
+        <td>${Math.round(d.points*100)/100}</td>
+      </tr>
+    `).join('');
+  });
+}
+</script>
+</body>
+</html>

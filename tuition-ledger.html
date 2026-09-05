@@ -291,6 +291,14 @@
       </div>
     </div>
     <p class="status-msg" id="session-status"></p>
+
+    <h3>Reading Log access</h3>
+    <p style="font-size:0.8rem; color:var(--ink-soft); margin-top:-6px;">
+      One-click sync so students already in the system show up as options on the
+      Reading Log page (only names and session labels are copied — no fees, no phone numbers).
+    </p>
+    <button class="btn secondary" id="btn-sync-public">Sync existing sessions &amp; students</button>
+    <p class="status-msg" id="sync-status"></p>
   </div>
 </div>
 
@@ -348,7 +356,7 @@
    This must be the SAME config object your Teacher Portal
    already uses (same project, same Auth users).
    ========================================================= */
- const firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
     authDomain: "teacher-resource-hub.firebaseapp.com",
     projectId: "teacher-resource-hub",
@@ -545,6 +553,8 @@ document.getElementById('btn-add-session').addEventListener('click', () => {
   }
   db.collection('tuitionSessions').add({ label, startDate: start, endDate: end, createdAt: firebase.firestore.FieldValue.serverTimestamp() })
     .then(docRef => {
+      // mirror a minimal public copy (label only) for reading-log.html — no dates, no financial data
+      db.collection('publicSessions').doc(docRef.id).set({ label });
       sessionStatus.textContent = 'Session created.';
       sessionStatus.className = 'status-msg ok';
       document.getElementById('new-session-label').value = '';
@@ -605,7 +615,9 @@ document.getElementById('btn-add-student').addEventListener('click', () => {
     phone: document.getElementById('s-phone').value.trim(),
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     createdBy: auth.currentUser.email
-  }).then(() => {
+  }).then((docRef) => {
+    // mirror a minimal public copy (name + sessionId only) for reading-log.html — no fees, no phone
+    db.collection('publicStudents').doc(docRef.id).set({ name, sessionId: activeSessionId });
     sName.value = ''; sArrival.value = ''; document.getElementById('s-phone').value = '';
     updatePreview();
     addStatus.textContent = 'Student added.';
@@ -695,6 +707,7 @@ function renderStudentsTable(){
     tr.querySelector('.rm').addEventListener('click', () => {
       if(confirm('Remove ' + d.name + ' from this session?')){
         db.collection('tuitionStudents').doc(d.id).delete();
+        db.collection('publicStudents').doc(d.id).delete();
       }
     });
     tr.querySelectorAll('.row-input').forEach(inp => {
@@ -812,6 +825,31 @@ document.getElementById('btn-print-all').addEventListener('click', () => {
   container.classList.add('printing');
   window.print();
   setTimeout(() => { container.classList.remove('printing'); container.innerHTML = ''; }, 300);
+});
+
+/* ---------- one-time backfill sync to public mirror ---------- */
+document.getElementById('btn-sync-public').addEventListener('click', () => {
+  const st = document.getElementById('sync-status');
+  st.textContent = 'Syncing…'; st.className = 'status-msg';
+  Promise.all([
+    db.collection('tuitionSessions').get(),
+    db.collection('tuitionStudents').get()
+  ]).then(([sessSnap, studSnap]) => {
+    const batch = db.batch();
+    sessSnap.forEach(doc => {
+      const ref = db.collection('publicSessions').doc(doc.id);
+      batch.set(ref, { label: doc.data().label });
+    });
+    studSnap.forEach(doc => {
+      const d = doc.data();
+      const ref = db.collection('publicStudents').doc(doc.id);
+      batch.set(ref, { name: d.name, sessionId: d.sessionId });
+    });
+    return batch.commit();
+  }).then(() => {
+    st.textContent = 'Synced! Students can now select themselves on the Reading Log page.';
+    st.className = 'status-msg ok';
+  }).catch(err => { st.textContent = err.message; st.className = 'status-msg err'; });
 });
 
 /* ---------- helpers ---------- */

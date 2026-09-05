@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reading Log | Lovely Angels Tuition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --chalk-green:#1F3B33; --chalk-green-dark:#152A25;
+    --paper:#F4F1E6; --paper-line:#DCD6C2;
+    --margin-red:#C1443B; --ink:#26302C; --ink-soft:#5B6660;
+    --mustard:#C99A1E; --teal:#2C7A73; --radius:10px; --shadow:0 6px 18px rgba(21,42,37,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif;}
+  h1,h2,h3{font-family:'Fraunces',serif; font-weight:600; margin:0 0 8px;}
+  .hand{font-family:'Caveat',cursive; color:var(--margin-red); font-weight:700;}
+  :focus-visible{outline:3px solid var(--teal); outline-offset:2px;}
+
+  nav.main{background:var(--chalk-green); color:#F4F1E6; padding:14px 24px; text-align:center;}
+  nav.main .brand{font-family:'Fraunces',serif; font-size:1.2rem; font-weight:700;}
+
+  main{max-width:760px; margin:0 auto; padding:24px 18px 60px;}
+  .card{background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:20px; margin-bottom:18px;}
+  .card h2{font-size:1.05rem;}
+  .field{margin-bottom:10px;}
+  .field label{display:block; font-size:0.78rem; font-weight:600; color:var(--ink-soft); margin-bottom:3px;}
+  .field input, .field select, .field textarea{width:100%; padding:8px 10px; border:1.5px solid var(--paper-line); border-radius:6px; font-size:0.88rem;}
+  .row{display:flex; gap:10px; flex-wrap:wrap;}
+  .row > *{flex:1; min-width:130px;}
+  .btn{border:none; border-radius:6px; padding:10px 18px; background:var(--chalk-green); color:#fff; font-weight:600; font-size:0.88rem; cursor:pointer;}
+  .btn:hover{background:var(--chalk-green-dark);}
+  .btn:disabled{opacity:0.5; cursor:not-allowed;}
+  .status-msg{font-size:0.82rem; margin-top:8px; min-height:1.1em;}
+  .status-msg.ok{color:var(--teal);} .status-msg.err{color:var(--margin-red);}
+
+  .preview{background:var(--paper); border:1px dashed var(--paper-line); border-radius:8px; padding:12px 14px; font-size:0.88rem; color:var(--ink-soft); margin-top:6px;}
+  .preview b{color:var(--ink); font-family:'Fraunces',serif; font-size:1.1rem;}
+
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; margin-bottom:6px;}
+  .stat-box{background:var(--paper); border-radius:8px; padding:12px 10px; text-align:center;}
+  .stat-box .num{font-family:'Fraunces',serif; font-weight:700; font-size:1.25rem; color:var(--chalk-green);}
+  .stat-box .label{font-size:0.68rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.03em;}
+  .streak-box{background:linear-gradient(135deg, var(--mustard), #E4C46B); color:#fff; border-radius:8px; padding:12px; text-align:center; margin-bottom:14px;}
+  .streak-box .num{font-family:'Fraunces',serif; font-weight:900; font-size:1.6rem;}
+
+  table{width:100%; border-collapse:collapse; font-size:0.82rem;}
+  thead th{text-align:left; font-size:0.68rem; text-transform:uppercase; color:var(--ink-soft); border-bottom:2px solid var(--paper-line); padding:6px;}
+  tbody td{padding:6px; border-bottom:1px solid var(--paper-line);}
+  .status-pill{font-size:0.7rem; padding:2px 8px; border-radius:999px; font-weight:600;}
+  .status-pill.pending{background:#FCEFC7; color:var(--mustard);}
+  .status-pill.approved{background:#D9EDE9; color:var(--teal);}
+  .status-pill.flagged{background:#F6D8D5; color:var(--margin-red);}
+
+  .msg-banner{font-family:'Caveat',cursive; font-size:1.1rem; color:var(--chalk-green); text-align:center; margin-bottom:10px;}
+
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+<nav class="main"><span class="brand">📖 Reading Log — Lovely Angels Tuition</span></nav>
+
+<main>
+  <div class="msg-banner">Read honestly. Read with focus. Understand what you read.</div>
+
+  <div class="card">
+    <h2>Who are you?</h2>
+    <div class="row">
+      <div class="field"><label>Session</label><select id="p-session"><option value="">Select session…</option></select></div>
+      <div class="field"><label>Your name</label><select id="p-student"><option value="">Select session first…</option></select></div>
+    </div>
+  </div>
+
+  <div id="student-area" hidden>
+    <div class="card">
+      <div class="streak-box"><span class="num" id="streak-num">0</span> day streak 🔥</div>
+      <div class="stat-strip">
+        <div class="stat-box"><div class="num" id="stat-today">0</div><div class="label">Today (pts)</div></div>
+        <div class="stat-box"><div class="num" id="stat-week">0</div><div class="label">This week (pts)</div></div>
+        <div class="stat-box"><div class="num" id="stat-month">0</div><div class="label">This month (pts)</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Add a reading entry</h2>
+      <div class="row">
+        <div class="field"><label>Date</label><input id="r-date" type="date"></div>
+        <div class="field"><label>Start time</label><input id="r-start" type="time"></div>
+        <div class="field"><label>End time</label><input id="r-end" type="time"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Subject</label>
+          <select id="r-subject">
+            <option>English</option><option>Nepali</option><option>Mathematics</option>
+            <option>Science</option><option>Computer</option><option>Social Studies</option>
+            <option>GK</option><option>Book/Novel</option><option>Newspaper</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field"><label>Topic / Chapter</label><input id="r-topic" placeholder="e.g. Water Cycle"></div>
+      </div>
+      <div class="field"><label>What did you learn? (optional)</label><textarea id="r-note" rows="2"></textarea></div>
+      <div class="preview" id="r-preview">Fill in start and end time to see your points.</div>
+      <button class="btn" id="btn-submit" style="margin-top:12px;">Submit reading</button>
+      <p class="status-msg" id="submit-status"></p>
+    </div>
+
+    <div class="card">
+      <h2>My recent entries</h2>
+      <table>
+        <thead><tr><th>Date</th><th>Duration</th><th>Subject / Topic</th><th>Points</th><th>Status</th></tr></thead>
+        <tbody id="history-body"><tr><td colspan="5" style="text-align:center; color:var(--ink-soft);">No entries yet.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* PASTE the SAME firebaseConfig used everywhere else */
+const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
+
+/* ---------- points formula ----------
+   Full hours = 10 pts each. Leftover minutes = 1 pt per 10 min.
+   e.g. 130 min -> 2 full hours (20) + 10 leftover (1) = 21
+*/
+function calcPoints(totalMinutes){
+  const fullHours = Math.floor(totalMinutes / 60);
+  const remainder = totalMinutes % 60;
+  return Math.round((fullHours * 10 + remainder / 10) * 100) / 100;
+}
+function fmtDuration(mins){
+  const h = Math.floor(mins/60), m = mins % 60;
+  if(h && m) return `${h} hr ${m} min`;
+  if(h) return `${h} hr`;
+  return `${m} min`;
+}
+function timeToMinutes(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
+
+/* ---------- sessions & students (public mirror of Tuition Ledger data —
+   the real tuitionSessions/tuitionStudents collections stay login-only) ---------- */
+const sessionSelect = document.getElementById('p-session');
+const studentSelect = document.getElementById('p-student');
+let sessions = [], studentsInSession = [];
+let currentStudent = null;
+
+db.collection('publicSessions').get().then(snap => {
+  sessions = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+  sessions.sort((a,b) => (a.label||'').localeCompare(b.label||''));
+  sessionSelect.innerHTML = '<option value="">Select session…</option>' +
+    sessions.map(s => `<option value="${s.id}">${escapeHtml(s.label)}</option>`).join('');
+}).catch(err => console.error(err));
+
+sessionSelect.addEventListener('change', () => {
+  const sid = sessionSelect.value;
+  document.getElementById('student-area').hidden = true;
+  studentSelect.innerHTML = '<option value="">Loading…</option>';
+  if(!sid){ studentSelect.innerHTML = '<option value="">Select session first…</option>'; return; }
+  db.collection('publicStudents').where('sessionId','==',sid).get().then(snap => {
+    studentsInSession = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    studentsInSession.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    studentSelect.innerHTML = '<option value="">Select your name…</option>' +
+      studentsInSession.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+  });
+});
+
+studentSelect.addEventListener('change', () => {
+  const sid = studentSelect.value;
+  currentStudent = studentsInSession.find(s => s.id === sid) || null;
+  document.getElementById('student-area').hidden = !currentStudent;
+  if(currentStudent){
+    document.getElementById('r-date').value = new Date().toISOString().slice(0,10);
+    loadHistoryAndStats();
+  }
+});
+
+/* ---------- live preview ---------- */
+function updatePreview(){
+  const start = document.getElementById('r-start').value;
+  const end = document.getElementById('r-end').value;
+  const preview = document.getElementById('r-preview');
+  if(!start || !end){ preview.textContent = 'Fill in start and end time to see your points.'; return; }
+  const mins = timeToMinutes(end) - timeToMinutes(start);
+  if(mins <= 0){ preview.innerHTML = '<span style="color:var(--margin-red);">End time must be after start time.</span>'; return; }
+  const pts = calcPoints(mins);
+  preview.innerHTML = `<b>${fmtDuration(mins)}</b> of reading &nbsp;=&nbsp; <b>${pts} points</b>`;
+}
+document.getElementById('r-start').addEventListener('change', updatePreview);
+document.getElementById('r-end').addEventListener('change', updatePreview);
+
+/* ---------- submit ---------- */
+document.getElementById('btn-submit').addEventListener('click', () => {
+  const st = document.getElementById('submit-status');
+  st.textContent = '';
+  if(!currentStudent){ st.textContent = 'Select your name first.'; st.className='status-msg err'; return; }
+
+  const date = document.getElementById('r-date').value;
+  const start = document.getElementById('r-start').value;
+  const end = document.getElementById('r-end').value;
+  const subject = document.getElementById('r-subject').value;
+  const topic = document.getElementById('r-topic').value.trim();
+
+  if(!date || !start || !end || !topic){ st.textContent = 'Fill in date, times, and topic.'; st.className='status-msg err'; return; }
+
+  const today = new Date().toISOString().slice(0,10);
+  if(date > today){ st.textContent = "You can't log a future date."; st.className='status-msg err'; return; }
+
+  const mins = timeToMinutes(end) - timeToMinutes(start);
+  if(mins <= 0){ st.textContent = 'End time must be after start time.'; st.className='status-msg err'; return; }
+
+  const startMin = timeToMinutes(start), endMin = timeToMinutes(end);
+
+  // check overlap + daily total against this student's existing entries for the same date
+  db.collection('readingLogs')
+    .where('studentId','==',currentStudent.id)
+    .where('date','==',date)
+    .get().then(snap => {
+      let dailyTotal = mins;
+      let overlap = false;
+      snap.forEach(doc => {
+        const e = doc.data();
+        const eStart = timeToMinutes(e.startTime), eEnd = timeToMinutes(e.endTime);
+        dailyTotal += e.durationMinutes;
+        if(startMin < eEnd && endMin > eStart) overlap = true;
+      });
+      if(overlap){
+        st.textContent = 'This overlaps with an entry you already submitted today — check your times.';
+        st.className = 'status-msg err';
+        return;
+      }
+
+      const points = calcPoints(mins);
+      const flagged = dailyTotal > 240; // 4 hours/day soft cap
+
+      db.collection('readingLogs').add({
+        studentId: currentStudent.id,
+        studentName: currentStudent.name,
+        sessionId: sessionSelect.value,
+        date, startTime: start, endTime: end,
+        durationMinutes: mins,
+        subject, topic,
+        note: document.getElementById('r-note').value.trim(),
+        points,
+        status: flagged ? 'flagged' : 'pending',
+        flagReason: flagged ? 'Daily total exceeds 4 hours — please verify' : null,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        st.textContent = `Saved! +${points} points.` + (flagged ? ' (flagged for teacher review — daily total is high)' : '');
+        st.className = 'status-msg ok';
+        document.getElementById('r-start').value = '';
+        document.getElementById('r-end').value = '';
+        document.getElementById('r-topic').value = '';
+        document.getElementById('r-note').value = '';
+        document.getElementById('r-preview').textContent = 'Fill in start and end time to see your points.';
+        loadHistoryAndStats();
+      }).catch(e => { st.textContent = e.message; st.className='status-msg err'; });
+    });
+});
+
+/* ---------- history + stats + streak ---------- */
+function loadHistoryAndStats(){
+  db.collection('readingLogs').where('studentId','==',currentStudent.id).get().then(snap => {
+    const entries = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    entries.sort((a,b) => b.date.localeCompare(a.date) || b.startTime.localeCompare(a.startTime));
+    renderHistory(entries.slice(0,15));
+    renderStats(entries);
+    renderStreak(entries);
+  });
+}
+
+function renderHistory(entries){
+  const body = document.getElementById('history-body');
+  if(!entries.length){ body.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--ink-soft);">No entries yet.</td></tr>'; return; }
+  body.innerHTML = entries.map(e => `
+    <tr>
+      <td>${e.date}</td>
+      <td>${fmtDuration(e.durationMinutes)}</td>
+      <td>${escapeHtml(e.subject)} — ${escapeHtml(e.topic)}</td>
+      <td>${e.points}</td>
+      <td><span class="status-pill ${e.status}">${e.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+function renderStats(entries){
+  const today = new Date().toISOString().slice(0,10);
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 6*86400000).toISOString().slice(0,10);
+  const monthStart = today.slice(0,7) + '-01';
+
+  const sum = (filterFn) => entries.filter(filterFn).reduce((s,e) => s + e.points, 0);
+  document.getElementById('stat-today').textContent = Math.round(sum(e => e.date === today)*100)/100;
+  document.getElementById('stat-week').textContent = Math.round(sum(e => e.date >= weekAgo)*100)/100;
+  document.getElementById('stat-month').textContent = Math.round(sum(e => e.date >= monthStart)*100)/100;
+}
+
+function renderStreak(entries){
+  const dates = new Set(entries.map(e => e.date));
+  let streak = 0;
+  let cursor = new Date();
+  while(true){
+    const key = cursor.toISOString().slice(0,10);
+    if(dates.has(key)){ streak++; cursor.setDate(cursor.getDate()-1); }
+    else break;
+  }
+  document.getElementById('streak-num').textContent = streak;
+}
+</script>
+</body>
+</html>

@@ -222,38 +222,43 @@
         <!-- Page Header End -->
 
 
-        <!-- Fact Start -->
-        <div class="container-fluid bg-secondary py-5">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-3 wow fadeIn" data-wow-delay=".1s">
-                        <div class="d-flex counter">
-                            <h1 class="me-3 text-primary counter-value">19</h1>
-                            <h5 class="text-white mt-1">Students from   class 4</h5>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 wow fadeIn" data-wow-delay=".3s">
-                        <div class="d-flex counter">
-                            <h1 class="me-3 text-primary counter-value">11</h1>
-                            <h5 class="text-white mt-1">vibrant students from CLASS 3 have eagerly registered for tuition classes, ready to delve into their studies with passion</h5>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 wow fadeIn" data-wow-delay=".5s">
-                        <div class="d-flex counter">
-                            <h1 class="me-3 text-primary counter-value">15</h1>
-                            <h5 class="text-white mt-1"> enthusiastic students from Class 5 have enrolled for tuition classes</h5>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 wow fadeIn" data-wow-delay=".7s">
-                        <div class="d-flex counter">
-                            <h1 class="me-3 text-primary counter-value">7</h1>
-                            <h5 class="text-white mt-1">Students From Class 6</h5>
-                        </div>
-                    </div>
+ <!-- Fact Start -->
+<div class="container-fluid bg-secondary py-5">
+    <div class="container">
+        <div class="row" id="tuition-facts">
+
+            <div class="col-lg-3 wow fadeIn" data-wow-delay=".1s">
+                <div class="d-flex counter">
+                    <h1 class="me-3 text-primary counter-value">—</h1>
+                    <h5 class="text-white mt-1">Loading...</h5>
                 </div>
             </div>
+
+            <div class="col-lg-3 wow fadeIn" data-wow-delay=".3s">
+                <div class="d-flex counter">
+                    <h1 class="me-3 text-primary counter-value">—</h1>
+                    <h5 class="text-white mt-1">Loading...</h5>
+                </div>
+            </div>
+
+            <div class="col-lg-3 wow fadeIn" data-wow-delay=".5s">
+                <div class="d-flex counter">
+                    <h1 class="me-3 text-primary counter-value">—</h1>
+                    <h5 class="text-white mt-1">Loading...</h5>
+                </div>
+            </div>
+
+            <div class="col-lg-3 wow fadeIn" data-wow-delay=".7s">
+                <div class="d-flex counter">
+                    <h1 class="me-3 text-primary counter-value">—</h1>
+                    <h5 class="text-white mt-1">Loading...</h5>
+                </div>
+            </div>
+
         </div>
-        <!-- Fact End -->
+    </div>
+</div>
+<!-- Fact End -->
 
 
        <!-- Contact Start -->
@@ -420,8 +425,140 @@
         <script src="lib/waypoints/waypoints.min.js"></script>
         <script src="lib/owlcarousel/owl.carousel.min.js"></script>
 
+        <!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+
+/* =====================================================
+   AUTOMATIC TUITION STUDENT FACTS
+   ===================================================== */
+
+const factClasses = [
+    "Class 4",
+    "Class 3",
+    "Class 5",
+    "Class 6"
+];
+
+async function loadTuitionFacts() {
+
+    const factsContainer = document.getElementById('tuition-facts');
+
+    try {
+
+        // Get the latest tuition session
+        const sessionSnapshot = await db.collection('tuitionSessions')
+            .orderBy('startDate', 'desc')
+            .limit(1)
+            .get();
+
+        if (sessionSnapshot.empty) {
+            factsContainer.innerHTML = `
+                <div class="col-12 text-center">
+                    <h5 class="text-white">
+                        No tuition session available.
+                    </h5>
+                </div>
+            `;
+            return;
+        }
+
+        const latestSession = sessionSnapshot.docs[0];
+        const latestSessionId = latestSession.id;
+
+        // Get students from latest session
+        const studentsSnapshot = await db.collection('tuitionStudents')
+            .where('sessionId', '==', latestSessionId)
+            .get();
+
+        const students = studentsSnapshot.docs.map(doc => doc.data());
+
+        // Count students by class
+        const counts = {};
+
+        students.forEach(student => {
+
+            const grade = (student.grade || '').trim();
+
+            if (!counts[grade]) {
+                counts[grade] = 0;
+            }
+
+            counts[grade]++;
+        });
+
+        // Build fact cards
+        factsContainer.innerHTML = '';
+
+        factClasses.forEach((className, index) => {
+
+            const count = counts[className] || 0;
+
+            const delays = ['.1', '.3', '.5', '.7'];
+
+            const col = document.createElement('div');
+
+            col.className = 'col-lg-3 wow fadeIn';
+
+            col.setAttribute(
+                'data-wow-delay',
+                delays[index]
+            );
+
+            col.innerHTML = `
+                <div class="d-flex counter">
+
+                    <h1 class="me-3 text-primary counter-value">
+                        ${count}
+                    </h1>
+
+                    <h5 class="text-white mt-1">
+                        Students from ${className}
+                    </h5>
+
+                </div>
+            `;
+
+            factsContainer.appendChild(col);
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Could not load tuition facts:',
+            error
+        );
+
+        factsContainer.innerHTML = `
+            <div class="col-12 text-center">
+                <h5 class="text-white">
+                    Unable to load student information.
+                </h5>
+            </div>
+        `;
+    }
+}
+
+loadTuitionFacts();
+</script>
+
         <!--  Javascript -->
         <script src="js/main.js"></script>
+
     </body>
 
 </html>

@@ -894,16 +894,15 @@ function submitAnswer(i){
 
     if(!correctAlready){
       $(`playerCard${i}`).classList.add("first");
-      $("feedback").textContent=`${p.name} was first! +${points} points`;
+      $("feedback").textContent=`${p.name} was first! +${points} points — others can still answer!`;
       $("feedback").className="feedback success";
-      state.accepting=false;
-      stopTimer();
+      // NOTE: deliberately NOT stopping the timer / accepting here.
+      // Other players should still get a chance to answer correctly and
+      // earn "Other Correct Points" — that's the whole point of that setting.
     }
     $(`status${i}`).textContent=correctAlready ? `Correct! +${points}` : `FIRST! +${points}`;
     updateScores();
     playTone(correctAlready?700:900,0.12);
-
-    if(!state.accepting) finishQuestionEarly();
   }else{
     p.result="wrong";
     $(`status${i}`).textContent="Wrong answer";
@@ -918,16 +917,6 @@ function submitAnswer(i){
       continueAfterQuestion();
     }
   }
-}
-
-function finishQuestionEarly(){
-  state.players.forEach((p,i)=>{
-    if(!p.submitted){
-      $(`status${i}`).textContent="Question finished";
-      $(`playerCard${i}`).classList.add("locked");
-    }
-  });
-  continueAfterQuestion();
 }
 
 function continueAfterQuestion(){

@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Battle | 4 Player Classroom Game</title>
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#ffffff;
+  --text:#172033;
+  --muted:#64748b;
+  --border:#dbe3ef;
+  --primary:#2563eb;
+  --primary-dark:#1d4ed8;
+  --success:#16a34a;
+  --danger:#dc2626;
+  --warning:#f59e0b;
+  --shadow:0 12px 35px rgba(15,23,42,.10);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+
+header{
+  background:#0f172a;
+  color:#fff;
+  padding:14px 24px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+}
+.brand{font-size:clamp(20px,3vw,32px);font-weight:800}
+.header-actions{display:flex;gap:8px}
+.header-actions button{
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.1);
+  color:#fff;
+  border-radius:9px;
+  padding:8px 12px;
+}
+
+.container{width:min(1400px,96%);margin:0 auto}
+.setup{
+  padding:25px 0 40px;
+}
+.setup-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  box-shadow:var(--shadow);
+  padding:25px;
+}
+h1,h2,h3{margin-top:0}
+.section-title{margin:25px 0 12px;font-size:18px}
+.player-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+.player-input{
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:13px;
+  width:100%;
+  outline:none;
+}
+.player-input:focus{border-color:var(--primary)}
+.key-hint{font-size:11px;color:var(--muted);margin-top:4px}
+
+.options{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+}
+.option{
+  border:1px solid var(--border);
+  background:#fff;
+  padding:10px 15px;
+  border-radius:10px;
+  font-weight:700;
+}
+.option.active{
+  background:var(--primary);
+  color:#fff;
+  border-color:var(--primary);
+}
+.control-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+.control label{
+  display:block;
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:5px;
+}
+.control input,.control select{
+  width:100%;
+  padding:11px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#fff;
+}
+.checkbox-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+}
+.checkbox{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:9px 12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+}
+.primary-btn{
+  width:100%;
+  margin-top:25px;
+  padding:16px;
+  border:0;
+  border-radius:12px;
+  background:var(--primary);
+  color:#fff;
+  font-size:20px;
+  font-weight:800;
+}
+.primary-btn:hover{background:var(--primary-dark)}
+
+.history-card{
+  margin-top:20px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  box-shadow:var(--shadow);
+  padding:22px 25px;
+}
+.history-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:800px){.history-grid{grid-template-columns:1fr}}
+.history-list table, .alltime-list table{width:100%;border-collapse:collapse;font-size:14px}
+.history-list th,.history-list td,.alltime-list th,.alltime-list td{
+  text-align:left;padding:6px 4px;border-bottom:1px solid #eef2f7;
+}
+.muted-note{color:var(--muted);font-size:13px}
+
+.game{
+  min-height:calc(100vh - 64px);
+  padding:10px 0 20px;
+}
+.topbar{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  gap:12px;
+  align-items:center;
+  margin-bottom:10px;
+}
+.question-count{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px 16px;
+  font-weight:700;
+}
+.timer{
+  min-width:150px;
+  text-align:center;
+  background:#0f172a;
+  color:#fff;
+  border-radius:14px;
+  padding:10px 20px;
+  font-size:34px;
+  font-weight:900;
+  letter-spacing:1px;
+}
+.timer.warning{background:var(--warning);color:#111827}
+.timer.danger{background:var(--danger)}
+.game-controls{text-align:right}
+.game-controls button{
+  padding:10px 14px;
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:9px;
+}
+.next-btn{
+  background:var(--primary)!important;
+  color:#fff!important;
+  border-color:var(--primary)!important;
+  font-weight:800;
+}
+
+.question-card{
+  background:#fff;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  border-radius:20px;
+  text-align:center;
+  padding:20px;
+  margin-bottom:12px;
+}
+.question-stage{
+  display:grid;
+  grid-template-columns:minmax(110px,150px) minmax(0,1fr) minmax(110px,150px);
+  align-items:center;
+  gap:16px;
+  margin-top:8px;
+}
+.question-stage .timer{
+  width:100%;
+}
+.question-main{
+  min-width:0;
+}
+.player-question{
+  background:#eff6ff;
+  border:1px solid #bfdbfe;
+  border-radius:10px;
+  padding:7px 10px;
+  margin:6px 0 8px;
+  text-align:center;
+  font-size:clamp(18px,2vw,25px);
+  font-weight:900;
+  line-height:1.15;
+  color:#1e3a8a;
+}
+.question-label{
+  color:var(--muted);
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+.question{
+  font-size:clamp(52px,9vw,120px);
+  font-weight:900;
+  line-height:1.1;
+  margin:8px 0;
+}
+.feedback{
+  min-height:28px;
+  font-size:20px;
+  font-weight:800;
+}
+.feedback.success{color:var(--success)}
+.feedback.danger{color:var(--danger)}
+
+.players{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+.player-card{
+  background:#fff;
+  border:4px solid transparent;
+  border-radius:16px;
+  padding:13px;
+  box-shadow:0 8px 24px rgba(15,23,42,.08);
+  min-width:0;
+}
+.player-card.first{border-color:var(--warning)}
+.player-card.locked{opacity:.78}
+.player-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+.player-name{
+  font-size:clamp(18px,2.2vw,28px);
+  font-weight:900;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.score{
+  font-size:clamp(22px,3vw,36px);
+  font-weight:900;
+  white-space:nowrap;
+}
+.status{
+  color:var(--muted);
+  font-size:14px;
+  min-height:20px;
+  margin:5px 0;
+}
+.answer-display{
+  background:#f8fafc;
+  border:2px solid var(--border);
+  border-radius:10px;
+  min-height:48px;
+  padding:8px;
+  text-align:center;
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:2px;
+}
+.keypad{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px;
+  margin-top:8px;
+}
+.keypad button{
+  min-height:48px;
+  border:1px solid var(--border);
+  background:#f8fafc;
+  border-radius:9px;
+  font-size:21px;
+  font-weight:800;
+  touch-action:manipulation;
+}
+.keypad button:active{transform:scale(.96)}
+.keypad .submit{
+  background:var(--success);
+  color:#fff;
+  border-color:var(--success);
+}
+.keypad .clear{
+  background:#fee2e2;
+  color:#991b1b;
+}
+.keypad .negative{background:#e0e7ff}
+.keypad .wide{grid-column:span 2}
+
+.rankings{
+  margin-top:15px;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px;
+}
+.rank-row{
+  display:grid;
+  grid-template-columns:45px 1fr 80px;
+  padding:7px;
+  border-bottom:1px solid #eef2f7;
+}
+.rank-row:last-child{border-bottom:0}
+
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.78);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:20;
+  padding:20px;
+}
+.result-box{
+  width:min(650px,100%);
+  background:#fff;
+  border-radius:22px;
+  padding:30px;
+  text-align:center;
+  box-shadow:0 25px 80px rgba(0,0,0,.3);
+}
+.winner{
+  font-size:clamp(34px,7vw,65px);
+  font-weight:900;
+  margin:10px 0 25px;
+}
+.final-row{
+  display:flex;
+  justify-content:space-between;
+  padding:13px 15px;
+  border-bottom:1px solid var(--border);
+  font-size:20px;
+  font-weight:700;
+}
+.result-actions{display:flex;gap:10px;margin-top:20px}
+.result-actions button{flex:1;padding:14px;border-radius:10px;border:0;font-weight:800}
+.play-again{background:var(--primary);color:#fff}
+.setup-again{background:#e2e8f0}
+.save-note{font-size:13px;color:var(--muted);margin-top:10px;min-height:1.2em}
+
+@media(max-width:900px){
+  .player-grid,.control-grid{grid-template-columns:repeat(2,1fr)}
+  .players{grid-template-columns:repeat(2,1fr)}
+  .topbar{grid-template-columns:1fr auto}
+  .game-controls{grid-column:1/-1;text-align:center}
+  .question-stage{grid-template-columns:120px minmax(0,1fr) 120px}
+}
+@media(max-width:600px){
+  .player-grid,.control-grid,.players{grid-template-columns:1fr}
+  .topbar{grid-template-columns:1fr}
+  .game-controls{text-align:left}
+  .question-stage{
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  .question-stage .question-main{
+    grid-column:1/-1;
+    grid-row:1;
+  }
+  .question-stage .timer-left{
+    grid-column:1;
+    grid-row:2;
+  }
+  .question-stage .timer-right{
+    grid-column:2;
+    grid-row:2;
+  }
+  .question-stage .timer{width:100%}
+  .question{font-size:58px}
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="brand">MATH BATTLE</div>
+  <div class="header-actions">
+    <button id="fullscreenBtn">Fullscreen</button>
+  </div>
+</header>
+
+<main id="setupScreen" class="setup">
+<div class="container">
+<div class="setup-card">
+  <h1>4-Player Classroom Math Game</h1>
+  <p style="color:#64748b">One question. Four players. Fastest correct answer wins the bonus.</p>
+
+  <div class="section-title">Player Names</div>
+  <div class="player-grid">
+    <div><input class="player-input" id="p1" value="Player 1" maxlength="20"><div class="key-hint">or type 1 2 3 4 5 6 7 8 9 0</div></div>
+    <div><input class="player-input" id="p2" value="Player 2" maxlength="20"><div class="key-hint">or type Q W E R T Y U I O P</div></div>
+    <div><input class="player-input" id="p3" value="Player 3" maxlength="20"><div class="key-hint">or type A S D F G H J K L</div></div>
+    <div><input class="player-input" id="p4" value="Player 4" maxlength="20"><div class="key-hint">or type Z X C V B N M</div></div>
+  </div>
+
+  <div class="section-title">Difficulty</div>
+  <div class="options" id="difficultyOptions">
+    <button class="option active" data-value="easy">Easy</button>
+    <button class="option" data-value="normal">Normal</button>
+    <button class="option" data-value="hard">Hard</button>
+  </div>
+
+  <div class="section-title">Question Type</div>
+  <div class="options" id="modeOptions">
+    <button class="option active" data-value="mixed">Mixed</button>
+    <button class="option" data-value="addition">Addition</button>
+    <button class="option" data-value="subtraction">Subtraction</button>
+    <button class="option" data-value="multiplication">Multiplication</button>
+    <button class="option" data-value="division">Division</button>
+    <button class="option" data-value="square">Squares</button>
+  </div>
+
+  <div class="section-title">Game Settings</div>
+  <div class="control-grid">
+    <div class="control">
+      <label>Number of Questions</label>
+      <input id="questionTotal" type="number" min="1" max="100" value="10">
+    </div>
+    <div class="control">
+      <label>Time Per Question</label>
+      <select id="timeLimit">
+        <option value="5">5 seconds</option>
+        <option value="10" selected>10 seconds</option>
+        <option value="15">15 seconds</option>
+        <option value="20">20 seconds</option>
+        <option value="30">30 seconds</option>
+        <option value="0">No timer</option>
+      </select>
+    </div>
+    <div class="control">
+      <label>First Correct Points</label>
+      <input id="firstPoints" type="number" min="0" max="20" value="2">
+    </div>
+    <div class="control">
+      <label>Other Correct Points</label>
+      <input id="correctPoints" type="number" min="0" max="20" value="1">
+    </div>
+  </div>
+
+  <div class="section-title">Options</div>
+  <div class="checkbox-row">
+    <label class="checkbox"><input type="checkbox" id="autoNext" checked> Auto next question</label>
+    <label class="checkbox"><input type="checkbox" id="soundOn" checked> Sound effects</label>
+  </div>
+
+  <button class="primary-btn" id="startBtn">START GAME</button>
+</div>
+
+<div class="history-card">
+  <h3>📊 Game History <span class="muted-note">(saved online — survives refresh, visible from any device)</span></h3>
+  <div class="history-grid">
+    <div class="history-list">
+      <strong>Recent games</strong>
+      <div id="recentGamesBox"><p class="muted-note">Loading…</p></div>
+    </div>
+    <div class="alltime-list">
+      <strong>All-time totals by name</strong>
+      <div id="allTimeBox"><p class="muted-note">Loading…</p></div>
+    </div>
+  </div>
+</div>
+</div>
+</main>
+
+<main id="gameScreen" class="game hidden">
+<div class="container">
+
+  <div class="topbar">
+    <div class="question-count" id="questionCount">Question 1 / 10</div>
+    <div class="game-controls">
+      <button id="nextBtn" class="next-btn hidden">Next Question →</button>
+      <button id="pauseBtn">Pause</button>
+      <button id="restartBtn">Restart</button>
+      <button id="endBtn">End Game</button>
+    </div>
+  </div>
+
+  <section class="question-card">
+    <div class="question-label">Solve</div>
+    <div class="question-stage">
+      <div class="timer timer-left" id="timerLeft">10.0</div>
+      <div class="question-main">
+        <div class="question" id="question">Ready?</div>
+      </div>
+      <div class="timer timer-right" id="timerRight">10.0</div>
+    </div>
+    <div class="feedback" id="feedback"></div>
+  </section>
+
+  <section class="players" id="players"></section>
+
+  <section class="rankings">
+    <strong>Live Scoreboard</strong>
+    <div id="rankings"></div>
+  </section>
+</div>
+</main>
+
+<div id="resultOverlay" class="overlay hidden">
+  <div class="result-box">
+    <div style="color:#64748b;font-weight:700">GAME OVER</div>
+    <div class="winner" id="winnerText">Winner</div>
+    <div id="finalScores"></div>
+    <div class="save-note" id="saveNote"></div>
+    <div class="result-actions">
+      <button class="play-again" id="playAgainBtn">PLAY AGAIN</button>
+      <button class="setup-again" id="setupAgainBtn">NEW GAME</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase (for storing game history) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* PASTE the SAME firebaseConfig used everywhere else on your site */
+ const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+</script>
+
+<script>
+"use strict";
+
+const state = {
+  difficulty: "easy",
+  mode: "mixed",
+  players: [],
+  questionNumber: 0,
+  totalQuestions: 10,
+  timeLimit: 10,
+  remaining: 10,
+  timerId: null,
+  startedAt: 0,
+  paused: false,
+  gameActive: false,
+  accepting: true,
+  question: null,
+  firstPoints: 2,
+  correctPoints: 1,
+  autoNext: true,
+  soundOn: true
+};
+
+const $ = id => document.getElementById(id);
+
+function randomInt(min,max){
+  return Math.floor(Math.random()*(max-min+1))+min;
+}
+
+function chooseOperation(){
+  if(state.mode !== "mixed") return state.mode;
+
+  const ops = ["addition","subtraction","multiplication","division"];
+  if(state.difficulty === "hard") ops.push("square");
+  return ops[randomInt(0,ops.length-1)];
+}
+
+function makeQuestion(){
+  const op = chooseOperation();
+  let a,b,answer,text;
+
+  if(state.difficulty === "easy"){
+    if(op === "addition"){
+      a=randomInt(1,99); b=randomInt(1,99);
+      answer=a+b; text=`${a} + ${b}`;
+    } else if(op === "subtraction"){
+      a=randomInt(1,99); b=randomInt(1,a);
+      answer=a-b; text=`${a} − ${b}`;
+    } else if(op === "multiplication"){
+      a=randomInt(1,12); b=randomInt(1,9);
+      answer=a*b; text=`${a} × ${b}`;
+    } else if(op === "division"){
+      b=randomInt(1,9); answer=randomInt(1,12); a=b*answer;
+      text=`${a} ÷ ${b}`;
+    } else {
+      a=randomInt(1,10); answer=a*a; text=`${a}²`;
+    }
+  }
+
+  if(state.difficulty === "normal"){
+    if(op === "addition"){
+      a=randomInt(10,99); b=randomInt(10,99);
+      answer=a+b; text=`${a} + ${b}`;
+    } else if(op === "subtraction"){
+      a=randomInt(10,99); b=randomInt(10,a);
+      answer=a-b; text=`${a} − ${b}`;
+    } else if(op === "multiplication"){
+      a=randomInt(2,15); b=randomInt(2,15);
+      answer=a*b; text=`${a} × ${b}`;
+    } else if(op === "division"){
+      b=randomInt(2,15); answer=randomInt(2,15); a=b*answer;
+      text=`${a} ÷ ${b}`;
+    } else {
+      a=randomInt(1,20); answer=a*a; text=`${a}²`;
+    }
+  }
+
+  if(state.difficulty === "hard"){
+    if(op === "addition"){
+      a=randomInt(100,999); b=randomInt(100,999);
+      answer=a+b; text=`${a} + ${b}`;
+    } else if(op === "subtraction"){
+      a=randomInt(100,999); b=randomInt(100,a);
+      answer=a-b; text=`${a} − ${b}`;
+    } else if(op === "multiplication"){
+      a=randomInt(2,20); b=randomInt(2,20);
+      answer=a*b; text=`${a} × ${b}`;
+    } else if(op === "division"){
+      b=randomInt(2,20); answer=randomInt(2,20); a=b*answer;
+      text=`${a} ÷ ${b}`;
+    } else {
+      a=randomInt(1,30); answer=a*a; text=`${a}²`;
+    }
+  }
+
+  return {text,answer,op};
+}
+
+function renderPlayers(){
+  const box=$("players");
+  box.innerHTML="";
+  state.players.forEach((p,i)=>{
+    const card=document.createElement("div");
+    card.className="player-card";
+    card.id=`playerCard${i}`;
+    card.innerHTML=`
+      <div class="player-head">
+        <div class="player-name">${escapeHtml(p.name)}</div>
+        <div class="score" id="score${i}">0</div>
+      </div>
+      <div class="status" id="status${i}">Ready</div>
+      <div class="player-question" id="playerQuestion${i}">Ready?</div>
+      <div class="answer-display" id="display${i}">&nbsp;</div>
+      <div class="keypad">
+        <button data-player="${i}" data-key="1">1</button>
+        <button data-player="${i}" data-key="2">2</button>
+        <button data-player="${i}" data-key="3">3</button>
+        <button data-player="${i}" data-key="4">4</button>
+        <button data-player="${i}" data-key="5">5</button>
+        <button data-player="${i}" data-key="6">6</button>
+        <button data-player="${i}" data-key="7">7</button>
+        <button data-player="${i}" data-key="8">8</button>
+        <button data-player="${i}" data-key="9">9</button>
+        <button class="negative" data-player="${i}" data-key="-">−</button>
+        <button data-player="${i}" data-key="0">0</button>
+        <button class="clear" data-player="${i}" data-key="clear">C</button>
+        <button class="submit wide" data-player="${i}" data-key="submit">SUBMIT</button>
+      </div>`;
+    box.appendChild(card);
+  });
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g,m=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+
+function updateScores(){
+  state.players.forEach((p,i)=>$(`score${i}`).textContent=p.score);
+  const sorted=[...state.players].sort((a,b)=>b.score-a.score);
+  $("rankings").innerHTML=sorted.map((p,index)=>`
+    <div class="rank-row">
+      <div>${index+1}</div>
+      <div>${escapeHtml(p.name)}</div>
+      <div>${p.score} pts</div>
+    </div>`).join("");
+}
+
+function startGame(){
+  stopTimer();
+
+  state.players=[1,2,3,4].map((_,i)=>({
+    name:$(`p${i+1}`).value.trim() || `Player ${i+1}`,
+    score:0,
+    answer:"",
+    submitted:false,
+    result:null,
+    responseTime:null
+  }));
+
+  state.questionNumber=0;
+  state.totalQuestions=Math.max(1,Math.min(100,Number($("questionTotal").value)||10));
+  state.timeLimit=Math.max(0,Number($("timeLimit").value)||0);
+  state.firstPoints=Math.max(0,Number($("firstPoints").value)||0);
+  state.correctPoints=Math.max(0,Number($("correctPoints").value)||0);
+  state.autoNext=$("autoNext").checked;
+  state.soundOn=$("soundOn").checked;
+  state.paused=false;
+  state.gameActive=true;
+
+  $("setupScreen").classList.add("hidden");
+  $("resultOverlay").classList.add("hidden");
+  $("gameScreen").classList.remove("hidden");
+  $("nextBtn").classList.add("hidden");
+
+  renderPlayers();
+  updateScores();
+  nextQuestion();
+}
+
+function nextQuestion(){
+  if(!state.gameActive) return;
+  if(state.questionNumber >= state.totalQuestions){
+    finishGame();
+    return;
+  }
+
+  state.questionNumber++;
+  state.question=makeQuestion();
+  state.accepting=true;
+  state.paused=false;
+  state.startedAt=performance.now();
+
+  state.players.forEach(p=>{
+    p.answer="";
+    p.submitted=false;
+    p.result=null;
+    p.responseTime=null;
+  });
+
+  $("questionCount").textContent=`Question ${state.questionNumber} / ${state.totalQuestions}`;
+  $("question").textContent=state.question.text;
+  state.players.forEach((_,i)=>{
+    $(`playerQuestion${i}`).textContent=state.question.text;
+  });
+  $("feedback").textContent="";
+  $("feedback").className="feedback";
+  $("nextBtn").classList.add("hidden");
+
+  state.players.forEach((_,i)=>{
+    $(`display${i}`).innerHTML="&nbsp;";
+    $(`status${i}`).textContent="Answer now!";
+    $(`playerCard${i}`).classList.remove("first","locked");
+  });
+
+  startTimer();
+}
+
+function startTimer(){
+  stopTimer();
+  if(state.timeLimit===0){
+    ["timerLeft","timerRight"].forEach(id=>{
+      $(id).textContent="∞";
+      $(id).className="timer";
+    });
+    return;
+  }
+
+  state.remaining=state.timeLimit;
+  updateTimerDisplay();
+
+  state.timerId=setInterval(()=>{
+    if(state.paused || !state.gameActive) return;
+    state.remaining-=0.1;
+    if(state.remaining<=0){
+      state.remaining=0;
+      updateTimerDisplay();
+      timeUp();
+    }else{
+      updateTimerDisplay();
+    }
+  },100);
+}
+
+function updateTimerDisplay(){
+  const value=state.remaining.toFixed(1);
+  ["timerLeft","timerRight"].forEach(id=>{
+    const t=$(id);
+    t.textContent=value;
+    t.className="timer";
+    if(state.remaining<=3 && state.remaining>0)t.classList.add("danger");
+    else if(state.remaining<=5 && state.remaining>0)t.classList.add("warning");
+  });
+}
+
+function stopTimer(){
+  if(state.timerId){
+    clearInterval(state.timerId);
+    state.timerId=null;
+  }
+}
+
+function timeUp(){
+  stopTimer();
+  state.accepting=false;
+  $("feedback").textContent=`TIME UP! Answer was ${state.question.answer}`;
+  $("feedback").className="feedback danger";
+  state.players.forEach((p,i)=>{
+    if(!p.submitted){
+      p.result="timeout";
+      $(`status${i}`).textContent="Time up";
+      $(`playerCard${i}`).classList.add("locked");
+    }
+  });
+  playTone(180,0.15);
+  continueAfterQuestion();
+}
+
+function handleKeypad(playerIndex,key){
+  if(!state.gameActive || state.paused || !state.accepting) return;
+
+  const p=state.players[playerIndex];
+  if(p.submitted) return;
+
+  if(key==="clear"){
+    p.answer="";
+  }else if(key==="-"){
+    if(p.answer==="") p.answer="-";
+  }else if(key==="submit"){
+    submitAnswer(playerIndex);
+    return;
+  }else{
+    if(p.answer==="-" && key==="0") return;
+    if(p.answer==="0") p.answer="";
+    if(p.answer.length<7) p.answer+=key;
+  }
+
+  $(`display${playerIndex}`).textContent=p.answer || " ";
+}
+
+function submitAnswer(i){
+  const p=state.players[i];
+  if(!state.accepting || p.submitted || !p.answer || p.answer==="-") return;
+
+  p.submitted=true;
+  p.responseTime=(performance.now()-state.startedAt)/1000;
+  const userAnswer=Number(p.answer);
+
+  // FIX: check whether anyone else was already correct BEFORE marking this player correct,
+  // otherwise the "first correct" bonus can never be awarded (it always sees itself).
+  const correctAlready = state.players.some(x => x.result === "correct");
+
+  // Mask the submitted value immediately so a neighbouring student can't read
+  // or copy the number off the screen, whether it was right or wrong.
+  $(`display${i}`).textContent = "✓ submitted";
+
+  if(userAnswer===state.question.answer){
+    p.result="correct";
+    const points=correctAlready ? state.correctPoints : state.firstPoints;
+    p.score+=points;
+
+    if(!correctAlready){
+      $(`playerCard${i}`).classList.add("first");
+      $("feedback").textContent=`${p.name} was first! +${points} points`;
+      $("feedback").className="feedback success";
+      state.accepting=false;
+      stopTimer();
+    }
+    $(`status${i}`).textContent=correctAlready ? `Correct! +${points}` : `FIRST! +${points}`;
+    updateScores();
+    playTone(correctAlready?700:900,0.12);
+
+    if(!state.accepting) finishQuestionEarly();
+  }else{
+    p.result="wrong";
+    $(`status${i}`).textContent="Wrong answer";
+    $(`playerCard${i}`).classList.add("locked");
+    playTone(180,0.08);
+  }
+
+  if(state.players.every(x=>x.submitted || x.result==="correct")){
+    if(state.accepting){
+      state.accepting=false;
+      stopTimer();
+      continueAfterQuestion();
+    }
+  }
+}
+
+function finishQuestionEarly(){
+  state.players.forEach((p,i)=>{
+    if(!p.submitted){
+      $(`status${i}`).textContent="Question finished";
+      $(`playerCard${i}`).classList.add("locked");
+    }
+  });
+  continueAfterQuestion();
+}
+
+function continueAfterQuestion(){
+  if(!state.gameActive) return;
+  if(state.autoNext){
+    setTimeout(()=>{
+      if(state.gameActive && !state.paused) nextQuestion();
+    },1400);
+  }else{
+    // FIX: previously there was no way to advance when auto-next was off.
+    // Show a manual button instead of silently dead-ending.
+    $("nextBtn").classList.remove("hidden");
+  }
+}
+
+function togglePause(){
+  if(!state.gameActive)return;
+  state.paused=!state.paused;
+  $("pauseBtn").textContent=state.paused?"Resume":"Pause";
+  $("feedback").textContent=state.paused?"GAME PAUSED":"";
+  if(state.paused){
+    $("feedback").className="feedback";
+  }
+}
+
+function finishGame(){
+  stopTimer();
+  state.gameActive=false;
+  const sorted=[...state.players].sort((a,b)=>b.score-a.score);
+  const winner=sorted[0];
+  $("winnerText").textContent=`🏆 ${winner.name}`;
+
+  $("finalScores").innerHTML=sorted.map((p,i)=>`
+    <div class="final-row">
+      <span>${i+1}. ${escapeHtml(p.name)}</span>
+      <span>${p.score} points</span>
+    </div>`).join("");
+
+  $("resultOverlay").classList.remove("hidden");
+  playTone(900,0.15);
+  setTimeout(()=>playTone(1200,0.18),180);
+
+  saveGameResult(sorted, winner);
+}
+
+/* ---------- Firestore: save + load game history ---------- */
+function saveGameResult(sortedPlayers, winner){
+  const note = $("saveNote");
+  note.textContent = "Saving result…";
+  db.collection("mathBattleResults").add({
+    date: new Date().toISOString().slice(0,10),
+    difficulty: state.difficulty,
+    mode: state.mode,
+    totalQuestions: state.totalQuestions,
+    players: sortedPlayers.map(p => ({ name: p.name, score: p.score })),
+    winner: winner.name,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    note.textContent = "Saved ✓ — visible in Game History next time you open this page.";
+    loadHistory();
+  }).catch(err => {
+    note.textContent = "Couldn't save result: " + err.message;
+  });
+}
+
+function loadHistory(){
+  const recentBox = $("recentGamesBox");
+  const allTimeBox = $("allTimeBox");
+  if(!recentBox || !allTimeBox) return;
+
+  db.collection("mathBattleResults").orderBy("createdAt","desc").limit(50).get().then(snap => {
+    if(snap.empty){
+      recentBox.innerHTML = '<p class="muted-note">No games played yet.</p>';
+      allTimeBox.innerHTML = '<p class="muted-note">No games played yet.</p>';
+      return;
+    }
+    const games = snap.docs.map(d => d.data());
+
+    // recent games (last 10)
+    recentBox.innerHTML = '<table><tr><th>Date</th><th>Winner</th><th>Top score</th></tr>' +
+      games.slice(0,10).map(g => {
+        const top = g.players[0];
+        return `<tr><td>${escapeHtml(g.date)}</td><td>${escapeHtml(g.winner)}</td><td>${top?top.score:''}</td></tr>`;
+      }).join('') + '</table>';
+
+    // all-time totals by name, across every saved game
+    const totals = {};
+    games.forEach(g => {
+      (g.players||[]).forEach(p => {
+        totals[p.name] = (totals[p.name]||0) + p.score;
+      });
+    });
+    const ranked = Object.entries(totals).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    allTimeBox.innerHTML = '<table><tr><th>Name</th><th>Total points</th></tr>' +
+      ranked.map(([name,total]) => `<tr><td>${escapeHtml(name)}</td><td>${total}</td></tr>`).join('') +
+      '</table>';
+  }).catch(err => {
+    recentBox.innerHTML = '<p class="muted-note">' + escapeHtml(err.message) + '</p>';
+  });
+}
+
+function restartGame(){
+  if(confirm("Restart this game from Question 1?")){
+    startGame();
+  }
+}
+
+function newGame(){
+  state.gameActive=false;
+  stopTimer();
+  $("resultOverlay").classList.add("hidden");
+  $("gameScreen").classList.add("hidden");
+  $("setupScreen").classList.remove("hidden");
+  loadHistory();
+}
+
+/* Reuse a single AudioContext instead of creating a new one per tone */
+let audioCtx = null;
+function playTone(freq,duration){
+  if(!state.soundOn)return;
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const osc=audioCtx.createOscillator();
+    const gain=audioCtx.createGain();
+    osc.frequency.value=freq;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    gain.gain.setValueAtTime(.08,audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);
+    osc.start();
+    osc.stop(audioCtx.currentTime+duration);
+  }catch(e){}
+}
+
+/* Difficulty and mode selection */
+document.querySelectorAll("#difficultyOptions .option").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll("#difficultyOptions .option").forEach(x=>x.classList.remove("active"));
+    btn.classList.add("active");
+    state.difficulty=btn.dataset.value;
+  });
+});
+
+document.querySelectorAll("#modeOptions .option").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll("#modeOptions .option").forEach(x=>x.classList.remove("active"));
+    btn.classList.add("active");
+    state.mode=btn.dataset.value;
+  });
+});
+
+/* Keypad event delegation */
+$("players").addEventListener("click",e=>{
+  const btn=e.target.closest("button[data-player]");
+  if(!btn)return;
+  handleKeypad(Number(btn.dataset.player),btn.dataset.key);
+});
+
+$("startBtn").addEventListener("click",startGame);
+$("pauseBtn").addEventListener("click",togglePause);
+$("restartBtn").addEventListener("click",restartGame);
+$("nextBtn").addEventListener("click",()=>{
+  $("nextBtn").classList.add("hidden");
+  nextQuestion();
+});
+$("endBtn").addEventListener("click",()=>{
+  if(confirm("End the current game?")) finishGame();
+});
+$("playAgainBtn").addEventListener("click",startGame);
+$("setupAgainBtn").addEventListener("click",newGame);
+
+$("fullscreenBtn").addEventListener("click",async()=>{
+  try{
+    if(!document.fullscreenElement) await document.documentElement.requestFullscreen();
+    else await document.exitFullscreen();
+  }catch(e){}
+});
+
+/* Keyboard support:
+   1-4 players can use keyboard number rows by prefixes:
+   Player 1: normal number keys
+   Player 2: QWERTY row Q-W-E-R-T-Y-U-I-O-P
+   Player 3: A-S-D-F-G-H-J-K-L
+   Player 4: Z-X-C-V-B-N-M plus Enter submit
+*/
+const keyMaps=[
+  {"1":"1","2":"2","3":"3","4":"4","5":"5","6":"6","7":"7","8":"8","9":"9","0":"0"},
+  {"q":"1","w":"2","e":"3","r":"4","t":"5","y":"6","u":"7","i":"8","o":"9","p":"0"},
+  {"a":"1","s":"2","d":"3","f":"4","g":"5","h":"6","j":"7","k":"8","l":"9"},
+  {"z":"1","x":"2","c":"3","v":"4","b":"5","n":"6","m":"7"}
+];
+
+document.addEventListener("keydown",e=>{
+  if(!state.gameActive || state.paused)return;
+
+  const key=e.key.toLowerCase();
+
+  for(let i=0;i<4;i++){
+    if(keyMaps[i][key]){
+      handleKeypad(i,keyMaps[i][key]);
+      e.preventDefault();
+      return;
+    }
+  }
+
+  if(key==="backspace"){
+    for(let i=0;i<4;i++){
+      if(state.players[i] && !state.players[i].submitted && state.players[i].answer){
+        state.players[i].answer=state.players[i].answer.slice(0,-1);
+        $(`display${i}`).textContent=state.players[i].answer||" ";
+        break;
+      }
+    }
+  }
+});
+
+/* Prevent accidental browser zoom during board use */
+document.addEventListener("dblclick",e=>e.preventDefault(),{passive:false});
+
+/* Load history on first page load */
+loadHistory();
+</script>
+</body>
+</html>

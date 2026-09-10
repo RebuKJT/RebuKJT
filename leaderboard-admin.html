@@ -59,7 +59,9 @@
   tbody tr:hover{background:var(--paper);}
   td.total-cell{font-weight:700; font-family:'Fraunces',serif;}
   td.rank-cell{color:var(--ink-soft); font-size:0.8rem;}
-  input.score-input{width:64px; padding:5px 6px; border:1.5px solid var(--paper-line); border-radius:5px; font-size:0.85rem; text-align:center;}
+  input.score-input{width:52px; padding:5px 4px; border:1.5px solid var(--paper-line); border-radius:5px; font-size:0.85rem; text-align:center;}
+  .step-btn{width:22px; height:22px; border-radius:5px; border:1.5px solid var(--paper-line); background:#fff; color:var(--ink-soft); cursor:pointer; font-size:0.9rem; line-height:1; padding:0; flex:0 0 auto;}
+  .step-btn:hover{background:var(--paper); color:var(--ink);}
   input.name-cell{border:none; background:transparent; font-weight:600; width:120px;}
 
   .board-link-card{display:flex; gap:16px; align-items:center; flex-wrap:wrap;}
@@ -108,7 +110,6 @@
           <input id="new-class-pin" type="text" placeholder="e.g. 4271" style="width:100px;">
         </div>
         <button class="btn secondary" id="btn-add-class">+ Create class</button>
-        <button class="btn" id="btn-delete-class"style="background:var(--margin-red);"> Delete Selected Class</button>
       </div>
       <p class="status-msg" id="class-status"></p>
     </div>
@@ -146,8 +147,26 @@
             <input id="new-activity" type="text" placeholder='e.g. "Test 1 /5" or "Discipline"'>
           </div>
           <button class="btn secondary" id="btn-add-activity">+ Add</button>
+          <button class="btn secondary" id="btn-add-today">+ Today's column</button>
         </div>
         <p class="status-msg" id="activity-status"></p>
+
+        <h3 style="font-size:0.88rem; margin-top:16px; color:var(--teal);">Merge columns</h3>
+        <p style="font-size:0.78rem; color:var(--ink-soft); margin-top:-6px;">
+          Moves every student's marks from one column into another (added together), then removes the source column.
+        </p>
+        <div class="row">
+          <div class="field" style="margin:0;">
+            <label for="merge-from">Move marks from</label>
+            <select id="merge-from"></select>
+          </div>
+          <div class="field" style="margin:0;">
+            <label for="merge-into">Into</label>
+            <select id="merge-into"></select>
+          </div>
+          <button class="btn secondary" id="btn-merge-activity">Merge</button>
+        </div>
+        <p class="status-msg" id="merge-status"></p>
       </div>
 
       <div class="card">
@@ -276,114 +295,6 @@ function loadClasses(){
 }
 classSelect.addEventListener('change', () => { activeClassId = classSelect.value; onClassChanged(); });
 
-/* ---- delete class ---- */
-document.getElementById('btn-delete-class').addEventListener('click', async () => {
-  if (!activeClassId) {
-    classStatus.textContent = 'No class selected.';
-    classStatus.className = 'status-msg err';
-    return;
-  }
-
-  const selectedClass = classes.find(c => c.id === activeClassId);
-
-  if (!selectedClass) {
-    classStatus.textContent = 'Selected class not found.';
-    classStatus.className = 'status-msg err';
-    return;
-  }
-
-  const confirmed = confirm(
-    `WARNING!\n\n` +
-    `You are about to delete "${selectedClass.name}".\n\n` +
-    `This will permanently delete:\n` +
-    `• The class\n` +
-    `• All terms/sessions of this class\n` +
-    `• All students and scores in those terms\n\n` +
-    `This action cannot be undone.\n\n` +
-    `Are you sure?`
-  );
-
-  if (!confirmed) return;
-
-  try {
-    classStatus.textContent = 'Deleting class...';
-    classStatus.className = 'status-msg';
-
-    // 1. Find all sessions belonging to this class
-    const sessionSnap = await db.collection('leaderboardSessions')
-      .where('classId', '==', activeClassId)
-      .get();
-
-    // 2. Find all entries belonging to this class
-    const entrySnap = await db.collection('leaderboardEntries')
-      .where('classId', '==', activeClassId)
-      .get();
-
-    // Firestore batch has a 500-operation limit.
-    // Delete in batches.
-    let batch = db.batch();
-    let count = 0;
-
-    const commitBatch = async () => {
-      if (count > 0) {
-        await batch.commit();
-        batch = db.batch();
-        count = 0;
-      }
-    };
-
-    // Delete entries
-    for (const doc of entrySnap.docs) {
-      batch.delete(doc.ref);
-      count++;
-
-      if (count >= 450) {
-        await commitBatch();
-      }
-    }
-
-    // Delete sessions
-    for (const doc of sessionSnap.docs) {
-      batch.delete(doc.ref);
-      count++;
-
-      if (count >= 450) {
-        await commitBatch();
-      }
-    }
-
-    // Delete the class itself
-    batch.delete(
-      db.collection('leaderboardClasses').doc(activeClassId)
-    );
-    count++;
-
-    await commitBatch();
-
-    classStatus.textContent =
-      `"${selectedClass.name}" and all its data have been deleted.`;
-
-    classStatus.className = 'status-msg ok';
-
-    activeClassId = null;
-    activeSessionId = null;
-    currentEntries = [];
-
-    classBody.hidden = true;
-
-    // Reload class list
-    await loadClasses();
-
-  } catch (err) {
-    console.error('Delete class failed:', err);
-
-    classStatus.textContent =
-      'Could not delete class: ' + err.message;
-
-    classStatus.className = 'status-msg err';
-  }
-});
-
 document.getElementById('btn-add-class').addEventListener('click', () => {
   const name = document.getElementById('new-class-name').value.trim();
   const pin = document.getElementById('new-class-pin').value.trim();
@@ -497,7 +408,16 @@ function renderActivityChips(){
     chip.querySelector('button').addEventListener('click', () => removeActivity(name));
     activityChips.appendChild(chip);
   });
+  renderMergeSelects(s?.activities || []);
   renderScoreTable();
+}
+
+function renderMergeSelects(activities){
+  const fromSel = document.getElementById('merge-from');
+  const intoSel = document.getElementById('merge-into');
+  const opts = activities.map(a => `<option value="${escapeAttr(a)}">${escapeHtml(a)}</option>`).join('');
+  fromSel.innerHTML = opts;
+  intoSel.innerHTML = opts;
 }
 
 document.getElementById('btn-add-activity').addEventListener('click', () => {
@@ -510,12 +430,61 @@ document.getElementById('btn-add-activity').addEventListener('click', () => {
   db.collection('leaderboardSessions').doc(activeSessionId).update({ activities })
     .then(() => { input.value=''; s.activities = activities; renderActivityChips(); });
 });
+document.getElementById('btn-add-today').addEventListener('click', () => {
+  if(!activeSessionId){ activityStatus.textContent = 'Start a term first.'; activityStatus.className='status-msg err'; return; }
+  const label = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short' });
+  const s = sessions.find(x => x.id === activeSessionId);
+  if((s.activities || []).includes(label)){
+    activityStatus.textContent = "Today's column already exists.";
+    activityStatus.className = 'status-msg ok';
+    return;
+  }
+  const activities = [...(s.activities || []), label];
+  db.collection('leaderboardSessions').doc(activeSessionId).update({ activities })
+    .then(() => { s.activities = activities; renderActivityChips(); });
+});
+
 function removeActivity(name){
   const s = sessions.find(x => x.id === activeSessionId);
   const activities = (s.activities || []).filter(a => a !== name);
   db.collection('leaderboardSessions').doc(activeSessionId).update({ activities })
     .then(() => { s.activities = activities; renderActivityChips(); });
 }
+
+document.getElementById('btn-merge-activity').addEventListener('click', () => {
+  const st = document.getElementById('merge-status');
+  const fromName = document.getElementById('merge-from').value;
+  const intoName = document.getElementById('merge-into').value;
+  st.textContent = '';
+
+  if(!fromName || !intoName){ st.textContent = 'Pick both columns.'; st.className = 'status-msg err'; return; }
+  if(fromName === intoName){ st.textContent = "Those are the same column."; st.className = 'status-msg err'; return; }
+  if(!confirm(`Move every mark from "${fromName}" into "${intoName}" (added together), then delete "${fromName}"? This can't be undone.`)) return;
+
+  const s = sessions.find(x => x.id === activeSessionId);
+  const batch = db.batch();
+
+  currentEntries.forEach(entry => {
+    const scores = { ...(entry.scores || {}) };
+    const fromVal = typeof scores[fromName] === 'number' ? scores[fromName] : 0;
+    if(fromName in scores || fromVal){
+      scores[intoName] = (typeof scores[intoName] === 'number' ? scores[intoName] : 0) + fromVal;
+      delete scores[fromName];
+      const total = Object.values(scores).reduce((sum,v) => sum + (typeof v === 'number' ? v : 0), 0);
+      batch.update(db.collection('leaderboardEntries').doc(entry.id), { scores, total });
+    }
+  });
+
+  const activities = (s.activities || []).filter(a => a !== fromName);
+  batch.update(db.collection('leaderboardSessions').doc(activeSessionId), { activities });
+
+  batch.commit().then(() => {
+    s.activities = activities;
+    st.textContent = `Merged "${fromName}" into "${intoName}".`;
+    st.className = 'status-msg ok';
+    renderActivityChips();
+  }).catch(err => { st.textContent = err.message; st.className = 'status-msg err'; });
+});
 
 /* ---- roster / entries ---- */
 document.getElementById('btn-add-student').addEventListener('click', () => {
@@ -561,7 +530,11 @@ function renderScoreTable(){
     let cells = `<td class="rank-cell">${i+1}.</td><td>${escapeHtml(entry.name)}</td>`;
     activities.forEach(a => {
       const val = (entry.scores && entry.scores[a] !== undefined) ? entry.scores[a] : '';
-      cells += `<td><input type="number" step="0.5" class="score-input" data-entry="${entry.id}" data-activity="${escapeAttr(a)}" value="${val}"></td>`;
+      cells += `<td><div style="display:flex; align-items:center; gap:3px;">
+        <button type="button" class="step-btn" data-dir="-1" title="-1">−</button>
+        <input type="number" step="0.5" class="score-input" data-entry="${entry.id}" data-activity="${escapeAttr(a)}" value="${val}">
+        <button type="button" class="step-btn" data-dir="1" title="+1">+</button>
+      </div></td>`;
     });
     cells += `<td class="total-cell">${entry.total || 0}</td><td><button class="chip" style="border:none; background:none; color:var(--margin-red); cursor:pointer;" data-del="${entry.id}">Remove</button></td>`;
     tr.innerHTML = cells;
@@ -569,6 +542,14 @@ function renderScoreTable(){
   });
   scoreBody.querySelectorAll('.score-input').forEach(inp => {
     inp.addEventListener('change', onScoreChange);
+  });
+  scoreBody.querySelectorAll('.step-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = btn.parentElement.querySelector('.score-input');
+      const current = parseFloat(input.value) || 0;
+      input.value = current + parseFloat(btn.dataset.dir);
+      input.dispatchEvent(new Event('change'));
+    });
   });
   scoreBody.querySelectorAll('[data-del]').forEach(btn => {
     btn.addEventListener('click', () => {

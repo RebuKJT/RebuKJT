@@ -50,6 +50,12 @@
   .status-pill.approved{background:#D9EDE9; color:var(--teal);}
   .status-pill.flagged{background:#F6D8D5; color:var(--margin-red);}
   .note-text{font-size:0.75rem; color:var(--ink-soft); font-style:italic;}
+  .link-row{border:1.5px solid var(--paper-line); border-radius:8px; padding:10px 12px; margin-bottom:8px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .link-row .lname{flex:1; min-width:120px; font-weight:600;}
+  .link-row select{padding:6px 8px; border:1.5px solid var(--paper-line); border-radius:6px; font-size:0.82rem;}
+  .link-status{font-size:0.75rem;}
+  .link-status.linked{color:var(--teal);}
+  .link-status.unlinked{color:var(--ink-soft);}
 
   [hidden]{display:none !important;}
 </style>
@@ -61,6 +67,7 @@
   <div class="tabs" id="tabs" hidden>
     <button data-tab="today" class="active">Today's Activity</button>
     <button data-tab="leaderboard">Points Leaderboard</button>
+    <button data-tab="links">Leaderboard Links</button>
   </div>
   <div class="who" id="nav-who" hidden>
     <span id="who-email"></span>
@@ -122,6 +129,19 @@
       </div>
     </section>
 
+    <section id="tab-links" hidden>
+      <div class="card">
+        <h2>Link reading-log students to their class leaderboard</h2>
+        <p style="font-size:0.82rem; color:var(--ink-soft); margin-top:-6px;">
+          One-time setup per student. Once linked, every future Approve automatically
+          adds that day's reading points to the student's leaderboard entry — no
+          manual re-entry. If someone starts a new term on the leaderboard, no need
+          to re-link — it finds their current term automatically by name.
+        </p>
+        <div id="links-list"></div>
+      </div>
+    </section>
+
   </div>
 </main>
 
@@ -179,8 +199,9 @@ document.querySelectorAll('.tabs button').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    ['today','leaderboard'].forEach(t => document.getElementById('tab-'+t).hidden = (t !== btn.dataset.tab));
+    ['today','leaderboard','links'].forEach(t => document.getElementById('tab-'+t).hidden = (t !== btn.dataset.tab));
     if(btn.dataset.tab === 'leaderboard') loadLeaderboard();
+    if(btn.dataset.tab === 'links') loadLinksPanel();
   });
 });
 
@@ -241,7 +262,11 @@ function renderEntries(){
   `).join('');
 
   tbody.querySelectorAll('[data-approve]').forEach(btn => btn.addEventListener('click', () => {
-    db.collection('readingLogs').doc(btn.dataset.approve).update({ status:'approved', flagReason:null }).then(loadEntries);
+    const entry = allEntries.find(x => x.id === btn.dataset.approve);
+    db.collection('readingLogs').doc(btn.dataset.approve).update({ status:'approved', flagReason:null }).then(() => {
+      loadEntries();
+      if(entry) pushPointsToLeaderboard(entry);
+    });
   }));
   tbody.querySelectorAll('[data-flag]').forEach(btn => btn.addEventListener('click', () => {
     db.collection('readingLogs').doc(btn.dataset.flag).update({ status:'flagged' }).then(loadEntries);
@@ -294,6 +319,130 @@ function loadLeaderboard(){
     `).join('');
   });
 }
+
+/* ================= LEADERBOARD LINKING ================= */
+let leaderboardClasses = [];
+
+function loadLinksPanel(){
+  const list = document.getElementById('links-list');
+  list.innerHTML = '<p style="color:var(--ink-soft); font-size:0.85rem;">Loading…</p>';
+
+  Promise.all([
+    db.collection('leaderboardClasses').orderBy('name').get(),
+    db.collection('readingLogs').get(),
+    db.collection('readingLeaderboardLinks').get()
+  ]).then(([classSnap, logsSnap, linksSnap]) => {
+    leaderboardClasses = classSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // unique students that appear in reading logs
+    const studentsById = {};
+    logsSnap.forEach(doc => {
+      const d = doc.data();
+      studentsById[d.studentId] = d.studentName;
+    });
+
+    const links = {};
+    linksSnap.forEach(doc => { links[doc.id] = doc.data(); });
+
+    const studentIds = Object.keys(studentsById);
+    if(!studentIds.length){
+      list.innerHTML = '<p style="color:var(--ink-soft); font-size:0.85rem;">No reading-log students yet.</p>';
+      return;
+    }
+
+    list.innerHTML = studentIds.map(sid => {
+      const name = studentsById[sid];
+      const link = links[sid];
+      const options = '<option value="">Not linked</option>' +
+        leaderboardClasses.map(c => `<option value="${c.id}" ${link && link.leaderboardClassId===c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('');
+      return `
+        <div class="link-row">
+          <span class="lname">${escapeHtml(name)}</span>
+          <select data-student="${sid}" data-name="${escapeAttr(name)}">${options}</select>
+          <span class="link-status ${link ? 'linked' : 'unlinked'}" id="link-status-${sid}">
+            ${link ? 'Linked to ' + escapeHtml(leaderboardClasses.find(c=>c.id===link.leaderboardClassId)?.name || '?') : 'Not linked'}
+          </span>
+        </div>
+      `;
+    }).join('');
+
+    list.querySelectorAll('select[data-student]').forEach(sel => {
+      sel.addEventListener('change', () => {
+        const sid = sel.dataset.student;
+        const name = sel.dataset.name;
+        const classId = sel.value;
+        const statusEl = document.getElementById('link-status-' + sid);
+        if(!classId){
+          db.collection('readingLeaderboardLinks').doc(sid).delete().then(() => {
+            statusEl.textContent = 'Not linked';
+            statusEl.className = 'link-status unlinked';
+          });
+          return;
+        }
+        db.collection('readingLeaderboardLinks').doc(sid).set({
+          leaderboardClassId: classId, studentName: name
+        }).then(() => {
+          const cls = leaderboardClasses.find(c => c.id === classId);
+          statusEl.textContent = 'Linked to ' + (cls ? cls.name : '?');
+          statusEl.className = 'link-status linked';
+        });
+      });
+    });
+  }).catch(err => {
+    list.innerHTML = '<p style="color:var(--margin-red);">' + escapeHtml(err.message) + '</p>';
+  });
+}
+
+/* Called after Approve. Best-effort: if no link exists, or no matching
+   entry is found on the student's current leaderboard term, it just skips
+   quietly — approving still succeeds either way. */
+function pushPointsToLeaderboard(logEntry){
+  if(logEntry.pushedToLeaderboard) return; // already applied once, don't double-count
+
+  db.collection('readingLeaderboardLinks').doc(logEntry.studentId).get().then(linkDoc => {
+    if(!linkDoc.exists) return;
+    const link = linkDoc.data();
+    const activityKey = 'Reading'; // one running column, not one per date
+
+    return db.collection('leaderboardSessions')
+      .where('classId','==',link.leaderboardClassId)
+      .orderBy('createdAt','desc').limit(1).get()
+      .then(sessSnap => {
+        if(sessSnap.empty) return;
+        const sessionDoc = sessSnap.docs[0];
+        const session = sessionDoc.data();
+        const activities = session.activities || [];
+
+        const jobs = [];
+        if(!activities.includes(activityKey)){
+          jobs.push(sessionDoc.ref.update({ activities: [...activities, activityKey] }));
+        }
+
+        jobs.push(
+          db.collection('leaderboardEntries')
+            .where('classId','==',link.leaderboardClassId)
+            .where('sessionId','==',sessionDoc.id)
+            .get()
+            .then(entriesSnap => {
+              const match = entriesSnap.docs.find(d =>
+                (d.data().name || '').trim().toLowerCase() === (link.studentName || '').trim().toLowerCase()
+              );
+              if(!match) return; // no matching name on this term's leaderboard roster yet
+              const entryData = match.data();
+              const scores = { ...(entryData.scores || {}) };
+              scores[activityKey] = (scores[activityKey] || 0) + logEntry.points; // add, don't overwrite
+              const total = Object.values(scores).reduce((s,v) => s + (typeof v === 'number' ? v : 0), 0);
+              return match.ref.update({ scores, total }).then(() =>
+                db.collection('readingLogs').doc(logEntry.id).update({ pushedToLeaderboard: true })
+              );
+            })
+        );
+        return Promise.all(jobs);
+      });
+  }).catch(err => console.error('Leaderboard push failed:', err));
+}
+
+function escapeAttr(str){ return escapeHtml(str).replace(/"/g,'&quot;'); }
 </script>
 </body>
 </html>

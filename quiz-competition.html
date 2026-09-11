@@ -35,6 +35,8 @@
   .btn:hover{background:var(--chalk-green-dark);}
   .btn.secondary{background:#fff; color:var(--chalk-green); border:1.5px solid var(--chalk-green);}
   .btn.danger{background:var(--margin-red);}
+  .rm{background:none; border:none; color:var(--margin-red); cursor:pointer; font-size:1.1rem; font-weight:700; padding:0 6px;}
+  .rm:hover{color:var(--chalk-green-dark);}
   .btn.big{padding:16px 30px; font-size:1.1rem; border-radius:10px;}
   .btn:disabled{opacity:0.4; cursor:not-allowed;}
   .field{margin-bottom:10px;}
@@ -116,12 +118,15 @@
   <section id="tab-setup">
     <div class="card">
       <h2>Groups &amp; captains</h2>
-      <p style="font-size:0.82rem; color:var(--ink-soft); margin-top:-4px;">Group names are fixed. Fill in captain and members — this can be edited anytime before you start playing.</p>
+      <p style="font-size:0.82rem; color:var(--ink-soft); margin-top:-4px;">Add, rename, or remove groups as needed — team name, captain, and members are all editable.</p>
       <table>
-        <thead><tr><th>Group</th><th>Captain</th><th>Member 2</th><th>Member 3</th></tr></thead>
+        <thead><tr><th>Group name</th><th>Captain</th><th>Member 2</th><th>Member 3</th><th></th></tr></thead>
         <tbody id="groups-body"></tbody>
       </table>
-      <div style="margin-top:12px;"><button class="btn" id="btn-save-groups">Save groups</button></div>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn secondary" id="btn-add-group">+ Add group</button>
+        <button class="btn" id="btn-save-groups">Save groups</button>
+      </div>
       <p class="status-msg" id="groups-status"></p>
     </div>
 
@@ -197,23 +202,50 @@ Which is the largest planet? | Jupiter"></textarea>
   <section id="tab-board" hidden>
     <div style="text-align:right; margin-bottom:10px;">
       <button class="btn secondary" id="btn-fullscreen">Fullscreen (for projector)</button>
-        <button class="btn danger" id="btn-reset-scores">Reset Scores</button>
     </div>
     <div class="board-wrap">
       <h1 style="text-align:center; color:#fff; margin-bottom:20px;">🏆 Live Scoreboard</h1>
       <div id="board-list"></div>
+    </div>
+
+    <div class="card" style="margin-top:18px;">
+      <h2>Round statistics</h2>
+      <p style="font-size:0.82rem; color:var(--ink-soft); margin-top:-6px;">How each group's questions were resolved, across every round so far.</p>
+      <table>
+        <thead><tr><th>Group</th><th>✓ Correct</th><th>✕ Wrong</th><th>→ Pass</th><th>⏱ Time Up</th></tr></thead>
+        <tbody id="stats-body"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Finish this game</h2>
+      <p style="font-size:0.82rem; color:var(--ink-soft); margin-top:-6px;">
+        Saves the final scores and stats under a title you choose, then resets everything
+        (scores, round statistics, question progress) so you can start a new game. Groups,
+        captains, and your question banks are kept.
+      </p>
+      <button class="btn danger" id="btn-save-reset">💾 Save Game &amp; Reset</button>
+      <p class="status-msg" id="save-reset-status"></p>
+    </div>
+
+    <div class="card">
+      <h2>Recent games <span style="font-weight:400; font-size:0.78rem; color:var(--ink-soft);">(last 5, saved in this browser)</span></h2>
+      <div id="game-history-list"></div>
     </div>
   </section>
 
 </main>
 
 <script>
-const FIXED_GROUPS = ["Everest","Annapurna","Lumbini","Sagarmatha","Koshi","Gandaki","Karnali","Bagmati"];
+const DEFAULT_GROUP_NAMES = ["Everest","Annapurna","Lumbini","Sagarmatha","Koshi","Gandaki","Karnali","Bagmati"];
 const STORAGE_KEY = "class5QuizState";
 
 function defaultState(){
   return {
-    groups: FIXED_GROUPS.map((name,i) => ({ id:'g'+i, name, captain:'', member2:'', member3:'', score:0 })),
+    groups: DEFAULT_GROUP_NAMES.map((name,i) => ({
+      id:'g'+i, name, captain:'', member2:'', member3:'', score:0,
+      stats:{correct:0,wrong:0,pass:0,timeUp:0}
+    })),
     rounds: [],
     currentRoundId: null,
     turnIndex: 0,
@@ -248,14 +280,31 @@ function renderGroupsTable(){
   state.groups.forEach(g => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><strong>${g.name}</strong></td>
+      <td><input data-id="${g.id}" data-field="name" value="${escapeAttr(g.name)}" style="font-weight:600;"></td>
       <td><input data-id="${g.id}" data-field="captain" value="${escapeAttr(g.captain)}"></td>
       <td><input data-id="${g.id}" data-field="member2" value="${escapeAttr(g.member2)}"></td>
       <td><input data-id="${g.id}" data-field="member3" value="${escapeAttr(g.member3)}"></td>
+      <td><button class="rm" title="Remove group" data-remove="${g.id}">&times;</button></td>
     `;
+    tr.querySelector('[data-remove]').addEventListener('click', () => {
+      if(state.groups.length <= 2){ alert('You need at least 2 groups.'); return; }
+      if(!confirm('Remove "'+g.name+'"? This does not affect scores already recorded, but they will drop out of the rotation.')) return;
+      state.groups = state.groups.filter(x => x.id !== g.id);
+      if(state.turnIndex >= state.groups.length) state.turnIndex = 0;
+      save();
+      renderGroupsTable();
+    });
     body.appendChild(tr);
   });
 }
+document.getElementById('btn-add-group').addEventListener('click', () => {
+  state.groups.push({
+    id:'g'+Date.now(), name:'New Group', captain:'', member2:'', member3:'', score:0,
+    stats:{correct:0,wrong:0,pass:0,timeUp:0}
+  });
+  save();
+  renderGroupsTable();
+});
 document.getElementById('btn-save-groups').addEventListener('click', () => {
   document.querySelectorAll('#groups-body input').forEach(inp => {
     const g = state.groups.find(x => x.id === inp.dataset.id);
@@ -352,7 +401,10 @@ function renderPlayRoundSelect(){
 }
 document.getElementById('play-round').addEventListener('change', (e) => {
   state.currentRoundId = e.target.value;
-  state.turnIndex = 0;
+  // Deliberately NOT resetting turnIndex here — whoever's turn it is
+  // carries over into the new round, so the same groups don't always
+  // get first pick in every category (that would be unfair if a round's
+  // question count doesn't divide evenly by the number of groups).
   state.activeQuestion = null;
   save();
   renderPlay();
@@ -471,77 +523,39 @@ function startTimer(){
 
 function advanceOrComplete(reasonLabel){
   if(timerInterval) clearInterval(timerInterval);
-
   const round = getActiveRound();
   const aq = state.activeQuestion;
   const q = round.questions.find(x => x.num === aq.num);
-
   const groupCount = state.groups.length;
-
-  const originalIndex = state.groups.findIndex(
-    g => g.id === q.originalGroupId
-  );
-
-  const currentIndex = state.groups.findIndex(
-    g => g.id === aq.holderGroupId
-  );
-
+  const originalIndex = state.groups.findIndex(g => g.id === q.originalGroupId);
+  const currentIndex = state.groups.findIndex(g => g.id === aq.holderGroupId);
   const nextIndex = (currentIndex + 1) % groupCount;
 
-  // If the question has gone all the way around
-  // and returned to the original group, close it.
+  const holder = state.groups[currentIndex];
+  if(holder){
+    holder.stats = holder.stats || {correct:0,wrong:0,pass:0,timeUp:0};
+    if(reasonLabel === 'WRONG') holder.stats.wrong++;
+    else if(reasonLabel === 'PASS') holder.stats.pass++;
+  }
+
   if(nextIndex === originalIndex){
-
+    // full circle — nobody got it, question closes
     q.status = 'COMPLETED';
-
-    // IMPORTANT:
-    // Question-selection authority moves one step
-    // after the ORIGINAL chooser.
     state.turnIndex = (originalIndex + 1) % groupCount;
-
     state.activeQuestion = Object.assign({}, aq, {
       phase: 'result',
-      result: {
-        outcome: 'UNSOLVED',
-        points: 0,
-        groupName: null,
-        captain: null,
-        lastReason: reasonLabel
-      }
+      result: { outcome: 'UNSOLVED', points: 0, groupName: null, captain: null, lastReason: reasonLabel }
     });
-
     save();
     renderPlay();
     renderMiniScores();
-
   } else {
-
-    // Pass the question to the next group.
     const nextGroup = state.groups[nextIndex];
-
     q.status = 'PASSED';
     q.holderGroupId = nextGroup.id;
-
-    // IMPORTANT:
-    // DO NOT change state.turnIndex here.
-    //
-    // The question-selection turn must remain with
-    // the original chooser's rotation until this
-    // question is completely resolved.
-
+    state.turnIndex = nextIndex;
     const endsAt = Date.now() + round.passTime * 1000;
-
-    state.activeQuestion = {
-      roundId: round.id,
-      num: q.num,
-      holderGroupId: nextGroup.id,
-      originalGroupId: q.originalGroupId,
-      isPassed: true,
-      endsAt,
-      duration: round.passTime,
-      phase: 'question'
-    };
-
+    state.activeQuestion = { roundId: round.id, num: q.num, holderGroupId: nextGroup.id, originalGroupId: q.originalGroupId, isPassed: true, endsAt, duration: round.passTime, phase: 'question' };
     save();
     renderPlay();
     startTimer();
@@ -550,41 +564,30 @@ function advanceOrComplete(reasonLabel){
 
 function resolve(outcome){
   if(timerInterval) clearInterval(timerInterval);
-
   const round = getActiveRound();
   const aq = state.activeQuestion;
   const q = round.questions.find(x => x.num === aq.num);
   const holder = state.groups.find(g => g.id === aq.holderGroupId);
 
   let points = 0;
-
   if(outcome === 'CORRECT') points = round.correctMarks;
   else if(outcome === 'WRONG') points = round.wrongMarks;
   else if(outcome === 'TIME_UP') points = round.timeUpMarks;
 
   holder.score = (holder.score || 0) + points;
+  holder.stats = holder.stats || {correct:0,wrong:0,pass:0,timeUp:0};
+  if(outcome === 'CORRECT') holder.stats.correct++;
+  else if(outcome === 'TIME_UP') holder.stats.timeUp++;
   q.status = 'COMPLETED';
-
-  // NEXT QUESTION AUTHORITY
-  // Always move one group forward from the ORIGINAL chooser.
-  // The group that finally answered the question does not matter.
-  const originalIndex = state.groups.findIndex(
-    g => g.id === aq.originalGroupId
-  );
-
-  state.turnIndex = (originalIndex + 1) % state.groups.length;
+  state.turnIndex = (state.turnIndex + 1) % state.groups.length;
 
   state.activeQuestion = Object.assign({}, aq, {
     phase: 'result',
     result: {
-      outcome,
-      points,
-      groupName: holder.name,
-      captain: holder.captain,
+      outcome, points, groupName: holder.name, captain: holder.captain,
       answer: outcome === 'CORRECT' ? q.answer : null
     }
   });
-
   save();
   renderPlay();
   renderMiniScores();
@@ -632,6 +635,14 @@ function renderBoard(){
       <div class="rank-score">${g.score||0}</div>
     </div>
   `).join('');
+
+  const statsBody = document.getElementById('stats-body');
+  if(statsBody){
+    statsBody.innerHTML = state.groups.map(g => {
+      const s = g.stats || {correct:0,wrong:0,pass:0,timeUp:0};
+      return `<tr><td><strong>${escapeHtml(g.name)}</strong></td><td>${s.correct}</td><td>${s.wrong}</td><td>${s.pass}</td><td>${s.timeUp}</td></tr>`;
+    }).join('');
+  }
 }
 document.getElementById('btn-fullscreen').addEventListener('click', () => {
   const el = document.querySelector('.board-wrap');
@@ -641,47 +652,79 @@ document.getElementById('btn-fullscreen').addEventListener('click', () => {
 function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
 function escapeAttr(str){ return escapeHtml(str).replace(/"/g,'&quot;'); }
 
-document.getElementById('btn-reset-scores').addEventListener('click', () => {
+/* ---------- save game & reset for a new one ---------- */
+const HISTORY_KEY = 'class5QuizHistory';
 
-  if(!confirm(
-    "Reset all group scores and question progress?\n\n" +
-    "Your saved questions and rounds will NOT be deleted."
-  )) return;
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }catch(e){ return []; }
+}
+function saveHistoryList(list){ localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); }
 
-  // Reset all group scores
-  state.groups.forEach(g => {
-    g.score = 0;
+document.getElementById('btn-save-reset').addEventListener('click', () => {
+  const st = document.getElementById('save-reset-status');
+  const suggested = 'Quiz — ' + new Date().toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+  const title = prompt('Save this game as:', suggested);
+  if(title === null) return; // cancelled, nothing happens
+
+  const history = loadHistory();
+  history.unshift({
+    title: title.trim() || suggested,
+    date: new Date().toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}),
+    timestamp: Date.now(),
+    groups: state.groups.map(g => ({
+      name: g.name, captain: g.captain, score: g.score || 0,
+      stats: g.stats || {correct:0,wrong:0,pass:0,timeUp:0}
+    }))
   });
+  saveHistoryList(history.slice(0, 5));
 
-  // Reset current turn to Group A
+  if(!confirm('Saved! Now reset scores, round statistics, and question progress for a new game? (Groups and question banks are kept.)')){
+    st.textContent = 'Saved — reset skipped, current game is still live.';
+    st.className = 'status-msg ok';
+    renderGameHistory();
+    return;
+  }
+
+  state.groups.forEach(g => { g.score = 0; g.stats = {correct:0,wrong:0,pass:0,timeUp:0}; });
+  state.rounds.forEach(r => { r.questions.forEach(q => { q.status='AVAILABLE'; q.holderGroupId=null; q.originalGroupId=null; }); });
   state.turnIndex = 0;
-
-  // Remove any question currently in progress
   state.activeQuestion = null;
-
-  // Make all questions available again
-  state.rounds.forEach(r => {
-    r.questions.forEach(q => {
-      q.status = 'AVAILABLE';
-      q.holderGroupId = null;
-      q.originalGroupId = null;
-    });
-  });
-
-  // Save the reset state
   save();
 
-  // Refresh the screen
+  st.textContent = 'Saved as "' + (title.trim() || suggested) + '" — everything reset for a new game.';
+  st.className = 'status-msg ok';
   renderPlay();
   renderBoard();
-
-  alert('Scoreboard reset successfully!');
+  renderGameHistory();
 });
+
+function renderGameHistory(){
+  const wrap = document.getElementById('game-history-list');
+  if(!wrap) return;
+  const history = loadHistory();
+  if(!history.length){
+    wrap.innerHTML = '<p style="color:var(--ink-soft); font-size:0.85rem;">No saved games yet.</p>';
+    return;
+  }
+  wrap.innerHTML = history.map(h => {
+    const sorted = [...h.groups].sort((a,b) => (b.score||0) - (a.score||0));
+    const winner = sorted[0];
+    return `
+      <div class="round-card">
+        <div>
+          <strong>${escapeHtml(h.title)}</strong>
+          <div class="meta">${escapeHtml(h.date)} • 🏆 ${winner ? escapeHtml(winner.name) + ' — ' + (winner.score||0) + ' pts' : '—'}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
 renderGroupsTable();
 renderRoundsList();
 renderPlay();
 renderBoard();
+renderGameHistory();
 </script>
 </body>
 </html>

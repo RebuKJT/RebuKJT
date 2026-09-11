@@ -272,6 +272,14 @@
     </div>
     <p class="status-msg" id="grades-status"></p>
 
+    <h3>Bill settings</h3>
+    <div class="field" style="margin:0 0 10px;">
+      <label for="bill-qr-url">Payment QR image (URL or repo path — shown on every printed bill)</label>
+      <input id="bill-qr-url" type="text" placeholder="img/payment-qr.png or a direct image link">
+    </div>
+    <button class="btn secondary small" id="btn-save-bill-settings">Save bill settings</button>
+    <p class="status-msg" id="bill-settings-status"></p>
+
     <h3>Sessions</h3>
     <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr auto;">
       <div class="field" style="margin:0;">
@@ -319,13 +327,15 @@
 <div id="print-all-container" style="display:none;"></div>
 
 <style>
-  .bill-paper{ background:#fff; border:1px solid var(--paper-line); border-radius:8px; padding:18px 20px; }
-  .bill-paper h3{ font-size:1.1rem; margin-bottom:2px; }
-  .bill-paper .sub{ font-size:0.78rem; color:var(--ink-soft); margin-bottom:14px; }
+  .bill-paper{ background:#fff; border:1px solid var(--paper-line); border-radius:8px; padding:14px 16px; }
+  .bill-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px; }
+  .bill-paper h3{ font-size:1.05rem; margin-bottom:2px; }
+  .bill-paper .sub{ font-size:0.74rem; color:var(--ink-soft); }
+  .bill-qr{ width:56px; height:56px; object-fit:contain; flex:0 0 auto; }
   .bill-paper table{ width:100%; font-size:0.85rem; border-collapse:collapse; }
-  .bill-paper td{ padding:5px 0; border-bottom:1px dashed var(--paper-line); }
+  .bill-paper td{ padding:4px 0; border-bottom:1px dashed var(--paper-line); }
   .bill-paper td:last-child{ text-align:right; font-weight:600; }
-  .bill-paper .bill-total-row td{ border-top:2px solid var(--ink); border-bottom:none; font-weight:700; font-family:'Fraunces',serif; font-size:1rem; padding-top:8px; }
+  .bill-paper .bill-total-row td{ border-top:2px solid var(--ink); border-bottom:none; font-weight:700; font-family:'Fraunces',serif; font-size:1rem; padding-top:6px; }
   @media print{
     body *{ visibility:hidden; }
     #bill-overlay.print-mode, #bill-overlay.print-mode *{ visibility:visible; }
@@ -333,16 +343,19 @@
     #bill-overlay.print-mode .close, #bill-overlay.print-mode #bill-actions{ display:none; }
     #print-all-container.printing{ visibility:visible; position:absolute; top:0; left:0; width:100%; display:block !important; }
     #print-all-container.printing *{ visibility:visible; }
-    .print-page-group{ page-break-after:always; padding:8mm 10mm 0; }
+    .print-page-group{
+      display:grid; grid-template-columns:1fr 1fr; grid-auto-rows:1fr;
+      gap:6mm 8mm; page-break-after:always; padding:8mm; height:277mm;
+    }
     .print-page-group:last-child{ page-break-after:auto; }
-    .bill-slot{ border-bottom:1px dashed #999; padding-bottom:6px; margin-bottom:6px; }
-    .bill-slot:last-child{ border-bottom:none; }
-    .bill-slot .bill-paper{ padding:8px 12px; }
-    .bill-slot .bill-paper h3{ font-size:0.88rem; margin-bottom:1px; }
-    .bill-slot .bill-paper .sub{ font-size:0.62rem; margin-bottom:5px; }
-    .bill-slot .bill-paper table{ font-size:0.7rem; }
+    .bill-slot .bill-paper{ padding:7px 10px; height:100%; }
+    .bill-slot .bill-paper .bill-head{ margin-bottom:3px; }
+    .bill-slot .bill-paper h3{ font-size:0.8rem; margin-bottom:0; }
+    .bill-slot .bill-paper .sub{ font-size:0.56rem; }
+    .bill-slot .bill-paper .bill-qr{ width:34px; height:34px; }
+    .bill-slot .bill-paper table{ font-size:0.66rem; }
     .bill-slot .bill-paper td{ padding:1.5px 0; }
-    .bill-slot .bill-paper .bill-total-row td{ padding-top:3px; font-size:0.78rem; }
+    .bill-slot .bill-paper .bill-total-row td{ padding-top:3px; font-size:0.74rem; }
   }
 </style>
 
@@ -356,7 +369,7 @@
    This must be the SAME config object your Teacher Portal
    already uses (same project, same Auth users).
    ========================================================= */
-const firebaseConfig = {
+ const firebaseConfig = {
     apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
     authDomain: "teacher-resource-hub.firebaseapp.com",
     projectId: "teacher-resource-hub",
@@ -443,16 +456,27 @@ document.getElementById('close-settings').addEventListener('click', () => settin
 settingsOverlay.addEventListener('click', e => { if(e.target === settingsOverlay) settingsOverlay.classList.remove('open'); });
 
 /* ---------- load grade fee settings ---------- */
+let paymentQrUrl = '';
 function loadSettings(){
   db.collection('tuitionSettings').doc('config').get().then(doc => {
     if(doc.exists){
       gradeFees = doc.data().gradeFees || {};
+      paymentQrUrl = doc.data().paymentQrUrl || '';
     } else {
       gradeFees = { "Class 4": 0, "Class 5": 0, "Class 6": 0, "Class 7": 0 };
     }
+    document.getElementById('bill-qr-url').value = paymentQrUrl;
     populateGradeSelect();
   });
 }
+
+document.getElementById('btn-save-bill-settings').addEventListener('click', () => {
+  const st = document.getElementById('bill-settings-status');
+  paymentQrUrl = document.getElementById('bill-qr-url').value.trim();
+  db.collection('tuitionSettings').doc('config').set({ paymentQrUrl }, { merge: true })
+    .then(() => { st.textContent = 'Saved.'; st.className = 'status-msg ok'; })
+    .catch(err => { st.textContent = err.message; st.className = 'status-msg err'; });
+});
 
 function populateGradeSelect(){
   sGrade.innerHTML = '';
@@ -755,8 +779,13 @@ function billHtml(d){
   const due = dueFor(d);
   return `
     <div class="bill-paper">
-      <h3>Lovely Angels English Boarding School</h3>
-      <div class="sub">Tuition Bill • ${session ? escapeHtml(session.label) : ''} • Generated ${new Date().toLocaleDateString('en-GB')}</div>
+      <div class="bill-head">
+        <div>
+          <h3>Lovely Angels: Tuition</h3>
+          <div class="sub">📞 9802701683 • ${session ? escapeHtml(session.label) : ''} • ${new Date().toLocaleDateString('en-GB')}</div>
+        </div>
+        ${paymentQrUrl ? `<img class="bill-qr" src="${escapeAttr(paymentQrUrl)}" alt="Payment QR">` : ''}
+      </div>
       <table>
         <tr><td>Student name</td><td>${escapeHtml(d.name)}</td></tr>
         <tr><td>Grade</td><td>${escapeHtml(d.grade)}</td></tr>
@@ -813,7 +842,7 @@ document.getElementById('btn-bill-sms').addEventListener('click', () => {
 document.getElementById('btn-print-all').addEventListener('click', () => {
   if(!currentStudents.length){ alert('No students in this session yet.'); return; }
   const container = document.getElementById('print-all-container');
-  const perPage = 4;
+  const perPage = 8;
   let html = '';
   for(let i = 0; i < currentStudents.length; i += perPage){
     const group = currentStudents.slice(i, i + perPage);

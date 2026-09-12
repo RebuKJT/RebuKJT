@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Challenge | Lovely Angels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --chalk-green:#1F3B33; --chalk-green-dark:#152A25;
+    --paper:#F4F1E6; --paper-line:#DCD6C2;
+    --margin-red:#C1443B; --ink:#26302C; --ink-soft:#5B6660;
+    --mustard:#C99A1E; --teal:#2C7A73; --radius:10px; --shadow:0 6px 18px rgba(21,42,37,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif;}
+  h1,h2,h3{font-family:'Fraunces',serif; font-weight:700; margin:0 0 8px;}
+  .hand{font-family:'Caveat',cursive; color:var(--margin-red); font-weight:700;}
+  button,input,select{font-family:inherit;}
+  :focus-visible{outline:3px solid var(--teal); outline-offset:2px;}
+
+  nav.main{background:var(--chalk-green); color:#F4F1E6; padding:14px 24px; text-align:center;}
+  nav.main .brand{font-family:'Fraunces',serif; font-size:1.2rem; font-weight:700;}
+
+  main{max-width:720px; margin:0 auto; padding:24px 18px 60px;}
+  .card{background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; margin-bottom:18px;}
+  .card h2{font-size:1.05rem;}
+  .field{margin-bottom:10px;}
+  .field label{display:block; font-size:0.8rem; font-weight:600; color:var(--ink-soft); margin-bottom:4px;}
+  .field input{width:100%; padding:10px 12px; border:1.5px solid var(--paper-line); border-radius:8px; font-size:0.95rem;}
+  .btn{border:none; border-radius:8px; padding:11px 20px; background:var(--chalk-green); color:#fff; font-weight:700; font-size:0.92rem; cursor:pointer;}
+  .btn:hover{background:var(--chalk-green-dark);}
+  .btn.secondary{background:#fff; color:var(--chalk-green); border:1.5px solid var(--chalk-green);}
+  .btn.big{width:100%; padding:15px; font-size:1.05rem; border-radius:10px;}
+  .btn:disabled{opacity:0.5; cursor:not-allowed;}
+  .error{color:var(--margin-red); font-size:0.85rem; margin-top:8px; min-height:1em;}
+
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(90px,1fr)); gap:10px; margin-bottom:6px;}
+  .stat-box{background:var(--paper); border-radius:8px; padding:10px 8px; text-align:center;}
+  .stat-box .num{font-family:'Fraunces',serif; font-weight:700; font-size:1.2rem; color:var(--chalk-green);}
+  .stat-box .label{font-size:0.65rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.02em;}
+  .streak-pill{display:inline-flex; align-items:center; gap:5px; background:linear-gradient(135deg,var(--mustard),#E4C46B); color:#fff; padding:6px 14px; border-radius:999px; font-weight:700; font-size:0.85rem;}
+
+  .level-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(48px,1fr)); gap:6px;}
+  .level-btn{aspect-ratio:1; border-radius:8px; border:1.5px solid var(--paper-line); background:#fff; font-family:'Fraunces',serif; font-weight:700; cursor:pointer; font-size:0.85rem;}
+  .level-btn.unlocked:hover{border-color:var(--teal); color:var(--teal);}
+  .level-btn.completed{background:var(--teal); color:#fff; border-color:var(--teal);}
+  .level-btn.locked{background:var(--paper); color:var(--paper-line); cursor:not-allowed;}
+
+  .timer-presets{display:flex; gap:8px; flex-wrap:wrap;}
+  .timer-presets button{padding:9px 14px; border-radius:8px; border:1.5px solid var(--paper-line); background:#fff; cursor:pointer; font-weight:600; font-size:0.85rem;}
+  .timer-presets button:hover{border-color:var(--teal); color:var(--teal);}
+  .custom-timer{display:flex; gap:8px; align-items:end; margin-top:10px;}
+  .custom-timer .field{margin:0; flex:1;}
+
+  .play-hud{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;}
+  .play-hud .clock{font-family:'Fraunces',serif; font-weight:900; font-size:1.8rem; background:var(--chalk-green); color:#fff; padding:8px 18px; border-radius:10px;}
+  .play-hud .clock.danger{background:var(--margin-red);}
+  .play-hud .progress{font-weight:600; color:var(--ink-soft); font-size:0.9rem;}
+  .question-box{text-align:center; padding:20px 10px;}
+  .question-text{font-size:clamp(2rem,7vw,3rem); font-weight:900; font-family:'Fraunces',serif; margin-bottom:20px;}
+  .choices{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .choice-btn{padding:18px; border-radius:10px; border:2px solid var(--paper-line); background:#fff; font-size:1.3rem; font-weight:700; cursor:pointer;}
+  .choice-btn:hover{border-color:var(--teal);}
+  .choice-btn.correct{background:var(--teal); border-color:var(--teal); color:#fff;}
+  .choice-btn.wrong{background:var(--margin-red); border-color:var(--margin-red); color:#fff;}
+  .live-tally{display:flex; justify-content:center; gap:20px; margin-top:16px; font-size:0.9rem; color:var(--ink-soft);}
+
+  .result-hero{text-align:center; padding:10px 0 20px;}
+  .result-hero .big-num{font-family:'Fraunces',serif; font-weight:900; font-size:2.6rem; color:var(--chalk-green);}
+  .badge-note{background:var(--paper); border:1px dashed var(--mustard); border-radius:8px; padding:10px 14px; font-size:0.88rem; margin:10px 0; text-align:center;}
+
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+<nav class="main"><span class="brand">🧮 Math Challenge</span></nav>
+
+<main>
+
+  <!-- ===== NAME ENTRY ===== -->
+  <div class="card" id="screen-name">
+    <span class="hand">practice, improve, master —</span>
+    <h1>What's your name?</h1>
+    <p style="color:var(--ink-soft); font-size:0.88rem;">Type your full name so your progress is remembered next time. No password needed.</p>
+    <div class="field"><input id="name-input" placeholder="e.g. Aarav Sharma" maxlength="40"></div>
+    <button class="btn big" id="btn-continue">Continue →</button>
+    <p class="error" id="name-error"></p>
+  </div>
+
+  <!-- ===== HOME / DASHBOARD ===== -->
+  <div id="screen-home" hidden>
+    <div class="card">
+      <h2 id="home-greeting">Welcome!</h2>
+      <div class="stat-strip">
+        <div class="stat-box"><div class="num" id="stat-points">0</div><div class="label">Points</div></div>
+        <div class="stat-box"><div class="num" id="stat-levels">1/50</div><div class="label">Levels</div></div>
+        <div class="stat-box"><div class="num" id="stat-accuracy">—</div><div class="label">Accuracy</div></div>
+      </div>
+      <div class="streak-pill">🔥 <span id="stat-streak">0</span> day streak</div>
+      <p style="margin-top:12px;"><a href="math-records.html" style="color:var(--teal); font-weight:600; font-size:0.88rem;">View leaderboards & records →</a></p>
+    </div>
+
+    <div class="card">
+      <h2>Stopwatch — practice mode</h2>
+      <p style="font-size:0.85rem; color:var(--ink-soft); margin-top:-4px;">Go at your own pace. Score 80%+ to unlock the next level.</p>
+      <div class="level-grid" id="level-grid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Timer — speed challenge</h2>
+      <p style="font-size:0.85rem; color:var(--ink-soft); margin-top:-4px;">Answer as many as you can before time runs out, at your current level's difficulty.</p>
+      <div class="timer-presets" id="timer-presets"></div>
+      <div class="custom-timer">
+        <div class="field"><label>Custom (minutes)</label><input id="custom-min" type="number" min="0" value="0"></div>
+        <div class="field"><label>Seconds</label><input id="custom-sec" type="number" min="0" max="59" value="0"></div>
+        <button class="btn secondary" id="btn-start-custom">Start</button>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="btn secondary" id="btn-switch-name">Not you? Switch name</button>
+    </div>
+  </div>
+
+  <!-- ===== PLAY SCREEN ===== -->
+  <div class="card" id="screen-play" hidden>
+    <div class="play-hud">
+      <div class="clock" id="play-clock">00:00</div>
+      <div class="progress" id="play-progress">Level 1</div>
+    </div>
+    <div class="question-box">
+      <div class="question-text" id="question-text">?</div>
+      <div class="choices" id="choices"></div>
+    </div>
+    <div class="live-tally">
+      <span>✓ <span id="tally-correct">0</span></span>
+      <span>✕ <span id="tally-wrong">0</span></span>
+    </div>
+  </div>
+
+  <!-- ===== RESULTS ===== -->
+  <div class="card" id="screen-results" hidden>
+    <div class="result-hero">
+      <div style="color:var(--ink-soft); font-weight:700;">SESSION COMPLETE</div>
+      <div class="big-num" id="result-points">+0</div>
+      <div style="color:var(--ink-soft);">points earned</div>
+    </div>
+    <div class="stat-strip" id="result-stats"></div>
+    <div id="result-badges"></div>
+    <div style="display:flex; gap:10px; margin-top:16px;">
+      <button class="btn secondary" style="flex:1;" id="btn-back-home">Back to home</button>
+      <button class="btn" style="flex:1;" id="btn-play-again">Play again</button>
+    </div>
+  </div>
+
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* PASTE the SAME firebaseConfig used everywhere else */
+ const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const CONFIG = {
+  totalLevels: 50,
+  questionsPerLevel: 10,
+  unlockAccuracy: 0.8,
+  pointsCorrect: 2,
+  pointsWrong: -1,
+  pointsDailyLogin: 3,
+  pointsLevelComplete: 5,
+  timerPresets: [30,60,120,300,600]
+};
+
+function $(id){ return document.getElementById(id); }
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=randInt(0,i); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function slugify(name){ return (name||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'student'; }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function fmtTime(ms){
+  const totalSec = Math.floor(ms/1000);
+  const m = Math.floor(totalSec/60), s = totalSec%60, cs = Math.floor((ms%1000)/10);
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + '.' + String(cs).padStart(2,'0');
+}
+function fmtSeconds(totalSec){
+  const m = Math.floor(totalSec/60), s = totalSec%60;
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+/* ---------- question generation, scaled across 50 levels ---------- */
+function levelParams(level){
+  const t = Math.min(Math.max(level,1), 50);
+  const maxNum = 5 + t*4;
+  const small = Math.max(4, Math.round(maxNum/8));
+  let ops;
+  if(t<=5) ops=['add','sub'];
+  else if(t<=15) ops=['add','sub','mul'];
+  else if(t<=25) ops=['add','sub','mul','div'];
+  else if(t<=40) ops=['add','sub','mul','div','square'];
+  else ops=['add','sub','mul','div','square','twostep'];
+  return { maxNum: maxNum, small: small, ops: ops };
+}
+
+function generateQuestion(level){
+  const p = levelParams(level);
+  const maxNum = p.maxNum, small = p.small, ops = p.ops;
+  const op = ops[randInt(0,ops.length-1)];
+  var a,b,c,answer,text;
+  if(op==='add'){ a=randInt(1,maxNum); b=randInt(1,maxNum); answer=a+b; text=a+' + '+b; }
+  else if(op==='sub'){ a=randInt(1,maxNum); b=randInt(1,a); answer=a-b; text=a+' \u2212 '+b; }
+  else if(op==='mul'){ a=randInt(2,small); b=randInt(2,small); answer=a*b; text=a+' \u00d7 '+b; }
+  else if(op==='div'){ b=randInt(2,small); answer=randInt(2,small); a=b*answer; text=a+' \u00f7 '+b; }
+  else if(op==='square'){ a=randInt(2,Math.max(3,Math.round(small/1.3))); answer=a*a; text=a+'\u00b2'; }
+  else { a=randInt(2,small); b=randInt(2,small); c=randInt(2,small); answer=(a+b)*c; text='('+a+' + '+b+') \u00d7 '+c; }
+
+  const choicesSet = new Set([answer]);
+  let guard = 0;
+  while(choicesSet.size < 4 && guard < 30){
+    guard++;
+    const offset = randInt(1, Math.max(3, Math.round(Math.abs(answer)*0.25)+2));
+    let wrong = Math.random()<0.5 ? answer - offset : answer + offset;
+    if(wrong < 0) wrong = answer + offset;
+    choicesSet.add(wrong);
+  }
+  return { text: text, answer: answer, choices: shuffle(Array.from(choicesSet)) };
+}
+
+/* ---------- student profile ---------- */
+let student = null;
+
+function blankStudent(name){
+  return {
+    name: name, points:0, levelsUnlocked:1, completedLevels:[],
+    streak:0, lastLoginDate:null,
+    totalCorrect:0, totalWrong:0,
+    stopwatchBest:{}, timerBest:{}
+  };
+}
+
+$('btn-continue').addEventListener('click', function(){
+  const name = $('name-input').value.trim();
+  const err = $('name-error');
+  if(!name){ err.textContent = 'Type your name to continue.'; return; }
+  err.textContent = '';
+  loadOrCreateStudent(name);
+});
+$('name-input').addEventListener('keydown', function(e){ if(e.key==='Enter') $('btn-continue').click(); });
+
+function loadOrCreateStudent(name){
+  const slug = slugify(name);
+  db.collection('mathGameStudents').doc(slug).get().then(function(doc){
+    if(doc.exists){
+      student = doc.data();
+    } else {
+      student = blankStudent(name);
+    }
+    student.slug = slug;
+    applyDailyLogin();
+  }).catch(function(err){
+    $('name-error').textContent = err.message;
+  });
+}
+
+function applyDailyLogin(){
+  const today = todayStr();
+  if(student.lastLoginDate !== today){
+    const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+    student.streak = (student.lastLoginDate === yesterday) ? (student.streak||0)+1 : 1;
+    student.lastLoginDate = today;
+    student.points = (student.points||0) + CONFIG.pointsDailyLogin;
+  }
+  saveStudent().then(showHome);
+}
+
+function saveStudent(){
+  const data = Object.assign({}, student);
+  const slug = data.slug;
+  delete data.slug;
+  return db.collection('mathGameStudents').doc(slug).set(data, { merge: false });
+}
+
+/* ---------- home screen ---------- */
+function showHome(){
+  $('screen-name').hidden = true;
+  $('screen-play').hidden = true;
+  $('screen-results').hidden = true;
+  $('screen-home').hidden = false;
+
+  $('home-greeting').textContent = 'Welcome back, ' + student.name + '!';
+  $('stat-points').textContent = student.points || 0;
+  $('stat-levels').textContent = (student.completedLevels||[]).length + '/' + CONFIG.totalLevels;
+  const totalQ = (student.totalCorrect||0) + (student.totalWrong||0);
+  $('stat-accuracy').textContent = totalQ ? Math.round((student.totalCorrect/totalQ)*100)+'%' : '\u2014';
+  $('stat-streak').textContent = student.streak || 0;
+
+  renderLevelGrid();
+  renderTimerPresets();
+}
+
+function renderLevelGrid(){
+  const grid = $('level-grid');
+  grid.innerHTML = '';
+  for(let lvl=1; lvl<=CONFIG.totalLevels; lvl++){
+    const btn = document.createElement('button');
+    btn.textContent = lvl;
+    btn.className = 'level-btn ' +
+      ((student.completedLevels||[]).indexOf(lvl) !== -1 ? 'completed' :
+       lvl <= student.levelsUnlocked ? 'unlocked' : 'locked');
+    if(lvl <= student.levelsUnlocked){
+      (function(l){ btn.addEventListener('click', function(){ startStopwatch(l); }); })(lvl);
+    } else {
+      btn.disabled = true;
+    }
+    grid.appendChild(btn);
+  }
+}
+
+function renderTimerPresets(){
+  const wrap = $('timer-presets');
+  wrap.innerHTML = '';
+  CONFIG.timerPresets.forEach(function(sec){
+    const btn = document.createElement('button');
+    btn.textContent = sec < 60 ? sec+' sec' : (sec/60)+' min';
+    btn.addEventListener('click', function(){ startTimer(sec); });
+    wrap.appendChild(btn);
+  });
+}
+$('btn-start-custom').addEventListener('click', function(){
+  const min = parseInt($('custom-min').value)||0;
+  const sec = parseInt($('custom-sec').value)||0;
+  const total = min*60+sec;
+  if(total < 5){ alert('Pick at least 5 seconds.'); return; }
+  startTimer(total);
+});
+
+$('btn-switch-name').addEventListener('click', function(){
+  student = null;
+  $('name-input').value = '';
+  $('screen-home').hidden = true;
+  $('screen-name').hidden = false;
+});
+
+/* ---------- session state ---------- */
+let session = null;
+
+function startStopwatch(level){
+  session = { mode:'stopwatch', level:level, index:0, correct:0, wrong:0, startTime: performance.now() };
+  $('screen-home').hidden = true;
+  $('screen-play').hidden = false;
+  $('play-progress').textContent = 'Level ' + level + ' \u2014 Question 1/' + CONFIG.questionsPerLevel;
+  runStopwatchClock();
+  nextQuestion();
+}
+
+function runStopwatchClock(){
+  if(session.timerId) clearInterval(session.timerId);
+  session.timerId = setInterval(function(){
+    if(!session || session.mode !== 'stopwatch') return;
+    $('play-clock').textContent = fmtTime(performance.now() - session.startTime);
+  }, 47);
+}
+
+function startTimer(durationSec){
+  const level = student.levelsUnlocked || 1;
+  session = { mode:'timer', duration:durationSec, level:level, index:0, correct:0, wrong:0, endsAt: Date.now()+durationSec*1000 };
+  $('screen-home').hidden = true;
+  $('screen-play').hidden = false;
+  $('play-progress').textContent = 'Timer \u2014 Level ' + level + ' difficulty';
+  runTimerClock();
+  nextQuestion();
+}
+
+function runTimerClock(){
+  if(session.timerId) clearInterval(session.timerId);
+  session.timerId = setInterval(function(){
+    if(!session || session.mode !== 'timer') return;
+    const remaining = Math.max(0, session.endsAt - Date.now());
+    const clockEl = $('play-clock');
+    clockEl.textContent = fmtSeconds(Math.ceil(remaining/1000));
+    clockEl.classList.toggle('danger', remaining <= 10000);
+    if(remaining <= 0){
+      clearInterval(session.timerId);
+      finishSession();
+    }
+  }, 200);
+}
+
+function nextQuestion(){
+  if(session.mode === 'stopwatch' && session.index >= CONFIG.questionsPerLevel){
+    finishSession();
+    return;
+  }
+  session.current = generateQuestion(session.level);
+  $('question-text').textContent = session.current.text;
+  $('tally-correct').textContent = session.correct;
+  $('tally-wrong').textContent = session.wrong;
+  if(session.mode === 'stopwatch'){
+    $('play-progress').textContent = 'Level ' + session.level + ' \u2014 Question ' + (session.index+1) + '/' + CONFIG.questionsPerLevel;
+  }
+  const choicesWrap = $('choices');
+  choicesWrap.innerHTML = '';
+  session.current.choices.forEach(function(val){
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = val;
+    btn.addEventListener('click', function(){ answerQuestion(val, btn); });
+    choicesWrap.appendChild(btn);
+  });
+}
+
+function answerQuestion(val, btnEl){
+  if(!session) return;
+  document.querySelectorAll('.choice-btn').forEach(function(b){ b.disabled = true; });
+  const isCorrect = val === session.current.answer;
+  btnEl.classList.add(isCorrect ? 'correct' : 'wrong');
+  if(!isCorrect){
+    document.querySelectorAll('.choice-btn').forEach(function(b){
+      if(parseInt(b.textContent) === session.current.answer) b.classList.add('correct');
+    });
+  }
+  if(isCorrect) session.correct++; else session.wrong++;
+  session.index++;
+
+  setTimeout(function(){
+    if(session.mode === 'timer' && Date.now() >= session.endsAt){
+      finishSession();
+    } else {
+      nextQuestion();
+    }
+  }, 550);
+}
+
+function finishSession(){
+  if(session.timerId) clearInterval(session.timerId);
+  const mode = session.mode;
+  const correct = session.correct, wrong = session.wrong;
+  const totalAnswered = correct + wrong;
+  const accuracy = totalAnswered ? correct/totalAnswered : 0;
+  let sessionPoints = correct*CONFIG.pointsCorrect + wrong*CONFIG.pointsWrong;
+  let leveledUp = false, newRecord = false, levelBonus = false;
+
+  student.totalCorrect = (student.totalCorrect||0) + correct;
+  student.totalWrong = (student.totalWrong||0) + wrong;
+
+  if(mode === 'stopwatch'){
+    const timeMs = performance.now() - session.startTime;
+    const qualifies = accuracy >= CONFIG.unlockAccuracy;
+    const level = session.level;
+
+    if(qualifies && (student.completedLevels||[]).indexOf(level) === -1){
+      student.completedLevels = (student.completedLevels||[]).concat([level]);
+      sessionPoints += CONFIG.pointsLevelComplete;
+      levelBonus = true;
+    }
+    if(qualifies && level === student.levelsUnlocked && level < CONFIG.totalLevels){
+      student.levelsUnlocked = level + 1;
+      leveledUp = true;
+    }
+    if(qualifies){
+      const prevBest = (student.stopwatchBest||{})[level];
+      if(!prevBest || timeMs < prevBest.timeMs){
+        student.stopwatchBest = Object.assign({}, student.stopwatchBest);
+        student.stopwatchBest[level] = { timeMs: timeMs, accuracy: Math.round(accuracy*100), date: todayStr() };
+        newRecord = true;
+      }
+    }
+  } else {
+    const duration = session.duration;
+    const prevBest = (student.timerBest||{})[duration];
+    if(!prevBest || sessionPoints > prevBest.points){
+      student.timerBest = Object.assign({}, student.timerBest);
+      student.timerBest[duration] = { correct: correct, wrong: wrong, points: sessionPoints, date: todayStr() };
+      newRecord = true;
+    }
+  }
+
+  student.points = (student.points||0) + sessionPoints;
+  saveStudent().then(function(){
+    showResults({ mode:mode, correct:correct, wrong:wrong, accuracy:accuracy, sessionPoints:sessionPoints, leveledUp:leveledUp, newRecord:newRecord, levelBonus:levelBonus, session:session });
+  });
+}
+
+function showResults(r){
+  $('screen-play').hidden = true;
+  $('screen-results').hidden = false;
+  $('result-points').textContent = (r.sessionPoints>=0?'+':'') + r.sessionPoints;
+
+  $('result-stats').innerHTML =
+    '<div class="stat-box"><div class="num">'+r.correct+'</div><div class="label">Correct</div></div>' +
+    '<div class="stat-box"><div class="num">'+r.wrong+'</div><div class="label">Wrong</div></div>' +
+    '<div class="stat-box"><div class="num">'+Math.round(r.accuracy*100)+'%</div><div class="label">Accuracy</div></div>';
+
+  const notes = [];
+  if(r.levelBonus) notes.push('\ud83c\udf89 Level completed! +' + CONFIG.pointsLevelComplete + ' bonus points.');
+  if(r.leveledUp) notes.push('\ud83d\udd13 Next level unlocked!');
+  if(r.newRecord) notes.push('\ud83c\udfc6 New personal best!');
+  $('result-badges').innerHTML = notes.map(function(n){ return '<div class="badge-note">'+n+'</div>'; }).join('');
+
+  window._lastSession = r.session;
+}
+
+$('btn-back-home').addEventListener('click', showHome);
+$('btn-play-again').addEventListener('click', function(){
+  const last = window._lastSession;
+  if(!last) { showHome(); return; }
+  if(last.mode === 'stopwatch') startStopwatch(last.level);
+  else startTimer(last.duration);
+});
+</script>
+</body>
+</html>

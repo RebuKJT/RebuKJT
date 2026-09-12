@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Challenge Records | Lovely Angels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --chalk-green:#1F3B33; --chalk-green-dark:#152A25;
+    --paper:#F4F1E6; --paper-line:#DCD6C2;
+    --margin-red:#C1443B; --ink:#26302C; --ink-soft:#5B6660;
+    --mustard:#C99A1E; --teal:#2C7A73; --radius:10px; --shadow:0 6px 18px rgba(21,42,37,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif;}
+  h1,h2{font-family:'Fraunces',serif; font-weight:700; margin:0 0 8px;}
+  .hand{font-family:'Caveat',cursive; color:var(--margin-red); font-weight:700;}
+
+  nav.main{background:var(--chalk-green); color:#F4F1E6; padding:14px 24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;}
+  nav.main .brand{font-family:'Fraunces',serif; font-size:1.15rem; font-weight:700;}
+  nav.main a{color:#DCE6DF; font-size:0.85rem; text-decoration:none; font-weight:600;}
+  nav.main a:hover{color:#fff;}
+
+  .tabs{display:flex; gap:6px; flex-wrap:wrap; max-width:900px; margin:20px auto 0; padding:0 18px;}
+  .tabs button{background:#fff; border:1.5px solid var(--paper-line); color:var(--ink-soft); padding:8px 16px; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600;}
+  .tabs button.active{background:var(--chalk-green); color:#fff; border-color:var(--chalk-green);}
+
+  main{max-width:900px; margin:0 auto; padding:16px 18px 60px;}
+  .card{background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; margin-bottom:18px;}
+  .card h2{font-size:1.05rem;}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:end;}
+  .field{margin-bottom:10px;}
+  .field label{display:block; font-size:0.78rem; font-weight:600; color:var(--ink-soft); margin-bottom:3px;}
+  .field select{padding:8px 10px; border:1.5px solid var(--paper-line); border-radius:6px; font-size:0.85rem;}
+
+  table{width:100%; border-collapse:collapse; font-size:0.88rem;}
+  thead th{text-align:left; font-size:0.7rem; text-transform:uppercase; color:var(--ink-soft); border-bottom:2px solid var(--paper-line); padding:8px 6px;}
+  tbody td{padding:8px 6px; border-bottom:1px solid var(--paper-line);}
+  .rank-medal{font-size:1.1rem;}
+  .practice-card{border-left:4px solid var(--mustard); background:#FCF7E9;}
+  .practice-card h2{color:#8a6b12;}
+
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+<nav class="main">
+  <span class="brand">🏆 Math Challenge — Records</span>
+  <a href="math-challenge.html">← Back to game</a>
+</nav>
+
+<div class="tabs" id="tabs">
+  <button data-tab="overall" class="active">Overall Top 15</button>
+  <button data-tab="stopwatch">Stopwatch by Level</button>
+  <button data-tab="timer">Timer by Duration</button>
+</div>
+
+<main>
+
+  <section id="tab-overall">
+    <div class="card">
+      <h2>🏅 Top 15 — Overall Points</h2>
+      <table>
+        <thead><tr><th>Rank</th><th>Student</th><th>Points</th><th>Levels</th><th>Accuracy</th></tr></thead>
+        <tbody id="top15-body"><tr><td colspan="5" style="color:var(--ink-soft); text-align:center;">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="card practice-card">
+      <h2>🌱 Students who could use more practice</h2>
+      <p style="font-size:0.85rem; color:#8a6b12; margin-top:-6px;">A gentle nudge, not a ranking — everyone improves at their own pace.</p>
+      <table>
+        <thead><tr><th>Student</th><th>Points</th><th>Levels</th><th>Accuracy</th></tr></thead>
+        <tbody id="practice-body"><tr><td colspan="4" style="color:var(--ink-soft); text-align:center;">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="tab-stopwatch" hidden>
+    <div class="card">
+      <h2>⏱ Fastest times by level</h2>
+      <div class="row">
+        <div class="field"><label>Level</label><select id="level-select"></select></div>
+      </div>
+      <table>
+        <thead><tr><th>Rank</th><th>Student</th><th>Time</th><th>Accuracy</th></tr></thead>
+        <tbody id="stopwatch-body"><tr><td colspan="4" style="color:var(--ink-soft); text-align:center;">Pick a level.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="tab-timer" hidden>
+    <div class="card">
+      <h2>⚡ Highest scores by duration</h2>
+      <div class="row">
+        <div class="field"><label>Duration</label><select id="duration-select"></select></div>
+      </div>
+      <table>
+        <thead><tr><th>Rank</th><th>Student</th><th>Correct</th><th>Wrong</th><th>Points</th></tr></thead>
+        <tbody id="timer-body"><tr><td colspan="5" style="color:var(--ink-soft); text-align:center;">Pick a duration.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* PASTE the SAME firebaseConfig used in math-challenge.html */
+ const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const TOTAL_LEVELS = 50;
+const TIMER_DURATIONS = [30,60,120,300,600];
+
+function $(id){ return document.getElementById(id); }
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
+function fmtTime(ms){
+  const totalSec = Math.floor(ms/1000);
+  const m = Math.floor(totalSec/60), s = totalSec%60, cs = Math.floor((ms%1000)/10);
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + '.' + String(cs).padStart(2,'0');
+}
+function fmtDuration(sec){ return sec < 60 ? sec+' sec' : (sec/60)+' min'; }
+
+let allStudents = [];
+
+document.querySelectorAll('.tabs button').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.tabs button').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    ['overall','stopwatch','timer'].forEach(function(t){
+      $('tab-'+t).hidden = (t !== btn.dataset.tab);
+    });
+  });
+});
+
+/* level & duration dropdowns */
+const levelSelect = $('level-select');
+for(let i=1;i<=TOTAL_LEVELS;i++){
+  const opt = document.createElement('option');
+  opt.value = i; opt.textContent = 'Level ' + i;
+  levelSelect.appendChild(opt);
+}
+levelSelect.addEventListener('change', renderStopwatchBoard);
+
+const durationSelect = $('duration-select');
+TIMER_DURATIONS.forEach(function(d){
+  const opt = document.createElement('option');
+  opt.value = d; opt.textContent = fmtDuration(d);
+  durationSelect.appendChild(opt);
+});
+durationSelect.addEventListener('change', renderTimerBoard);
+
+/* load all students once, render everything client-side */
+db.collection('mathGameStudents').get().then(function(snap){
+  allStudents = snap.docs.map(function(d){ return d.data(); });
+  renderOverall();
+  renderStopwatchBoard();
+  renderTimerBoard();
+}).catch(function(err){
+  $('top15-body').innerHTML = '<tr><td colspan="5" style="color:var(--margin-red);">' + escapeHtml(err.message) + '</td></tr>';
+});
+
+function accuracyOf(s){
+  const total = (s.totalCorrect||0) + (s.totalWrong||0);
+  return total ? (s.totalCorrect/total) : 0;
+}
+
+function renderOverall(){
+  const sorted = allStudents.slice().sort(function(a,b){ return (b.points||0) - (a.points||0); });
+  const medals = ['🥇','🥈','🥉'];
+
+  const top15 = sorted.slice(0,15);
+  $('top15-body').innerHTML = top15.length ? top15.map(function(s,i){
+    return '<tr><td class="rank-medal">' + (medals[i]||(i+1)) + '</td><td>' + escapeHtml(s.name) + '</td><td>' + (s.points||0) +
+      '</td><td>' + (s.completedLevels||[]).length + '/' + TOTAL_LEVELS + '</td><td>' + Math.round(accuracyOf(s)*100) + '%</td></tr>';
+  }).join('') : '<tr><td colspan="5" style="text-align:center; color:var(--ink-soft);">No games played yet.</td></tr>';
+
+  const practiceList = sorted.length > 15 ? sorted.slice(15).slice(-5).reverse() : [];
+  $('practice-body').innerHTML = practiceList.length ? practiceList.map(function(s){
+    return '<tr><td>' + escapeHtml(s.name) + '</td><td>' + (s.points||0) + '</td><td>' + (s.completedLevels||[]).length + '/' + TOTAL_LEVELS +
+      '</td><td>' + Math.round(accuracyOf(s)*100) + '%</td></tr>';
+  }).join('') : '<tr><td colspan="4" style="text-align:center; color:var(--ink-soft);">Not enough games yet.</td></tr>';
+}
+
+function renderStopwatchBoard(){
+  const level = levelSelect.value;
+  const entries = [];
+  allStudents.forEach(function(s){
+    const rec = (s.stopwatchBest||{})[level];
+    if(rec) entries.push({ name: s.name, timeMs: rec.timeMs, accuracy: rec.accuracy });
+  });
+  entries.sort(function(a,b){ return a.timeMs - b.timeMs; });
+  const medals = ['🥇','🥈','🥉'];
+  $('stopwatch-body').innerHTML = entries.length ? entries.map(function(e,i){
+    return '<tr><td class="rank-medal">' + (medals[i]||(i+1)) + '</td><td>' + escapeHtml(e.name) + '</td><td>' + fmtTime(e.timeMs) + '</td><td>' + e.accuracy + '%</td></tr>';
+  }).join('') : '<tr><td colspan="4" style="text-align:center; color:var(--ink-soft);">No records for this level yet.</td></tr>';
+}
+
+function renderTimerBoard(){
+  const duration = durationSelect.value;
+  const entries = [];
+  allStudents.forEach(function(s){
+    const rec = (s.timerBest||{})[duration];
+    if(rec) entries.push({ name: s.name, correct: rec.correct, wrong: rec.wrong, points: rec.points });
+  });
+  entries.sort(function(a,b){ return b.points - a.points; });
+  const medals = ['🥇','🥈','🥉'];
+  $('timer-body').innerHTML = entries.length ? entries.map(function(e,i){
+    return '<tr><td class="rank-medal">' + (medals[i]||(i+1)) + '</td><td>' + escapeHtml(e.name) + '</td><td>' + e.correct + '</td><td>' + e.wrong + '</td><td>' + e.points + '</td></tr>';
+  }).join('') : '<tr><td colspan="5" style="text-align:center; color:var(--ink-soft);">No records for this duration yet.</td></tr>';
+}
+</script>
+</body>
+</html>

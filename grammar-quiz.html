@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Grammar Practice — Student Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --slate:#2F4A43;
+    --slate-dark:#22362F;
+    --panel:#1F3631;
+    --chalk:#F7F4EC;
+    --chalk-dim:#C9D6D0;
+    --mustard:#E8B84B;
+    --mustard-dark:#C79A34;
+    --mint:#7FB77E;
+    --coral:#D9695F;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 12% 18%, rgba(247,244,236,0.05) 0, transparent 40%),
+      radial-gradient(circle at 85% 75%, rgba(247,244,236,0.04) 0, transparent 45%),
+      var(--slate);
+    color:var(--chalk);
+    font-family:'Inter',sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 16px;
+  }
+  .app{ width:100%; max-width:560px; }
+  .brand{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:0.02em;
+    color:var(--chalk-dim);
+    margin:0 0 18px 4px;
+  }
+  .card{
+    background:var(--panel);
+    border-radius:var(--radius);
+    padding:28px;
+    box-shadow: inset 0 0 0 1px rgba(247,244,236,0.06);
+  }
+  h1.title{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:26px;
+    line-height:1.25;
+    margin:0 0 6px 0;
+    color:var(--chalk);
+  }
+  p.sub{
+    color:var(--chalk-dim);
+    font-size:15px;
+    line-height:1.5;
+    margin:0 0 24px 0;
+  }
+  /* Name gate */
+  .name-row{ display:flex; gap:10px; }
+  input[type=text]{
+    flex:1;
+    background:var(--slate-dark);
+    border:1px solid rgba(247,244,236,0.14);
+    color:var(--chalk);
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    padding:12px 14px;
+    border-radius:10px;
+    outline:none;
+  }
+  input[type=text]:focus{ border-color:var(--mustard); }
+  button{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    border:none;
+    border-radius:10px;
+  }
+  .btn-primary{
+    background:var(--mustard);
+    color:var(--slate-dark);
+    padding:12px 22px;
+  }
+  .btn-primary:hover{ background:var(--mustard-dark); }
+  .btn-primary:disabled{ opacity:0.4; cursor:not-allowed; }
+  .btn-ghost{
+    background:transparent;
+    color:var(--chalk-dim);
+    padding:10px 16px;
+    border:1px solid rgba(247,244,236,0.16);
+  }
+  .btn-ghost:hover{ color:var(--chalk); border-color:rgba(247,244,236,0.3); }
+
+  /* Class grid */
+  .class-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:4px; }
+  .class-tile{
+    aspect-ratio:1/1;
+    background:var(--slate-dark);
+    border:1px solid rgba(247,244,236,0.1);
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Baloo 2',sans-serif; font-weight:700; font-size:20px;
+    color:var(--chalk);
+    cursor:pointer;
+    transition:transform .12s ease, border-color .12s ease;
+  }
+  .class-tile:hover{ border-color:var(--mustard); transform:translateY(-2px); }
+  .class-tile span{ display:block; font-family:'Inter',sans-serif; font-weight:500; font-size:10px; color:var(--chalk-dim); margin-top:2px;}
+
+  /* Topic list */
+  .topic-list{ display:flex; flex-direction:column; gap:8px; margin-top:4px; }
+  .topic-pill{
+    text-align:left;
+    background:var(--slate-dark);
+    border:1px solid rgba(247,244,236,0.1);
+    color:var(--chalk);
+    padding:13px 16px;
+    border-radius:10px;
+    font-size:15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .topic-pill:hover{ border-color:var(--mustard); }
+  .topic-pill small{ color:var(--chalk-dim); font-weight:400; }
+
+  /* Quiz */
+  .progress-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+  .progress-track{ flex:1; height:6px; background:var(--slate-dark); border-radius:4px; margin:0 12px; overflow:hidden; }
+  .progress-fill{ height:100%; background:var(--mustard); width:0%; transition:width .25s ease; }
+  .qcount{ font-size:13px; color:var(--chalk-dim); white-space:nowrap; }
+  .question{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:600;
+    font-size:19px;
+    line-height:1.4;
+    margin:0 0 20px 0;
+  }
+  .options{ display:flex; flex-direction:column; gap:10px; }
+  .option{
+    text-align:left;
+    background:var(--slate-dark);
+    border:1px solid rgba(247,244,236,0.12);
+    color:var(--chalk);
+    padding:13px 16px;
+    border-radius:10px;
+    font-size:15px;
+  }
+  .option:hover:not(:disabled){ border-color:var(--mustard); }
+  .option:disabled{ cursor:default; }
+  .option.correct{ background:rgba(127,183,126,0.18); border-color:var(--mint); }
+  .option.wrong{ background:rgba(217,105,95,0.18); border-color:var(--coral); }
+  .feedback{ margin-top:16px; font-size:14px; color:var(--chalk-dim); min-height:20px; }
+  .feedback.correct{ color:var(--mint); }
+  .feedback.wrong{ color:var(--coral); }
+  .quiz-footer{ display:flex; justify-content:space-between; align-items:center; margin-top:22px; }
+
+  /* Result */
+  .result-score{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:800;
+    font-size:44px;
+    margin:6px 0 2px 0;
+  }
+  .result-row{ display:flex; justify-content:space-between; padding:10px 0; border-top:1px solid rgba(247,244,236,0.08); font-size:14px; color:var(--chalk-dim); }
+  .result-row b{ color:var(--chalk); font-weight:600; }
+  .status{ font-size:13px; color:var(--chalk-dim); margin-top:14px; }
+  .hidden{ display:none; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <p class="brand">Student Hub · Grammar Practice</p>
+  <div class="card">
+
+    <!-- STEP 1: NAME -->
+    <section id="step-name">
+      <h1 class="title">What's your name?</h1>
+      <p class="sub">We'll save your points and progress as you practice.</p>
+      <div class="name-row">
+        <input type="text" id="nameInput" placeholder="e.g. Kuber" />
+        <button class="btn-primary" id="nameContinue">Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 2: CLASS -->
+    <section id="step-class" class="hidden">
+      <h1 class="title">Choose your class</h1>
+      <p class="sub">Grammar questions match your class level.</p>
+      <div class="class-grid" id="classGrid"></div>
+    </section>
+
+    <!-- STEP 3: TOPIC -->
+    <section id="step-topic" class="hidden">
+      <h1 class="title" id="topicTitle">Pick a topic</h1>
+      <p class="sub">5 questions per topic. Correct answers earn points.</p>
+      <div class="topic-list" id="topicList"></div>
+      <div style="margin-top:18px;">
+        <button class="btn-ghost" id="backToClass">← Change class</button>
+      </div>
+    </section>
+
+    <!-- STEP 4: QUIZ -->
+    <section id="step-quiz" class="hidden">
+      <div class="progress-row">
+        <span class="qcount" id="qcount">Q1/5</span>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <span class="qcount" id="scoreLive">0 pts</span>
+      </div>
+      <p class="question" id="questionText"></p>
+      <div class="options" id="optionsList"></div>
+      <p class="feedback" id="feedback"></p>
+      <div class="quiz-footer">
+        <button class="btn-ghost" id="quitQuiz">Quit</button>
+        <button class="btn-primary" id="nextQuestion" disabled>Next</button>
+      </div>
+    </section>
+
+    <!-- STEP 5: RESULT -->
+    <section id="step-result" class="hidden">
+      <h1 class="title">Nice work!</h1>
+      <div class="result-score" id="resultScore">0/5</div>
+      <div class="result-row"><span>Points earned this round</span><b id="pointsEarned">0</b></div>
+      <div class="result-row"><span>Total points</span><b id="totalPoints">0</b></div>
+      <div class="result-row"><span>Topic</span><b id="resultTopic">—</b></div>
+      <p class="status" id="saveStatus"></p>
+      <div class="quiz-footer">
+        <button class="btn-ghost" id="tryAnother">Try another topic</button>
+        <button class="btn-primary" id="playAgain">Play again</button>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, signInAnonymously, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ---------------------------------------------------------------
+  // 1) PASTE YOUR FIREBASE CONFIG HERE (same one used elsewhere on
+  //    kuberjungthapa.com.np — from Firebase Console > Project Settings)
+  // ---------------------------------------------------------------
+ const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // ---------------------------------------------------------------
+  // 2) QUESTION BANK — grouped by class, then by grammar topic.
+  //    Add more topics/questions here without touching any logic below.
+  //    Structure: { [classNum]: { [topicName]: [ {q, options, answerIndex} ] } }
+  // ---------------------------------------------------------------
+  const QUESTION_BANK = {
+    1: {
+      "Nouns": [
+        { q: "Which word is a noun?", options: ["Run", "Happy", "Dog", "Quickly"], a: 2 },
+        { q: "Which word is a naming word for a place?", options: ["School", "Jump", "Blue", "Slowly"], a: 0 },
+        { q: "Pick the noun: 'The ___ is on the table.'", options: ["book", "read", "under", "and"], a: 0 },
+        { q: "Which is a person's name (a noun)?", options: ["Ramesh", "Run", "Big", "Soon"], a: 0 },
+        { q: "Which word names a thing?", options: ["Chair", "Sit", "Fast", "Loudly"], a: 0 }
+      ],
+      "is / am / are": [
+        { q: "I ___ a student.", options: ["is", "am", "are", "be"], a: 1 },
+        { q: "She ___ happy today.", options: ["am", "are", "is", "be"], a: 2 },
+        { q: "They ___ my friends.", options: ["is", "am", "are", "be"], a: 2 },
+        { q: "We ___ ready to go.", options: ["is", "am", "are", "be"], a: 2 },
+        { q: "It ___ raining outside.", options: ["am", "is", "are", "be"], a: 1 }
+      ]
+    },
+    2: {
+      "has / have": [
+        { q: "She ___ a red bag.", options: ["have", "has", "having", "had"], a: 1 },
+        { q: "I ___ two brothers.", options: ["has", "have", "having", "had"], a: 1 },
+        { q: "They ___ a big house.", options: ["has", "have", "having", "had"], a: 1 },
+        { q: "The cat ___ a soft tail.", options: ["have", "has", "having", "had"], a: 1 },
+        { q: "We ___ a new teacher.", options: ["has", "have", "having", "had"], a: 1 }
+      ],
+      "this / that": [
+        { q: "___ is my pencil (close to me).", options: ["That", "This", "These", "Those"], a: 1 },
+        { q: "___ is a mountain (far away).", options: ["This", "That", "These", "Those"], a: 1 },
+        { q: "Look at ___ bird near your feet.", options: ["that", "this", "those", "these"], a: 1 },
+        { q: "___ house across the river is old.", options: ["This", "That", "These", "Those"], a: 1 },
+        { q: "Can I borrow ___ book in your hand?", options: ["that", "this", "those", "these"], a: 1 }
+      ]
+    },
+    3: {
+      "Present Simple": [
+        { q: "She ___ to school every day.", options: ["go", "goes", "going", "went"], a: 1 },
+        { q: "They ___ football on Saturdays.", options: ["play", "plays", "playing", "played"], a: 0 },
+        { q: "My father ___ tea every morning.", options: ["drink", "drinks", "drinking", "drank"], a: 1 },
+        { q: "We ___ our homework after school.", options: ["do", "does", "doing", "did"], a: 0 },
+        { q: "The sun ___ in the east.", options: ["rise", "rises", "rising", "rose"], a: 1 }
+      ],
+      "Past Simple": [
+        { q: "Yesterday, I ___ my grandmother.", options: ["visit", "visits", "visited", "visiting"], a: 2 },
+        { q: "She ___ a letter last night.", options: ["write", "writes", "wrote", "writing"], a: 2 },
+        { q: "We ___ to the market this morning.", options: ["go", "goes", "went", "going"], a: 2 },
+        { q: "He ___ his homework before dinner.", options: ["finish", "finishes", "finished", "finishing"], a: 2 },
+        { q: "They ___ a movie last weekend.", options: ["watch", "watches", "watched", "watching"], a: 2 }
+      ]
+    },
+    4: {
+      "Present Continuous": [
+        { q: "She ___ her homework right now.", options: ["do", "does", "is doing", "did"], a: 2 },
+        { q: "The children ___ in the garden.", options: ["is playing", "are playing", "play", "played"], a: 1 },
+        { q: "I ___ a letter at the moment.", options: ["am writing", "is writing", "writes", "wrote"], a: 0 },
+        { q: "Look! It ___ heavily.", options: ["rain", "rains", "is raining", "rained"], a: 2 },
+        { q: "We ___ for the bus now.", options: ["wait", "waits", "are waiting", "waited"], a: 2 }
+      ],
+      "Subject-Verb Agreement": [
+        { q: "Each of the students ___ a book.", options: ["have", "has", "having", "had"], a: 1 },
+        { q: "The team ___ practicing hard.", options: ["is", "are", "am", "be"], a: 0 },
+        { q: "My sister and I ___ going to the fair.", options: ["is", "am", "are", "be"], a: 2 },
+        { q: "Neither of the boys ___ ready.", options: ["is", "are", "am", "be"], a: 0 },
+        { q: "The news ___ surprising.", options: ["was", "were", "are", "be"], a: 0 }
+      ]
+    },
+    5: {
+      "Present Perfect": [
+        { q: "She ___ already finished her homework.", options: ["has", "have", "had", "having"], a: 0 },
+        { q: "I ___ never been to Kathmandu.", options: ["have", "has", "had", "having"], a: 0 },
+        { q: "They ___ just arrived home.", options: ["has", "have", "had", "having"], a: 1 },
+        { q: "He ___ lived here for ten years.", options: ["has", "have", "had", "having"], a: 0 },
+        { q: "We ___ finished the project already.", options: ["has", "have", "had", "having"], a: 1 }
+      ],
+      "Modal Verbs": [
+        { q: "You ___ wear a helmet while cycling.", options: ["can", "should", "may", "will"], a: 1 },
+        { q: "___ I open the window, please?", options: ["Must", "May", "Should", "Will"], a: 1 },
+        { q: "Students ___ finish their homework on time.", options: ["must", "may", "could", "would"], a: 0 },
+        { q: "It ___ rain later, take an umbrella.", options: ["must", "might", "should", "shall"], a: 1 },
+        { q: "You ___ speak loudly in the library.", options: ["should", "must not", "may", "will"], a: 1 }
+      ]
+    }
+  };
+
+  // ---------------------------------------------------------------
+  // STATE
+  // ---------------------------------------------------------------
+  let uid = null;
+  let studentName = "";
+  let selectedClass = null;
+  let selectedTopic = null;
+  let quizQuestions = [];
+  let currentIndex = 0;
+  let correctCount = 0;
+  let sessionPoints = 0;
+  let answered = false;
+
+  const el = (id) => document.getElementById(id);
+  const show = (id) => { ["step-name","step-class","step-topic","step-quiz","step-result"].forEach(s => el(s).classList.add("hidden")); el(id).classList.remove("hidden"); };
+
+  // ---------------------------------------------------------------
+  // AUTH — anonymous sign-in so each student gets a stable uid.
+  // Their chosen name is stored alongside it in Firestore.
+  // ---------------------------------------------------------------
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      uid = user.uid;
+      const savedName = localStorage.getItem("studentName");
+      if (savedName) {
+        studentName = savedName;
+        el("nameInput").value = savedName;
+      }
+    }
+  });
+  signInAnonymously(auth).catch((err) => {
+    console.error("Auth error:", err);
+    el("saveStatus").textContent = "Could not connect to Firebase — check your config.";
+  });
+
+  async function ensureStudentDoc() {
+    if (!uid) return;
+    const ref = doc(db, "students", uid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      await setDoc(ref, {
+        name: studentName,
+        class: selectedClass,
+        points: 0,
+        skills: { grammar: 0 },
+        createdAt: serverTimestamp()
+      });
+    } else if (studentName && snap.data().name !== studentName) {
+      await updateDoc(ref, { name: studentName });
+    }
+  }
+
+  // ---------------------------------------------------------------
+  // STEP 1: NAME
+  // ---------------------------------------------------------------
+  el("nameContinue").addEventListener("click", () => {
+    const val = el("nameInput").value.trim();
+    if (!val) { el("nameInput").focus(); return; }
+    studentName = val;
+    localStorage.setItem("studentName", val);
+    renderClassGrid();
+    show("step-class");
+  });
+
+  // ---------------------------------------------------------------
+  // STEP 2: CLASS PICKER
+  // ---------------------------------------------------------------
+  function renderClassGrid() {
+    const grid = el("classGrid");
+    grid.innerHTML = "";
+    Object.keys(QUESTION_BANK).forEach((cls) => {
+      const tile = document.createElement("div");
+      tile.className = "class-tile";
+      tile.innerHTML = `${cls}<span>Class</span>`;
+      tile.addEventListener("click", () => {
+        selectedClass = cls;
+        renderTopicList();
+        show("step-topic");
+      });
+      grid.appendChild(tile);
+    });
+  }
+
+  // ---------------------------------------------------------------
+  // STEP 3: TOPIC PICKER
+  // ---------------------------------------------------------------
+  function renderTopicList() {
+    el("topicTitle").textContent = `Class ${selectedClass} — Pick a topic`;
+    const list = el("topicList");
+    list.innerHTML = "";
+    const topics = QUESTION_BANK[selectedClass];
+    Object.keys(topics).forEach((topic) => {
+      const pill = document.createElement("button");
+      pill.className = "topic-pill";
+      pill.innerHTML = `${topic} <small>${topics[topic].length} questions</small>`;
+      pill.addEventListener("click", () => startQuiz(topic));
+      list.appendChild(pill);
+    });
+  }
+  el("backToClass").addEventListener("click", () => show("step-class"));
+
+  // ---------------------------------------------------------------
+  // STEP 4: QUIZ
+  // ---------------------------------------------------------------
+  function startQuiz(topic) {
+    selectedTopic = topic;
+    quizQuestions = QUESTION_BANK[selectedClass][topic];
+    currentIndex = 0;
+    correctCount = 0;
+    sessionPoints = 0;
+    ensureStudentDoc();
+    show("step-quiz");
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    answered = false;
+    const item = quizQuestions[currentIndex];
+    el("qcount").textContent = `Q${currentIndex + 1}/${quizQuestions.length}`;
+    el("progressFill").style.width = `${(currentIndex / quizQuestions.length) * 100}%`;
+    el("scoreLive").textContent = `${sessionPoints} pts`;
+    el("questionText").textContent = item.q;
+    el("feedback").textContent = "";
+    el("feedback").className = "feedback";
+    el("nextQuestion").disabled = true;
+
+    const list = el("optionsList");
+    list.innerHTML = "";
+    item.options.forEach((optText, idx) => {
+      const btn = document.createElement("button");
+      btn.className = "option";
+      btn.textContent = optText;
+      btn.addEventListener("click", () => selectAnswer(idx, btn));
+      list.appendChild(btn);
+    });
+  }
+
+  function selectAnswer(idx, btnEl) {
+    if (answered) return;
+    answered = true;
+    const item = quizQuestions[currentIndex];
+    const allBtns = el("optionsList").querySelectorAll(".option");
+    allBtns.forEach((b) => (b.disabled = true));
+
+    if (idx === item.a) {
+      btnEl.classList.add("correct");
+      correctCount++;
+      sessionPoints += 2;
+      el("feedback").textContent = "Correct! +2 points";
+      el("feedback").className = "feedback correct";
+    } else {
+      btnEl.classList.add("wrong");
+      allBtns[item.a].classList.add("correct");
+      sessionPoints -= 1;
+      el("feedback").textContent = "Not quite — the correct answer is highlighted. −1 point";
+      el("feedback").className = "feedback wrong";
+    }
+    el("scoreLive").textContent = `${sessionPoints} pts`;
+    el("nextQuestion").disabled = false;
+  }
+
+  el("nextQuestion").addEventListener("click", () => {
+    currentIndex++;
+    if (currentIndex < quizQuestions.length) {
+      renderQuestion();
+    } else {
+      el("progressFill").style.width = `100%`;
+      finishQuiz();
+    }
+  });
+
+  el("quitQuiz").addEventListener("click", () => show("step-topic"));
+
+  // ---------------------------------------------------------------
+  // STEP 5: RESULT + SAVE TO FIRESTORE
+  // ---------------------------------------------------------------
+  async function finishQuiz() {
+    el("resultScore").textContent = `${correctCount}/${quizQuestions.length}`;
+    el("pointsEarned").textContent = sessionPoints;
+    el("resultTopic").textContent = `${selectedTopic} (Class ${selectedClass})`;
+    el("saveStatus").textContent = "Saving your progress…";
+    show("step-result");
+
+    try {
+      if (uid) {
+        const studentRef = doc(db, "students", uid);
+        await updateDoc(studentRef, { points: increment(sessionPoints) });
+        const snap = await getDoc(studentRef);
+        el("totalPoints").textContent = snap.exists() ? (snap.data().points ?? 0) : "—";
+
+        await addDoc(collection(db, "attempts"), {
+          studentId: uid,
+          studentName,
+          class: selectedClass,
+          module: "grammar",
+          topic: selectedTopic,
+          correct: correctCount,
+          total: quizQuestions.length,
+          pointsEarned: sessionPoints,
+          timestamp: serverTimestamp()
+        });
+        el("saveStatus").textContent = "Progress saved.";
+      } else {
+        el("saveStatus").textContent = "Not connected — points weren't saved.";
+      }
+    } catch (err) {
+      console.error(err);
+      el("saveStatus").textContent = "Couldn't save progress. Check your Firestore rules/config.";
+    }
+  }
+
+  el("tryAnother").addEventListener("click", () => {
+    renderTopicList();
+    show("step-topic");
+  });
+  el("playAgain").addEventListener("click", () => startQuiz(selectedTopic));
+
+</script>
+</body>
+</html>

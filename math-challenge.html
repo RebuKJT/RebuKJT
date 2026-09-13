@@ -89,6 +89,7 @@
     <div class="field"><input id="name-input" placeholder="e.g. Aarav Sharma" maxlength="40"></div>
     <button class="btn big" id="btn-continue">Continue →</button>
     <p class="error" id="name-error"></p>
+    <p style="text-align:center; margin-top:14px;"><a href="math-records.html" style="color:var(--teal); font-weight:600; font-size:0.88rem;">Just want to see the leaderboard? →</a></p>
   </div>
 
   <!-- ===== HOME / DASHBOARD ===== -->
@@ -155,6 +156,7 @@
       <button class="btn secondary" style="flex:1;" id="btn-back-home">Back to home</button>
       <button class="btn" style="flex:1;" id="btn-play-again">Play again</button>
     </div>
+    <button class="btn big" id="btn-next-level" style="margin-top:10px;" hidden>Next Level →</button>
   </div>
 
 </main>
@@ -177,7 +179,7 @@ const db = firebase.firestore();
 const CONFIG = {
   totalLevels: 50,
   questionsPerLevel: 10,
-  unlockAccuracy: 0.8,
+  unlockAccuracy: 0.85,
   pointsCorrect: 2,
   pointsWrong: -1,
   pointsDailyLogin: 3,
@@ -329,6 +331,24 @@ function renderLevelGrid(){
   }
 }
 
+function renderOverall(){
+  const sorted = allStudents.slice().sort(function(a,b){ return (b.points||0) - (a.points||0); });
+  const medals = ['🥇','🥈','🥉'];
+
+  const top15 = sorted.slice(0,15);
+  $('top15-body').innerHTML = top15.length ? top15.map(function(s,i){
+    return '<tr><td class="rank-medal">' + (medals[i]||(i+1)) + '</td><td>' + escapeHtml(s.name) + '</td><td>' + (s.points||0) +
+      '</td><td>' + (s.completedLevels||[]).length + '/' + TOTAL_LEVELS + '</td><td>' + Math.round(accuracyOf(s)*100) + '%</td></tr>';
+  }).join('') : '<tr><td colspan="5" style="text-align:center; color:var(--ink-soft);">No games played yet.</td></tr>';
+
+  const practiceList = sorted.length > 15 ? sorted.slice(15).slice(-5).reverse() : [];
+  $('practice-body').innerHTML = practiceList.length ? practiceList.map(function(s){
+    return '<tr><td>' + escapeHtml(s.name) + '</td><td>' + (s.points||0) + '</td><td>' + (s.completedLevels||[]).length + '/' + TOTAL_LEVELS +
+      '</td><td>' + Math.round(accuracyOf(s)*100) + '%</td></tr>';
+  }).join('') : '<tr><td colspan="4" style="text-align:center; color:var(--ink-soft);">Not enough games yet.</td></tr>';
+}
+
+
 function renderTimerPresets(){
   const wrap = $('timer-presets');
   wrap.innerHTML = '';
@@ -356,52 +376,61 @@ $('btn-switch-name').addEventListener('click', function(){
 
 /* ---------- session state ---------- */
 let session = null;
+let clockIntervalId = null;   // kept OUTSIDE the session object on purpose — this is the bug fix.
+let sessionCounter = 0;       // each play-through gets a unique id so stale callbacks can't affect a newer session
+
+function stopClock(){
+  if(clockIntervalId){ clearInterval(clockIntervalId); clockIntervalId = null; }
+}
 
 function startStopwatch(level){
-  session = { mode:'stopwatch', level:level, index:0, correct:0, wrong:0, startTime: performance.now() };
+  stopClock();
+  sessionCounter++;
+  session = { sid: sessionCounter, mode:'stopwatch', level:level, index:0, correct:0, wrong:0, startTime: performance.now(), finished:false };
   $('screen-home').hidden = true;
   $('screen-play').hidden = false;
   $('play-progress').textContent = 'Level ' + level + ' \u2014 Question 1/' + CONFIG.questionsPerLevel;
-  runStopwatchClock();
+  runStopwatchClock(session.sid);
   nextQuestion();
 }
 
-function runStopwatchClock(){
-  if(session.timerId) clearInterval(session.timerId);
-  session.timerId = setInterval(function(){
-    if(!session || session.mode !== 'stopwatch') return;
+function runStopwatchClock(sid){
+  clockIntervalId = setInterval(function(){
+    if(!session || session.sid !== sid || session.mode !== 'stopwatch'){ clearInterval(clockIntervalId); return; }
     $('play-clock').textContent = fmtTime(performance.now() - session.startTime);
   }, 47);
 }
 
 function startTimer(durationSec){
+  stopClock();
+  sessionCounter++;
   const level = student.levelsUnlocked || 1;
-  session = { mode:'timer', duration:durationSec, level:level, index:0, correct:0, wrong:0, endsAt: Date.now()+durationSec*1000 };
+  session = { sid: sessionCounter, mode:'timer', duration:durationSec, level:level, index:0, correct:0, wrong:0, endsAt: Date.now()+durationSec*1000, finished:false };
   $('screen-home').hidden = true;
   $('screen-play').hidden = false;
   $('play-progress').textContent = 'Timer \u2014 Level ' + level + ' difficulty';
-  runTimerClock();
+  runTimerClock(session.sid);
   nextQuestion();
 }
 
-function runTimerClock(){
-  if(session.timerId) clearInterval(session.timerId);
-  session.timerId = setInterval(function(){
-    if(!session || session.mode !== 'timer') return;
+function runTimerClock(sid){
+  clockIntervalId = setInterval(function(){
+    if(!session || session.sid !== sid){ clearInterval(clockIntervalId); return; }
     const remaining = Math.max(0, session.endsAt - Date.now());
     const clockEl = $('play-clock');
     clockEl.textContent = fmtSeconds(Math.ceil(remaining/1000));
     clockEl.classList.toggle('danger', remaining <= 10000);
     if(remaining <= 0){
-      clearInterval(session.timerId);
-      finishSession();
+      stopClock();
+      finishSession(sid);
     }
   }, 200);
 }
 
 function nextQuestion(){
+  const sid = session.sid;
   if(session.mode === 'stopwatch' && session.index >= CONFIG.questionsPerLevel){
-    finishSession();
+    finishSession(sid);
     return;
   }
   session.current = generateQuestion(session.level);
@@ -417,13 +446,13 @@ function nextQuestion(){
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
     btn.textContent = val;
-    btn.addEventListener('click', function(){ answerQuestion(val, btn); });
+    btn.addEventListener('click', function(){ answerQuestion(val, btn, sid); });
     choicesWrap.appendChild(btn);
   });
 }
 
-function answerQuestion(val, btnEl){
-  if(!session) return;
+function answerQuestion(val, btnEl, sid){
+  if(!session || session.sid !== sid || session.finished) return; // stale click, ignore
   document.querySelectorAll('.choice-btn').forEach(function(b){ b.disabled = true; });
   const isCorrect = val === session.current.answer;
   btnEl.classList.add(isCorrect ? 'correct' : 'wrong');
@@ -436,16 +465,19 @@ function answerQuestion(val, btnEl){
   session.index++;
 
   setTimeout(function(){
+    if(!session || session.sid !== sid || session.finished) return; // session moved on, ignore
     if(session.mode === 'timer' && Date.now() >= session.endsAt){
-      finishSession();
+      finishSession(sid);
     } else {
       nextQuestion();
     }
   }, 550);
 }
 
-function finishSession(){
-  if(session.timerId) clearInterval(session.timerId);
+function finishSession(sid){
+  if(!session || session.sid !== sid || session.finished) return; // already handled, don't double-count
+  session.finished = true;
+  stopClock();
   const mode = session.mode;
   const correct = session.correct, wrong = session.wrong;
   const totalAnswered = correct + wrong;
@@ -510,6 +542,18 @@ function showResults(r){
   if(r.newRecord) notes.push('\ud83c\udfc6 New personal best!');
   $('result-badges').innerHTML = notes.map(function(n){ return '<div class="badge-note">'+n+'</div>'; }).join('');
 
+  const nextBtn = $('btn-next-level');
+  const qualifiedForNext = r.mode === 'stopwatch' && r.accuracy >= CONFIG.unlockAccuracy && r.session.level < CONFIG.totalLevels;
+  if(r.mode === 'stopwatch'){
+    nextBtn.hidden = false;
+    nextBtn.disabled = !qualifiedForNext;
+    nextBtn.textContent = qualifiedForNext
+      ? 'Next Level (' + (r.session.level+1) + ') \u2192'
+      : 'Next Level \u2014 need ' + Math.round(CONFIG.unlockAccuracy*100) + '%+ to unlock';
+  } else {
+    nextBtn.hidden = true;
+  }
+
   window._lastSession = r.session;
 }
 
@@ -519,6 +563,11 @@ $('btn-play-again').addEventListener('click', function(){
   if(!last) { showHome(); return; }
   if(last.mode === 'stopwatch') startStopwatch(last.level);
   else startTimer(last.duration);
+});
+$('btn-next-level').addEventListener('click', function(){
+  const last = window._lastSession;
+  if(!last || last.mode !== 'stopwatch') return;
+  startStopwatch(last.level + 1);
 });
 </script>
 </body>

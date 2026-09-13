@@ -637,13 +637,13 @@ function makeQuestion(){
       a=randomInt(10,99); b=randomInt(10,a);
       answer=a-b; text=`${a} − ${b}`;
     } else if(op === "multiplication"){
-      a=randomInt(2,15); b=randomInt(2,15);
+      a=randomInt(10,15); b=randomInt(2,15);
       answer=a*b; text=`${a} × ${b}`;
     } else if(op === "division"){
-      b=randomInt(2,15); answer=randomInt(2,15); a=b*answer;
+      b=randomInt(10,15); answer=randomInt(2,15); a=b*answer;
       text=`${a} ÷ ${b}`;
     } else {
-      a=randomInt(1,20); answer=a*a; text=`${a}²`;
+      a=randomInt(11,20); answer=a*a; text=`${a}²`;
     }
   }
 
@@ -655,13 +655,13 @@ function makeQuestion(){
       a=randomInt(100,999); b=randomInt(100,a);
       answer=a-b; text=`${a} − ${b}`;
     } else if(op === "multiplication"){
-      a=randomInt(2,20); b=randomInt(2,20);
+      a=randomInt(14,20); b=randomInt(2,20);
       answer=a*b; text=`${a} × ${b}`;
     } else if(op === "division"){
-      b=randomInt(2,20); answer=randomInt(2,20); a=b*answer;
+      b=randomInt(12,20); answer=randomInt(2,20); a=b*answer;
       text=`${a} ÷ ${b}`;
     } else {
-      a=randomInt(1,30); answer=a*a; text=`${a}²`;
+      a=randomInt(15,30); answer=a*a; text=`${a}²`;
     }
   }
 

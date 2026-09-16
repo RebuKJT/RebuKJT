@@ -377,7 +377,6 @@
     messagingSenderId: "331374983102",
     appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
   };
-
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -722,7 +721,10 @@ function renderStudentsTable(){
       <td>${d.days}</td>
       <td>Rs ${d.feeAmount}</td>
       <td><input type="number" class="row-input" data-field="discount" data-id="${d.id}" value="${d.discount || 0}"></td>
-      <td><input type="number" class="row-input" data-field="paidAmount" data-id="${d.id}" value="${d.paidAmount || 0}"></td>
+      <td>
+        <input type="number" class="row-input" data-field="paidAmount" data-id="${d.id}" value="${d.paidAmount || 0}">
+        <button class="btn secondary small" data-record-payment="${d.id}" title="Log a payment with today's date" style="padding:2px 6px; font-size:0.72rem;">+</button>
+      </td>
       <td class="due-cell ${due <= 0 ? 'zero' : 'owed'}">Rs ${due}</td>
       <td><button class="btn secondary small" data-bill="${d.id}">Bill</button></td>
       <td><button class="rm" title="Delete" data-id="${d.id}">&times;</button></td>
@@ -740,6 +742,17 @@ function renderStudentsTable(){
         db.collection('tuitionStudents').doc(inp.dataset.id).update({ [inp.dataset.field]: val });
       });
     });
+    tr.querySelector('[data-record-payment]').addEventListener('click', () => {
+      const amountStr = prompt('Amount received from ' + d.name + ' today:');
+      if(amountStr === null) return;
+      const amount = parseFloat(amountStr);
+      if(isNaN(amount) || amount <= 0){ alert('Enter a valid amount.'); return; }
+      const newPaid = (d.paidAmount || 0) + amount;
+      db.collection('tuitionStudents').doc(d.id).update({
+        paidAmount: newPaid,
+        payments: firebase.firestore.FieldValue.arrayUnion({ amount, date: todayStr() })
+      });
+    });
     studentsBody.appendChild(tr);
   });
 
@@ -750,11 +763,41 @@ function renderStudentsTable(){
 function renderStatStrip(students){
   const strip = document.getElementById('stat-strip');
   const totalFee = students.reduce((s,d) => s + (d.feeAmount||0), 0);
+  const totalCollected = students.reduce((s,d) => s + (d.paidAmount||0), 0);
   const totalDue = students.reduce((s,d) => s + dueFor(d), 0);
+  const collectionPct = totalFee > 0 ? Math.round((totalCollected/totalFee)*100) : 0;
+
+  const studentsPaid = students.filter(d => dueFor(d) <= 0).length;
+  const studentsPending = students.filter(d => dueFor(d) > 0).length;
+  const fullyPaidPct = students.length ? Math.round((studentsPaid/students.length)*100) : 0;
+
+  const session = sessions.find(x => x.id === activeSessionId);
+  const today = todayStr();
+  const overdue = (session && session.endDate && today > session.endDate)
+    ? students.reduce((s,d) => s + Math.max(0, dueFor(d)), 0)
+    : 0;
+
+  const monthPrefix = today.slice(0,7); // "YYYY-MM"
+  let todayCollected = 0, monthCollected = 0;
+  students.forEach(d => {
+    (d.payments || []).forEach(p => {
+      if(p.date === today) todayCollected += p.amount;
+      if((p.date||'').slice(0,7) === monthPrefix) monthCollected += p.amount;
+    });
+  });
+
   strip.innerHTML = `
     <div class="stat-box"><div class="num">${students.length}</div><div class="label">Students</div></div>
     <div class="stat-box"><div class="num">Rs ${totalFee}</div><div class="label">Total fee</div></div>
+    <div class="stat-box"><div class="num">Rs ${totalCollected}</div><div class="label">Total collected</div></div>
     <div class="stat-box"><div class="num">Rs ${totalDue}</div><div class="label">Total due</div></div>
+    <div class="stat-box"><div class="num">${collectionPct}%</div><div class="label">Collection %</div></div>
+    <div class="stat-box"><div class="num">${studentsPaid}</div><div class="label">Students paid</div></div>
+    <div class="stat-box"><div class="num">${studentsPending}</div><div class="label">Students pending</div></div>
+    <div class="stat-box"><div class="num">${fullyPaidPct}%</div><div class="label">Fully paid %</div></div>
+    <div class="stat-box"><div class="num" style="${overdue>0?'color:var(--margin-red);':''}">Rs ${overdue}</div><div class="label">Overdue</div></div>
+    <div class="stat-box"><div class="num">Rs ${todayCollected}</div><div class="label">Today collected</div></div>
+    <div class="stat-box"><div class="num">Rs ${monthCollected}</div><div class="label">This month</div></div>
   `;
 }
 
@@ -781,7 +824,7 @@ function billHtml(d){
     <div class="bill-paper">
       <div class="bill-head">
         <div>
-          <h3>Lovely Angels: Tuition</h3>
+          <h3>Lovely Angels E.B.S</h3>
           <div class="sub">📞 9802701683 • ${session ? escapeHtml(session.label) : ''} • ${new Date().toLocaleDateString('en-GB')}</div>
         </div>
         ${paymentQrUrl ? `<img class="bill-qr" src="${escapeAttr(paymentQrUrl)}" alt="Payment QR">` : ''}
@@ -818,10 +861,21 @@ function openBill(d){
 document.getElementById('close-bill').addEventListener('click', () => billOverlay.classList.remove('open'));
 billOverlay.addEventListener('click', e => { if(e.target === billOverlay) billOverlay.classList.remove('open'); });
 
+function waitForImages(container){
+  const imgs = Array.from(container.querySelectorAll('img'));
+  if(!imgs.length) return Promise.resolve();
+  return Promise.all(imgs.map(img => {
+    if(img.complete) return Promise.resolve();
+    return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
+  }));
+}
+
 document.getElementById('btn-bill-print').addEventListener('click', () => {
   billOverlay.classList.add('print-mode');
-  window.print();
-  setTimeout(() => billOverlay.classList.remove('print-mode'), 300);
+  waitForImages(billOverlay).then(() => {
+    window.print();
+    setTimeout(() => billOverlay.classList.remove('print-mode'), 300);
+  });
 });
 
 document.getElementById('btn-bill-whatsapp').addEventListener('click', () => {
@@ -852,8 +906,10 @@ document.getElementById('btn-print-all').addEventListener('click', () => {
   }
   container.innerHTML = html;
   container.classList.add('printing');
-  window.print();
-  setTimeout(() => { container.classList.remove('printing'); container.innerHTML = ''; }, 300);
+  waitForImages(container).then(() => {
+    window.print();
+    setTimeout(() => { container.classList.remove('printing'); container.innerHTML = ''; }, 300);
+  });
 });
 
 /* ---------- one-time backfill sync to public mirror ---------- */
@@ -882,6 +938,7 @@ document.getElementById('btn-sync-public').addEventListener('click', () => {
 });
 
 /* ---------- helpers ---------- */
+function todayStr(){ return new Date().toISOString().slice(0,10); }
 function fmtDate(str){
   if(!str) return '—';
   const d = new Date(str + 'T00:00:00');

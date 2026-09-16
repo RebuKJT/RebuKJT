@@ -328,14 +328,17 @@
 
 <style>
   .bill-paper{ background:#fff; border:1px solid var(--paper-line); border-radius:8px; padding:14px 16px; }
-  .bill-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px; }
+  .bill-header-row{ margin-bottom:8px; }
   .bill-paper h3{ font-size:1.05rem; margin-bottom:2px; }
   .bill-paper .sub{ font-size:0.74rem; color:var(--ink-soft); }
-  .bill-qr{ width:56px; height:56px; object-fit:contain; flex:0 0 auto; }
-  .bill-paper table{ width:100%; font-size:0.85rem; border-collapse:collapse; }
-  .bill-paper td{ padding:4px 0; border-bottom:1px dashed var(--paper-line); }
-  .bill-paper td:last-child{ text-align:right; font-weight:600; }
-  .bill-paper .bill-total-row td{ border-top:2px solid var(--ink); border-bottom:none; font-weight:700; font-family:'Fraunces',serif; font-size:1rem; padding-top:6px; }
+  .bill-body{ display:flex; align-items:center; gap:16px; }
+  .bill-table{ width:100%; font-size:0.85rem; border-collapse:collapse; flex:1; }
+  .bill-table td{ padding:4px 0; border-bottom:1px dashed var(--paper-line); }
+  .bill-table td:last-child{ text-align:right; font-weight:600; }
+  .bill-table .bill-total-row td{ border-top:2px solid var(--ink); border-bottom:none; font-weight:700; font-family:'Fraunces',serif; font-size:1.05rem; padding-top:8px; }
+  .bill-qr-block{ flex:0 0 auto; text-align:center; }
+  .bill-qr-big{ width:130px; height:130px; object-fit:contain; border:1px solid var(--paper-line); border-radius:8px; padding:5px; background:#fff; }
+  .qr-caption{ font-size:0.7rem; color:var(--ink-soft); margin-top:4px; font-weight:600; }
   @media print{
     body *{ visibility:hidden; }
     #bill-overlay.print-mode, #bill-overlay.print-mode *{ visibility:visible; }
@@ -349,12 +352,14 @@
     }
     .print-page-group:last-child{ page-break-after:auto; }
     .bill-slot .bill-paper{ padding:7px 10px; height:100%; }
-    .bill-slot .bill-paper .bill-head{ margin-bottom:3px; }
+    .bill-slot .bill-paper .bill-header-row{ margin-bottom:3px; }
     .bill-slot .bill-paper h3{ font-size:0.8rem; margin-bottom:0; }
     .bill-slot .bill-paper .sub{ font-size:0.56rem; }
-    .bill-slot .bill-paper .bill-qr{ width:34px; height:34px; }
-    .bill-slot .bill-paper table{ font-size:0.66rem; }
-    .bill-slot .bill-paper td{ padding:1.5px 0; }
+    .bill-slot .bill-paper .bill-body{ gap:6px; }
+    .bill-slot .bill-paper .bill-qr-big{ width:50px; height:50px; padding:2px; }
+    .bill-slot .bill-paper .qr-caption{ font-size:0.5rem; }
+    .bill-slot .bill-paper .bill-table{ font-size:0.66rem; }
+    .bill-slot .bill-paper .bill-table td{ padding:1.5px 0; }
     .bill-slot .bill-paper .bill-total-row td{ padding-top:3px; font-size:0.74rem; }
   }
 </style>
@@ -377,6 +382,7 @@
     messagingSenderId: "331374983102",
     appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
   };
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -822,21 +828,28 @@ function billHtml(d){
   const due = dueFor(d);
   return `
     <div class="bill-paper">
-      <div class="bill-head">
-        <div>
-          <h3>Lovely Angels E.B.S</h3>
-          <div class="sub">📞 9802701683 • ${session ? escapeHtml(session.label) : ''} • ${new Date().toLocaleDateString('en-GB')}</div>
-        </div>
-        ${paymentQrUrl ? `<img class="bill-qr" src="${escapeAttr(paymentQrUrl)}" alt="Payment QR">` : ''}
+      <div class="bill-header-row">
+        <h3>Lovely Angels E.B.S</h3>
+        <div class="sub">📞 9802701683 • ${session ? escapeHtml(session.label) : ''} • ${new Date().toLocaleDateString('en-GB')}</div>
       </div>
-      <table>
-        <tr><td>Student name</td><td>${escapeHtml(d.name)}</td></tr>
-        <tr><td>Grade</td><td>${escapeHtml(d.grade)}</td></tr>
-        <tr><td>Arrival date</td><td>${fmtDate(d.arrivalDate)}</td></tr>
-        <tr><td>Days</td><td>${d.days}</td></tr>
-        <tr><td>Fee</td><td>Rs ${d.feeAmount}</td></tr>
-        <tr><td>Discount</td><td>Rs ${d.discount || 0}</td></tr>
-        <tr><td>Paid</td><td>Rs ${d.paidAmount || 0}</td></tr>
+      <div class="bill-body">
+        <table class="bill-table">
+          <tr><td>Student name</td><td>${escapeHtml(d.name)}</td></tr>
+          <tr><td>Grade</td><td>${escapeHtml(d.grade)}</td></tr>
+          <tr><td>Arrival date</td><td>${fmtDate(d.arrivalDate)}</td></tr>
+          <tr><td>Days</td><td>${d.days}</td></tr>
+          <tr><td>Fee</td><td>Rs ${d.feeAmount}</td></tr>
+          <tr><td>Discount</td><td>Rs ${d.discount || 0}</td></tr>
+          <tr><td>Paid</td><td>Rs ${d.paidAmount || 0}</td></tr>
+        </table>
+        ${paymentQrUrl ? `
+          <div class="bill-qr-block">
+            <img class="bill-qr-big" src="${escapeAttr(paymentQrUrl)}" alt="Payment QR">
+            <div class="qr-caption">Scan to Pay</div>
+          </div>
+        ` : ''}
+      </div>
+      <table class="bill-table">
         <tr class="bill-total-row"><td>Due</td><td>Rs ${due}</td></tr>
       </table>
     </div>

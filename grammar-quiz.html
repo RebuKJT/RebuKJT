@@ -42,7 +42,11 @@
     letter-spacing:0.02em;
     color:var(--chalk-dim);
     margin:0 0 18px 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
+  .brand a { color: var(--mustard); text-decoration: none; cursor: pointer; }
   .card{
     background:var(--panel);
     border-radius:var(--radius);
@@ -63,7 +67,6 @@
     line-height:1.5;
     margin:0 0 24px 0;
   }
-  /* Name gate */
   .name-row{ display:flex; gap:10px; }
   input[type=text]{
     flex:1;
@@ -100,7 +103,6 @@
   }
   .btn-ghost:hover{ color:var(--chalk); border-color:rgba(247,244,236,0.3); }
 
-  /* Class grid */
   .class-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:4px; }
   .class-tile{
     aspect-ratio:1/1;
@@ -116,8 +118,7 @@
   .class-tile:hover{ border-color:var(--mustard); transform:translateY(-2px); }
   .class-tile span{ display:block; font-family:'Inter',sans-serif; font-weight:500; font-size:10px; color:var(--chalk-dim); margin-top:2px;}
 
-  /* Topic list */
-  .topic-list{ display:flex; flex-direction:column; gap:8px; margin-top:4px; }
+  .topic-list{ display:flex; flex-direction:column; gap:8px; margin-top:4px; max-height: 280px; overflow-y: auto; }
   .topic-pill{
     text-align:left;
     background:var(--slate-dark);
@@ -129,42 +130,45 @@
     display:flex;
     justify-content:space-between;
     align-items:center;
+    cursor: pointer;
   }
   .topic-pill:hover{ border-color:var(--mustard); }
   .topic-pill small{ color:var(--chalk-dim); font-weight:400; }
 
-  /* Quiz */
-  .progress-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+  .progress-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
   .progress-track{ flex:1; height:6px; background:var(--slate-dark); border-radius:4px; margin:0 12px; overflow:hidden; }
   .progress-fill{ height:100%; background:var(--mustard); width:0%; transition:width .25s ease; }
   .qcount{ font-size:13px; color:var(--chalk-dim); white-space:nowrap; }
   .question{
     font-family:'Baloo 2',sans-serif;
     font-weight:600;
-    font-size:19px;
-    line-height:1.4;
-    margin:0 0 20px 0;
+    font-size:18px;
+    line-height:1.3;
+    margin:0 0 14px 0;
   }
-  .options{ display:flex; flex-direction:column; gap:10px; }
+  .options{ display:flex; flex-direction:column; gap:8px; }
   .option{
     text-align:left;
     background:var(--slate-dark);
     border:1px solid rgba(247,244,236,0.12);
     color:var(--chalk);
-    padding:13px 16px;
+    padding:11px 14px;
     border-radius:10px;
-    font-size:15px;
+    font-size:14px;
   }
   .option:hover:not(:disabled){ border-color:var(--mustard); }
   .option:disabled{ cursor:default; }
   .option.correct{ background:rgba(127,183,126,0.18); border-color:var(--mint); }
   .option.wrong{ background:rgba(217,105,95,0.18); border-color:var(--coral); }
-  .feedback{ margin-top:16px; font-size:14px; color:var(--chalk-dim); min-height:20px; }
-  .feedback.correct{ color:var(--mint); }
-  .feedback.wrong{ color:var(--coral); }
-  .quiz-footer{ display:flex; justify-content:space-between; align-items:center; margin-top:22px; }
+  
+  .feedback-box{ margin-top:12px; font-size:13px; background:var(--slate-dark); padding:10px 14px; border-radius:8px; border:1px solid rgba(247,244,236,0.08); max-height: 140px; overflow-y: auto;}
+  .feedback-box.correct{ border-color:var(--mint); color:var(--mint); }
+  .feedback-box.wrong{ border-color:var(--coral); color:var(--coral); }
+  .feedback-box ul { margin: 6px 0 0 16px; padding: 0; color: var(--chalk-dim); font-size: 12px; }
+  .feedback-box li { margin-bottom: 3px; }
 
-  /* Result */
+  .quiz-footer{ display:flex; justify-content:space-between; align-items:center; margin-top:16px; }
+
   .result-score{
     font-family:'Baloo 2',sans-serif;
     font-weight:800;
@@ -174,13 +178,22 @@
   .result-row{ display:flex; justify-content:space-between; padding:10px 0; border-top:1px solid rgba(247,244,236,0.08); font-size:14px; color:var(--chalk-dim); }
   .result-row b{ color:var(--chalk); font-weight:600; }
   .status{ font-size:13px; color:var(--chalk-dim); margin-top:14px; }
+
+  /* Leaderboard */
+  .leaderboard-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; max-height: 280px; overflow-y: auto; }
+  .leaderboard-item { display: flex; justify-content: space-between; background: var(--slate-dark); padding: 10px 14px; border-radius: 8px; font-size: 14px; align-items: center; }
+  .leaderboard-item b { color: var(--mustard); }
+
   .hidden{ display:none; }
 </style>
 </head>
 <body>
 
 <div class="app">
-  <p class="brand">Student Hub · Grammar Practice</p>
+  <div class="brand">
+    <span>Student Hub · Grammar Practice</span>
+    <a id="navLeaderboard">🏆 Leaderboard</a>
+  </div>
   <div class="card">
 
     <!-- STEP 1: NAME -->
@@ -203,7 +216,7 @@
     <!-- STEP 3: TOPIC -->
     <section id="step-topic" class="hidden">
       <h1 class="title" id="topicTitle">Pick a topic</h1>
-      <p class="sub">5 questions per topic. Correct answers earn points.</p>
+      <p class="sub">20 questions per round. Correct answers give +2 pts, wrong answers deduct −1 pt.</p>
       <div class="topic-list" id="topicList"></div>
       <div style="margin-top:18px;">
         <button class="btn-ghost" id="backToClass">← Change class</button>
@@ -213,13 +226,16 @@
     <!-- STEP 4: QUIZ -->
     <section id="step-quiz" class="hidden">
       <div class="progress-row">
-        <span class="qcount" id="qcount">Q1/5</span>
+        <span class="qcount" id="qcount">Q1/20</span>
         <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
         <span class="qcount" id="scoreLive">0 pts</span>
       </div>
       <p class="question" id="questionText"></p>
       <div class="options" id="optionsList"></div>
-      <p class="feedback" id="feedback"></p>
+      <div class="feedback-box hidden" id="feedbackBox">
+        <span id="feedbackText"></span>
+        <ul id="examplesList"></ul>
+      </div>
       <div class="quiz-footer">
         <button class="btn-ghost" id="quitQuiz">Quit</button>
         <button class="btn-primary" id="nextQuestion" disabled>Next</button>
@@ -229,7 +245,7 @@
     <!-- STEP 5: RESULT -->
     <section id="step-result" class="hidden">
       <h1 class="title">Nice work!</h1>
-      <div class="result-score" id="resultScore">0/5</div>
+      <div class="result-score" id="resultScore">0/20</div>
       <div class="result-row"><span>Points earned this round</span><b id="pointsEarned">0</b></div>
       <div class="result-row"><span>Total points</span><b id="totalPoints">0</b></div>
       <div class="result-row"><span>Topic</span><b id="resultTopic">—</b></div>
@@ -240,22 +256,24 @@
       </div>
     </section>
 
+    <!-- STEP 6: LEADERBOARD -->
+    <section id="step-leaderboard" class="hidden">
+      <h1 class="title">Top Students 🏆</h1>
+      <p class="sub">Highest scorers across all grammar sessions.</p>
+      <div class="leaderboard-list" id="leaderboardList">Loading leaderboard...</div>
+      <div style="margin-top:18px;">
+        <button class="btn-ghost" id="backFromLeaderboard">← Back</button>
+      </div>
+    </section>
+
   </div>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import {
-    getAuth, signInAnonymously, onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import {
-    getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  // ---------------------------------------------------------------
-  // 1) PASTE YOUR FIREBASE CONFIG HERE (same one used elsewhere on
-  //    kuberjungthapa.com.np — from Firebase Console > Project Settings)
-  // ---------------------------------------------------------------
  const firebaseConfig = {
     apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
     authDomain: "teacher-resource-hub.firebaseapp.com",
@@ -268,97 +286,1542 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // ---------------------------------------------------------------
-  // 2) QUESTION BANK — grouped by class, then by grammar topic.
-  //    Add more topics/questions here without touching any logic below.
-  //    Structure: { [classNum]: { [topicName]: [ {q, options, answerIndex} ] } }
-  // ---------------------------------------------------------------
+  // Expanded Question Bank containing 20 questions with reference examples
   const QUESTION_BANK = {
-    1: {
-      "Nouns": [
-        { q: "Which word is a noun?", options: ["Run", "Happy", "Dog", "Quickly"], a: 2 },
-        { q: "Which word is a naming word for a place?", options: ["School", "Jump", "Blue", "Slowly"], a: 0 },
-        { q: "Pick the noun: 'The ___ is on the table.'", options: ["book", "read", "under", "and"], a: 0 },
-        { q: "Which is a person's name (a noun)?", options: ["Ramesh", "Run", "Big", "Soon"], a: 0 },
-        { q: "Which word names a thing?", options: ["Chair", "Sit", "Fast", "Loudly"], a: 0 }
-      ],
-      "is / am / are": [
-        { q: "I ___ a student.", options: ["is", "am", "are", "be"], a: 1 },
-        { q: "She ___ happy today.", options: ["am", "are", "is", "be"], a: 2 },
-        { q: "They ___ my friends.", options: ["is", "am", "are", "be"], a: 2 },
-        { q: "We ___ ready to go.", options: ["is", "am", "are", "be"], a: 2 },
-        { q: "It ___ raining outside.", options: ["am", "is", "are", "be"], a: 1 }
-      ]
-    },
     2: {
       "has / have": [
-        { q: "She ___ a red bag.", options: ["have", "has", "having", "had"], a: 1 },
-        { q: "I ___ two brothers.", options: ["has", "have", "having", "had"], a: 1 },
-        { q: "They ___ a big house.", options: ["has", "have", "having", "had"], a: 1 },
-        { q: "The cat ___ a soft tail.", options: ["have", "has", "having", "had"], a: 1 },
-        { q: "We ___ a new teacher.", options: ["has", "have", "having", "had"], a: 1 }
-      ],
-      "this / that": [
-        { q: "___ is my pencil (close to me).", options: ["That", "This", "These", "Those"], a: 1 },
-        { q: "___ is a mountain (far away).", options: ["This", "That", "These", "Those"], a: 1 },
-        { q: "Look at ___ bird near your feet.", options: ["that", "this", "those", "these"], a: 1 },
-        { q: "___ house across the river is old.", options: ["This", "That", "These", "Those"], a: 1 },
-        { q: "Can I borrow ___ book in your hand?", options: ["that", "this", "those", "these"], a: 1 }
-      ]
+        { q: "She ___ a red bag.", options: ["have", "has", "having", "had"], a: 1, examples: ["He has a new cycle.", "It has soft fur.", "Ramesh has a green book.", "She has a sister.", "The doll has black eyes."] },
+        { q: "I ___ two brothers.", options: ["has", "have", "having", "had"], a: 1, examples: ["I have a pen.", "We have a computer.", "They have many toys.", "You have a nice smile.", "I have an apple."] },
+        { q: "They ___ a big house.", options: ["has", "have", "having", "had"], a: 1, examples: ["They have a car.", "Students have books.", "Birds have wings.", "Trees have green leaves.", "Cats have whiskers."] },
+        { q: "The cat ___ a soft tail.", options: ["have", "has", "having", "had"], a: 1, examples: ["The dog has a collar.", "A cow has four legs.", "The baby has a rattle.", "An elephant has a trunk.", "A bird has feathers."] },
+        { q: "We ___ a new teacher.", options: ["has", "have", "having", "had"], a: 1, examples: ["We have a test today.", "You have a question.", "They have a plan.", "We have a garden.", "We have a match."] },
+        { q: "He ___ a bicycle.", options: ["have", "has", "having", "had"], a: 1, examples: ["He has a watch.", "Ram has a bat.", "He has a pet dog.", "He has a blue shirt.", "He has a computer."] },
+        { q: "You ___ a beautiful voice.", options: ["has", "have", "having", "had"], a: 1, examples: ["You have a nice garden.", "You have a test.", "You have a cool bag.", "You have an idea.", "You have a pencil."] },
+        { q: "Sita ___ a blue dress.", options: ["have", "has", "having", "had"], a: 1, examples: ["Sita has long hair.", "Geeta has a doll.", "Mina has a flower.", "Rita has a notebook.", "Anita has a balloon."] },
+        { q: "My dog ___ long ears.", options: ["have", "has", "having", "had"], a: 1, examples: ["My dog has sharp teeth.", "The puppy has short legs.", "My cat has green eyes.", "The rabbit has a small nose.", "Our cow has a calf."] },
+        { q: "An elephant ___ a long trunk.", options: ["have", "has", "having", "had"], a: 1, examples: ["An elephant has big ears.", "A monkey has a tail.", "A zebra has stripes.", "A lion has a mane.", "A bear has thick fur."] },
+        { q: "Children ___ many toys.", options: ["has", "have", "having", "had"], a: 1, examples: ["People have houses.", "Students have bags.", "Workers have tools.", "Farmers have fields.", "Birds have nests."] },
+        { q: "This flower ___ a sweet smell.", options: ["have", "has", "having", "had"], a: 1, examples: ["The rose has thorns.", "The plant has green leaves.", "This tree has fruit.", "That shrub has flowers.", "The branch has buds."] },
+        { q: "Do you ___ a pencil?", options: ["has", "have", "having", "had"], a: 1, examples: ["Do they have time?", "Do we have homework?", "Do cats have fur?", "Do birds have teeth?", "Do you have water?"] },
+        { q: "Does she ___ a notebook?", options: ["has", "have", "having", "had"], a: 0, examples: ["Does he have a ruler?", "Does Ram have a pen?", "Does the room have a fan?", "Does she have a sister?", "Does it have a cover?"] },
+        { q: "My school ___ a big playground.", options: ["have", "has", "having", "had"], a: 1, examples: ["My house has a gate.", "Our class has twenty desks.", "The park has swings.", "The library has books.", "The city has parks."] },
+        { q: "The bird ___ colorful feathers.", options: ["have", "has", "having", "had"], a: 1, examples: ["The parrot has a red beak.", "The peacock has a crown.", "The duck has webbed feet.", "The hen has a comb.", "The bird has wings."] },
+        { q: "Each player ___ a chance.", options: ["have", "has", "having", "had"], a: 0, examples: ["Each book has a title.", "Every child has a name.", "Each student has a desk.", "Each flower has petals.", "Each room has a door."] },
+        { q: "Our teacher ___ a friendly smile.", options: ["have", "has", "having", "had"], a: 1, examples: ["Our principal has an office.", "The doctor has a stethoscope.", "The driver has a cap.", "The guard has a whistle.", "The chef has a hat."] },
+        { q: "Both cars ___ four doors.", options: ["has", "have", "having", "had"], a: 1, examples: ["Both books have pictures.", "Both cats have tails.", "Both boys have balls.", "Both girls have ribbons.", "Both houses have roofs."] },
+        { q: "What do you ___ in your bag?", options: ["has", "have", "having", "had"], a: 1, examples: ["What do they have?", "What do we have for lunch?", "What does he have?", "What does she have?", "What do you have here?"] }
+      ], 
+      "is / am / are": [
+      {
+        q: "I ___ a student of Class 2.",
+        options: ["is", "am", "are", "be"],
+        a: 1,
+        examples: [
+          "I am six years old.",
+          "I am reading a book.",
+          "I am happy today.",
+          "I am in the classroom.",
+          "I am ready for school."
+        ]
+      },
+      {
+        q: "She ___ my best friend.",
+        options: ["is", "am", "are", "be"],
+        a: 0,
+        examples: [
+          "He is a good boy.",
+          "She is dancing gracefully.",
+          "It is a hot day.",
+          "Sita is writing neatly.",
+          "My sister is tall."
+        ]
+      },
+      {
+        q: "They ___ playing in the park.",
+        options: ["is", "am", "are", "be"],
+        a: 2,
+        examples: [
+          "We are happy to see you.",
+          "They are swimming in the pool.",
+          "You are very kind.",
+          "Birds are flying high.",
+          "The boys are running fast."
+        ]
+      },
+      {
+        q: "He ___ drawing a big elephant.",
+        options: ["is", "am", "are", "be"],
+        a: 0,
+        examples: [
+          "He is driving a red car.",
+          "Ram is sleeping in his bed.",
+          "The sun is shining brightly.",
+          "The dog is barking loudly.",
+          "My father is working hard."
+        ]
+      },
+      {
+        q: "We ___ ready for the game.",
+        options: ["is", "am", "are", "be"],
+        a: 2,
+        examples: [
+          "We are learning English.",
+          "We are best friends.",
+          "We are going to Dharan.",
+          "We are sitting together.",
+          "We are proud of you."
+        ]
+      },
+      {
+        q: "The cat ___ sleeping under the table.",
+        options: ["is", "am", "are", "be"],
+        a: 0,
+        examples: [
+          "The lion is roaring.",
+          "A cow is eating grass.",
+          "The bird is in its nest.",
+          "My puppy is very active.",
+          "The monkey is jumping."
+        ]
+      },
+      {
+        q: "You ___ a very smart student.",
+        options: ["is", "am", "are", "be"],
+        a: 2,
+        examples: [
+          "You are welcome.",
+          "You are standing on my shoe.",
+          "You are helpful.",
+          "You are early today.",
+          "You are my good friend."
+        ]
+      },
+      {
+        q: "I ___ seven years old.",
+        options: ["is", "am", "are", "be"],
+        a: 1,
+        examples: [
+          "I am tall.",
+          "I am drinking water.",
+          "I am feeling tired.",
+          "I am going home.",
+          "I am a fast runner."
+        ]
+      },
+      {
+        q: "The apples ___ sweet and juicy.",
+        options: ["is", "am", "are", "be"],
+        a: 2,
+        examples: [
+          "Mangoes are yellow.",
+          "Flowers are blooming.",
+          "Stars are shining.",
+          "The books are on the desk.",
+          "Trees are green."
+        ]
+      },
+      {
+        q: "It ___ raining outside.",
+        options: ["is", "am", "are", "be"],
+        a: 0,
+        examples: [
+          "It is a lovely morning.",
+          "It is very cold.",
+          "It is time to go.",
+          "It is a heavy box.",
+          "It is my favorite toy."
+        ]
+      },
+      {
+        q: "Ramesh ___ brushing his teeth.",
+        options: ["is", "am", "are", "be"],
+        a: 0,
+        examples: [
+          "Gita is singing a song.",
+          "Hari is eating an apple.",
+          "Teacher is explaining the lesson.",
+          "My brother is studying.",
+          "The chef is cooking food."
+        ]
+      },
+      {
+        q: "The children ___ listening to a story.",
+        options: ["is", "am", "are", "be"],
+        a: 2,
+        examples: [
+          "People are walking in the garden.",
+          "Students are making noise.",
+          "Monkeys are swinging on trees.",
+          "The ducks are swimming.",
+          "Cows are grazing in the field."
+        ]
+      },
+      {
+        q: "I ___ going to the shop.",
+        options: ["is", "am", "are", "be"],
+        a: 1,
+        examples: [
+          "I am writing a letter.",
+          "I am brushing my hair.",
+          "I am wearing a blue shirt.",
+          "I am drawing a map.",
+          "I am watching cartoon."
+        ]
+      },
+      {
+        q: "The sky ___ blue and clear.",
+        options: ["is", "am", "are", "be"],
+        a: 0,
+        examples: [
+          "The milk is hot.",
+          "The water is clean.",
+          "The house is big.",
+          "The grass is wet.",
+          "The box is light."
+        ]
+      },
+      {
+        q: "We ___ in the school playground.",
+        options: ["is", "am", "are", "be"],
+        a: 2,
+        examples: [
+          "We are in section B.",
+          "We are present today.",
+          "We are cleaning the room.",
+          "We are waiting for the bus.",
+          "We are singing together."
+        ]
+      },
+      {
+        q: "My mother ___ a teacher.",
+        options: ["is", "am", "are", "be"],
+        a: 0,
+        examples: [
+          "My uncle is a doctor.",
+          "His father is an officer.",
+          "Our principal is kind.",
+          "The driver is careful.",
+          "A cobbler is fixing shoes."
+        ]
+      },
+      {
+        q: "These shoes ___ new.",
+        options: ["is", "am", "are", "be"],
+        a: 2,
+        examples: [
+          "Those bags are heavy.",
+          "These pencils are sharp.",
+          "Those birds are loud.",
+          "These chairs are clean.",
+          "Those balloons are colorful."
+        ]
+      },
+      {
+        q: "Who ___ at the door?",
+        options: ["is", "am", "are", "be"],
+        a: 0,
+        examples: [
+          "What is your name?",
+          "Where is your book?",
+          "How is the weather?",
+          "Who is calling you?",
+          "Which is your seat?"
+        ]
+      },
+      {
+        q: "The boys ___ playing football.",
+        options: ["is", "am", "are", "be"],
+        a: 2,
+        examples: [
+          "Girls are jumping rope.",
+          "Dogs are barking outside.",
+          "Cars are moving fast.",
+          "Teachers are meeting in the hall.",
+          "Pigeons are flying."
+        ]
+      },
+      {
+        q: "I ___ happy to help you.",
+        options: ["is", "am", "are", "be"],
+        a: 1,
+        examples: [
+          "I am glad you came.",
+          "I am ready now.",
+          "I am honest.",
+          "I am sitting here.",
+          "I am focused."
+        ]
+      }
+    ],
+
+    "Pronouns(It, She ,He, They, We...)": [
+      {
+        q: "Ram is a good boy. ___ goes to school every day.",
+        options: ["She", "He", "It", "They"],
+        a: 1,
+        examples: [
+          "Hari is my brother. He likes apples.",
+          "My father is a doctor. He works hard.",
+          "The boy is crying. He lost his toy.",
+          "Uncle is here. He brought gifts.",
+          "Suman is fast. He won the race."
+        ]
+      },
+      {
+        q: "Sita is singing. ___ has a sweet voice.",
+        options: ["He", "They", "She", "It"],
+        a: 2,
+        examples: [
+          "Gita is my friend. She is very kind.",
+          "Mother is cooking. She makes tasty food.",
+          "Rina is reading. She loves books.",
+          "The girl is happy. She is smiling.",
+          "Aunt is dancing. She dances well."
+        ]
+      },
+      {
+        q: "This is a dog. ___ barks loudly.",
+        options: ["He", "She", "It", "We"],
+        a: 2,
+        examples: [
+          "I have a ball. It is round.",
+          "Look at the cat. It is drinking milk.",
+          "This is my book. It is new.",
+          "The sun is bright. It gives us light.",
+          "That is a car. It is red."
+        ]
+      },
+      {
+        q: "Ram and I are friends. ___ play together.",
+        options: ["They", "We", "You", "He"],
+        a: 1,
+        examples: [
+          "My sister and I live in Dharan. We go to the same school.",
+          "You and I are partners. We can win.",
+          "Mother and I cleaned the room. We are tired.",
+          "We are studying English.",
+          "We love our school."
+        ]
+      },
+      {
+        q: "Hari and Sita are classmates. ___ study in Class 2.",
+        options: ["We", "He", "They", "It"],
+        a: 2,
+        examples: [
+          "The birds are flying. They are high in the sky.",
+          "The children are playing. They are happy.",
+          "The apples are sweet. They are red.",
+          "My parents are kind. They love me.",
+          "The dogs are running. They are loud."
+        ]
+      },
+      {
+        q: "Hello Sam! How are ___ doing today?",
+        options: ["you", "he", "it", "they"],
+        a: 0,
+        examples: [
+          "You are a smart student.",
+          "Are you coming to my house?",
+          "You speak English very well.",
+          "You must wash your hands.",
+          "Where are you going?"
+        ]
+      },
+      {
+        q: "___ am writing my English homework.",
+        options: ["You", "He", "I", "They"],
+        a: 2,
+        examples: [
+          "I am seven years old.",
+          "I like to eat mangoes.",
+          "I have a red bicycle.",
+          "I live with my family.",
+          "I love my teacher."
+        ]
+      },
+      {
+        q: "Where is my pencil? ___ was on the table.",
+        options: ["She", "He", "They", "It"],
+        a: 3,
+        examples: [
+          "I lost my cap. It was blue.",
+          "Look at the flower. It smells sweet.",
+          "Pick up the bag. It is heavy.",
+          "I saw a bird. It flew away.",
+          "Touch the ice. It is cold."
+        ]
+      },
+      {
+        q: "My brother is sleeping. ___ is tired.",
+        options: ["He", "She", "It", "They"],
+        a: 0,
+        examples: [
+          "Grandfather is old. He walks slowly.",
+          "The policeman is standing. He helps us.",
+          "Ramesh is quiet. He is reading.",
+          "My uncle lives in Kathmandu. He visits us.",
+          "The cobbler fixes shoes. He works hard."
+        ]
+      },
+      {
+        q: "Gita and Rita are sisters. ___ dance very well.",
+        options: ["She", "They", "We", "He"],
+        a: 1,
+        examples: [
+          "The cows are grazing. They eat grass.",
+          "The books are on the shelf. They are neat.",
+          "Tom and Jerry are cartoons. They are funny.",
+          "The flowers are blooming. They look pretty.",
+          "My teachers are helpful. They teach us well."
+        ]
+      },
+      {
+        q: "My aunt gave me a flower. ___ is pink.",
+        options: ["He", "She", "It", "They"],
+        a: 2,
+        examples: [
+          "I bought an apple. It is sweet.",
+          "Close the window. It is open.",
+          "Wear your jacket. It is soft.",
+          "Draw a circle. It is round.",
+          "Eat this banana. It is ripe."
+        ]
+      },
+      {
+        q: "Gita bought a dress. ___ is wearing it today.",
+        options: ["He", "They", "She", "It"],
+        a: 2,
+        examples: [
+          "Rita is short. She is cute.",
+          "The queen has a crown. She is rich.",
+          "My grandmother tells stories. She is wise.",
+          "The nurse is gentle. She helps patients.",
+          "Mina lost her doll. She is sad."
+        ]
+      },
+      {
+        q: "You and your brother are neat. ___ keep your room clean.",
+        options: ["They", "You", "We", "He"],
+        a: 1,
+        examples: [
+          "You are good students.",
+          "You both must sit down.",
+          "You should eat your lunch.",
+          "You all look very smart.",
+          "You must speak politely."
+        ]
+      },
+      {
+        q: "Look at the stars. ___ are shining bright.",
+        options: ["It", "They", "We", "He"],
+        a: 1,
+        examples: [
+          "The toys are colorful. They are in the box.",
+          "The monkeys are jumping. They are active.",
+          "The shoes are clean. They belong to me.",
+          "Cars move fast. They have wheels.",
+          "Trees give shade. They are tall."
+        ]
+      },
+      {
+        q: "My family and I went to the zoo. ___ saw a lion.",
+        options: ["We", "They", "You", "It"],
+        a: 0,
+        examples: [
+          "My friends and I eat lunch. We share food.",
+          "We love our country.",
+          "We practice math every day.",
+          "We sing national anthem together.",
+          "We keep our class clean."
+        ]
+      },
+      {
+        q: "The elephant is big. ___ has a long trunk.",
+        options: ["He", "She", "It", "They"],
+        a: 2,
+        examples: [
+          "The lion is strong. It roars loudly.",
+          "A monkey likes bananas. It swings on trees.",
+          "The parrot is green. It can speak.",
+          "The rabbit is fast. It eats carrots.",
+          "The peacock is pretty. It dances in rain."
+        ]
+      },
+      {
+        q: "Teacher asked, 'Are ___ listening to me?'",
+        options: ["you", "he", "she", "it"],
+        a: 0,
+        examples: [
+          "You must complete your work.",
+          "Do you have a ruler?",
+          "You are doing a great job.",
+          "Can you help your friend?",
+          "You should drink milk."
+        ]
+      },
+      {
+        q: "My father is calling me. ___ is waiting outside.",
+        options: ["She", "He", "It", "They"],
+        a: 1,
+        examples: [
+          "The driver stopped the car. He is careful.",
+          "The baker made a cake. He is happy.",
+          "The farmer works in fields. He grows crops.",
+          "The boy ran fast. He reached first.",
+          "My brother is tall. He plays basketball."
+        ]
+      },
+      {
+        q: "I have two kittens. ___ are very soft.",
+        options: ["It", "She", "They", "He"],
+        a: 2,
+        examples: [
+          "The birds built a nest. They live in it.",
+          "The chairs are wood. They are strong.",
+          "My friends are here. They want to play.",
+          "The balloons flew away. They went high.",
+          "These pencils are sharp. They write well."
+        ]
+      },
+      {
+        q: "___ am standing near the whiteboard.",
+        options: ["He", "She", "I", "We"],
+        a: 2,
+        examples: [
+          "I am listening to music.",
+          "I am drawing a house.",
+          "I am feeling happy.",
+          "I am wearing a yellow shirt.",
+          "I am learning new words."
+        ]
+      }
+    ],
+
+    "Singular and Plural": [
+      {
+        q: "What is the plural of 'apple'?",
+        options: ["apples", "applese", "apple", "appless"],
+        a: 0,
+        examples: [
+          "One apple, two apples.",
+          "She bought five apples.",
+          "The apples are sweet.",
+          "There are three red apples.",
+          "I love eating juicy apples."
+        ]
+      },
+      {
+        q: "There are two ___ sitting on the branch.",
+        options: ["bird", "birds", "birdes", "birdss"],
+        a: 1,
+        examples: [
+          "A bird is singing.",
+          "Many birds fly in the sky.",
+          "The birds built a nest.",
+          "Four birds are on the tree.",
+          "Birds have colorful feathers."
+        ]
+      },
+      {
+        q: "What is the plural of 'bus'?",
+        options: ["buss", "buses", "busies", "bus"],
+        a: 1,
+        examples: [
+          "One bus is red.",
+          "Two buses are at the station.",
+          "School buses are yellow.",
+          "Many buses run on the road.",
+          "The buses arrived on time."
+        ]
+      },
+      {
+        q: "I have three __ in my bag.",
+        options: ["book", "bookes", "books", "bookies"],
+        a: 2,
+        examples: [
+          "This book is heavy.",
+          "Put your books away.",
+          "The library has many books.",
+          "I read two books every week.",
+          "These books are clean."
+        ]
+      },
+      {
+        q: "What is the plural of 'box'?",
+        options: ["boxs", "boxes", "boxies", "boxen"],
+        a: 1,
+        examples: [
+          "The box is big.",
+          "Open all the boxes.",
+          "These boxes are light.",
+          "Pack the toys in boxes.",
+          "He carried three boxes."
+        ]
+      },
+      {
+        q: "Look at those cute ___!",
+        options: ["cats", "cates", "cat", "caties"],
+        a: 0,
+        examples: [
+          "A cat is sleeping.",
+          "Two cats are playing.",
+          "Cats like to drink milk.",
+          "My cats are black and white.",
+          "The cats meowed loudly."
+        ]
+      },
+      {
+        q: "What is the plural of 'glass'?",
+        options: ["glass", "glasss", "glasses", "glassies"],
+        a: 2,
+        examples: [
+          "Fill one glass with water.",
+          "Bring four glasses of juice.",
+          "The glasses are on the table.",
+          "Clean the dirty glasses.",
+          "She broke two glass bowls."
+        ]
+      },
+      {
+        q: "My mother bought ten ___ from the market.",
+        options: ["mango", "mangoes", "mangos", "mangose"],
+        a: 1,
+        examples: [
+          "A mango is yellow.",
+          "Ripe mangoes are sweet.",
+          "Mangoes grow on big trees.",
+          "We ate three mangoes.",
+          "These mangoes taste good."
+        ]
+      },
+      {
+        q: "What is the plural of 'pencil'?",
+        options: ["penciles", "pencils", "pencilses", "pencil"],
+        a: 1,
+        examples: [
+          "Sharpen your pencil.",
+          "I have five colored pencils.",
+          "These pencils write neatly.",
+          "Give me two pencils.",
+          "The pencils are in the box."
+        ]
+      },
+      {
+        q: "What is the plural of 'watch'?",
+        options: ["watchs", "watches", "watchies", "watch"],
+        a: 1,
+        examples: [
+          "He lost his watch.",
+          "These watches are expensive.",
+          "Wrist watches tell time.",
+          "Father has two watches.",
+          "The watches are glowing."
+        ]
+      },
+      {
+        q: "Five ___ are playing in the mud.",
+        options: ["pigs", "pigges", "pig", "pigies"],
+        a: 0,
+        examples: [
+          "The pig is pink.",
+          "Pigs like to roll in mud.",
+          "Three pigs live on the farm.",
+          "Little pigs are called piglets.",
+          "The pigs are clean now."
+        ]
+      },
+      {
+        q: "What is the plural of 'fox'?",
+        options: ["foxs", "foxes", "foxies", "foxen"],
+        a: 1,
+        examples: [
+          "A fox is clever.",
+          "Two foxes ran into the forest.",
+          "Wild foxes live in dens.",
+          "The foxes hunted at night.",
+          "Foxes have bushy tails."
+        ]
+      },
+      {
+        q: "There are six ___ on the table.",
+        options: ["cup", "cupes", "cups", "cupies"],
+        a: 2,
+        examples: [
+          "Pass me the cup.",
+          "Wash the tea cups.",
+          "These cups are clean.",
+          "She filled the cups.",
+          "All six cups are blue."
+        ]
+      },
+      {
+        q: "What is the plural of 'dish'?",
+        options: ["dishs", "dishes", "dishies", "dish"],
+        a: 1,
+        examples: [
+          "Put the dish in the sink.",
+          "Mother washed the dishes.",
+          "These dishes are clean.",
+          "Tasty dishes were served.",
+          "Handle the glass dishes carefully."
+        ]
+      },
+      {
+        q: "Look at those bright ___ in the night sky.",
+        options: ["star", "stares", "stars", "staries"],
+        a: 2,
+        examples: [
+          "One star is shining.",
+          "Count the stars at night.",
+          "The stars are very far.",
+          "Twinkle, twinkle, little stars.",
+          "Many stars are glowing."
+        ]
+      },
+      {
+        q: "What is the plural of 'dress'?",
+        options: ["dresses", "dresss", "dressies", "dress"],
+        a: 0,
+        examples: [
+          "She wears a pink dress.",
+          "Her dresses are pretty.",
+          "Iron your school dresses.",
+          "New dresses for the festival.",
+          "The dresses are in the closet."
+        ]
+      },
+      {
+        q: "Two ___ are parked outside.",
+        options: ["car", "cars", "cares", "caries"],
+        a: 1,
+        examples: [
+          "This car is fast.",
+          "Red cars are popular.",
+          "The cars are moving slowly.",
+          "Park the cars here.",
+          "Both cars have four doors."
+        ]
+      },
+      {
+        q: "What is the plural of 'bench'?",
+        options: ["benchs", "benches", "benchies", "bench"],
+        a: 1,
+        examples: [
+          "Sit on the bench.",
+          "Our classroom has long benches.",
+          "Clean the wooden benches.",
+          "Four students sit on the benches.",
+          "The garden benches are wet."
+        ]
+      },
+      {
+        q: "There are many green ___ on the branch.",
+        options: ["tree", "trees", "treeses", "treese"],
+        a: 1,
+        examples: [
+          "Plant a tree today.",
+          "Trees give us fresh air.",
+          "Birds live in trees.",
+          "Tall trees shade the road.",
+          "Fruit trees bloom in spring."
+        ]
+      },
+      {
+        q: "What is the plural of 'potato'?",
+        options: ["potatos", "potatoes", "potatose", "potatose"],
+        a: 1,
+        examples: [
+          "Peel one potato.",
+          "We bought two kilos of potatoes.",
+          "Boiled potatoes are soft.",
+          "Potatoes grow underground.",
+          "Mashed potatoes are tasty."
+        ]
+      }
+    ],
+
+    "Articles (A, An, The)": [
+      {
+        q: "I ate ___ apple for breakfast.",
+        options: ["a", "an", "the", "no article"],
+        a: 1,
+        examples: [
+          "I saw an elephant.",
+          "Give me an orange.",
+          "She brought an umbrella.",
+          "He is an honest boy.",
+          "I have an ice cream."
+        ]
+      },
+      {
+        q: "Look at ___ sun in the sky.",
+        options: ["a", "an", "the", "no article"],
+        a: 2,
+        examples: [
+          "The moon shines at night.",
+          "The earth is round.",
+          "The sky is blue.",
+          "The stars are bright.",
+          "The world is big."
+        ]
+      },
+      {
+        q: "My brother has ___ new bicycle.",
+        options: ["a", "an", "the", "no article"],
+        a: 0,
+        examples: [
+          "This is a red shirt.",
+          "I have a pet cat.",
+          "She bought a pink doll.",
+          "He lives in a big house.",
+          "That is a tall tree."
+        ]
+      },
+      {
+        q: "It is raining! Take ___ umbrella with you.",
+        options: ["a", "an", "the", "no article"],
+        a: 1,
+        examples: [
+          "He has an ink pot.",
+          "She saw an owl on the tree.",
+          "I need an answer.",
+          "Eat an egg every morning.",
+          "He bought an eraser."
+        ]
+      },
+      {
+        q: "___ Himalayas are the highest mountains.",
+        options: ["A", "An", "The", "No article"],
+        a: 2,
+        examples: [
+          "The Ganges is a long river.",
+          "The Bagmati flows near the temple.",
+          "The Indian Ocean is big.",
+          "The Pacific is deep.",
+          "The Red Sea is warm."
+        ]
+      },
+      {
+        q: "Sita saw ___ blue bird in the garden.",
+        options: ["a", "an", "the", "no article"],
+        a: 0,
+        examples: [
+          "There is a small boy outside.",
+          "I read a green book.",
+          "She draws a beautiful flower.",
+          "He drives a yellow bus.",
+          "We visited a clean park."
+        ]
+      },
+      {
+        q: "Hari is ___ honest student.",
+        options: ["a", "an", "the", "no article"],
+        a: 1,
+        examples: [
+          "Wait for an hour.",
+          "He is an honorable person.",
+          "It is an honest reply.",
+          "She is an early riser.",
+          "An hour passed quickly."
+        ]
+      },
+      {
+        q: "I bought a book. ___ book is very interesting.",
+        options: ["A", "An", "The", "No article"],
+        a: 2,
+        examples: [
+          "I saw a cat. The cat was black.",
+          "She has a ball. The ball is bouncy.",
+          "He found a coin. The coin was shiny.",
+          "We met a teacher. The teacher was kind.",
+          "They adopted a puppy. The puppy is cute."
+        ]
+      },
+      {
+        q: "There is ___ cow grazing in the field.",
+        options: ["a", "an", "the", "no article"],
+        a: 0,
+        examples: [
+          "A horse runs fast.",
+          "A dog barked at night.",
+          "A rabbit eats carrots.",
+          "A parrot is in the cage.",
+          "A lion roars in the jungle."
+        ]
+      },
+      {
+        q: "___ Ganges is a sacred river in Nepal and India.",
+        options: ["A", "An", "The", "No article"],
+        a: 2,
+        examples: [
+          "The Nile is in Africa.",
+          "The Amazon is a vast rainforest.",
+          "The Sahara is a desert.",
+          "The Everest is high.",
+          "The Koshi flows south."
+        ]
+      },
+      {
+        q: "She wears ___ uniform to school every day.",
+        options: ["a", "an", "the", "no article"],
+        a: 0,
+        examples: [
+          "This is a useful tool.",
+          "Nepal is a unique country.",
+          "He studies at a university.",
+          "It is a one-rupee coin.",
+          "A European visited our school."
+        ]
+      },
+      {
+        q: "Pass me ___ salt, please.",
+        options: ["a", "an", "the", "no article"],
+        a: 2,
+        examples: [
+          "Turn off the lights.",
+          "Open the door.",
+          "Clean the whiteboard.",
+          "Close the window.",
+          "Hand me the keys."
+        ]
+      },
+      {
+        q: "I saw ___ owl sitting on the roof.",
+        options: ["a", "an", "the", "no article"],
+        a: 1,
+        examples: [
+          "An eagle flew high.",
+          "I found an old coin.",
+          "She ate an orange.",
+          "An ant is tiny.",
+          "He gave an example."
+        ]
+      },
+      {
+        q: "This is ___ best day of my life!",
+        options: ["a", "an", "the", "no article"],
+        a: 2,
+        examples: [
+          "He is the tallest boy in class.",
+          "She is the smartest girl.",
+          "Mount Everest is the highest peak.",
+          "This is the most fun game.",
+          "It was the happiest moment."
+        ]
+      },
+      {
+        q: "My father is ___ doctor.",
+        options: ["a", "an", "the", "no article"],
+        a: 0,
+        examples: [
+          "She is a teacher.",
+          "He is a farmer.",
+          "My uncle is a pilot.",
+          "Ramesh is a carpenter.",
+          "Her mother is a nurse."
+        ]
+      },
+      {
+        q: "Do you have ___ eraser I can borrow?",
+        options: ["a", "an", "the", "no article"],
+        a: 1,
+        examples: [
+          "I need an envelope.",
+          "She brought an extra pen.",
+          "He drank an entire glass.",
+          "It was an easy exam.",
+          "Give me an idea."
+        ]
+      },
+      {
+        q: "We stayed at a hotel. ___ hotel was near the lake.",
+        options: ["A", "An", "The", "No article"],
+        a: 2,
+        examples: [
+          "We ate a cake. The cake was tasty.",
+          "I bought a bag. The bag is blue.",
+          "She drew a picture. The picture was neat.",
+          "He visited a park. The park was clean.",
+          "They built a bridge. The bridge is strong."
+        ]
+      },
+      {
+        q: "___ moon shines brightly at night.",
+        options: ["A", "An", "The", "No article"],
+        a: 2,
+        examples: [
+          "The sun gives us light.",
+          "The sky is full of stars.",
+          "The wind is blowing.",
+          "The sea is blue.",
+          "The earth moves around the sun."
+        ]
+      },
+      {
+        q: "Give me ___ piece of paper.",
+        options: ["a", "an", "the", "no article"],
+        a: 0,
+        examples: [
+          "A glass of milk.",
+          "A cup of tea.",
+          "A slice of bread.",
+          "A bottle of water.",
+          "A box of chocolates."
+        ]
+      },
+      {
+        q: "He waited for ___ hour at the bus station.",
+        options: ["a", "an", "the", "no article"],
+        a: 1,
+        examples: [
+          "An hour of practice is good.",
+          "We met an hour ago.",
+          "It takes an hour to reach.",
+          "She slept for an hour.",
+          "An hour had passed."
+        ]
+      }
+    ],
+
+    "This, These, That, Those": [
+      {
+        q: "___ is a red apple in my hand.",
+        options: ["This", "These", "That", "Those"],
+        a: 0,
+        examples: [
+          "This is my new pencil.",
+          "This is a sweet mango.",
+          "This is a blue cap.",
+          "This is my favorite toy.",
+          "This is a clean book."
+        ]
+      },
+      {
+        q: "Look at ___ birds flying far up in the sky!",
+        options: ["this", "these", "that", "those"],
+        a: 3,
+        examples: [
+          "Those stars are shining bright.",
+          "Those trees are far away.",
+          "Those cars are parked across the road.",
+          "Those kites are high in the air.",
+          "Those houses look very small."
+        ]
+      },
+      {
+        q: "___ are my shoes right here near my feet.",
+        options: ["This", "These", "That", "Those"],
+        a: 1,
+        examples: [
+          "These are my colored pencils.",
+          "These are fresh flowers in my hand.",
+          "These are my close friends.",
+          "These are clean clothes.",
+          "These are juicy oranges."
+        ]
+      },
+      {
+        q: "___ is a tall tree over there near the gate.",
+        options: ["This", "These", "That", "Those"],
+        a: 2,
+        examples: [
+          "That is a big hill far away.",
+          "That is a white cloud.",
+          "That is my school building.",
+          "That is a speed bus on the road.",
+          "That is a flying airplane."
+        ]
+      },
+      {
+        q: "___ is my pet dog standing right next to me.",
+        options: ["This", "These", "That", "Those"],
+        a: 0,
+        examples: [
+          "This is a small kitten.",
+          "This is a sharp eraser.",
+          "This is my water bottle.",
+          "This is a soft pillow.",
+          "This is my drawing notebook."
+        ]
+      },
+      {
+        q: "___ are hot samosas on my plate.",
+        options: ["This", "These", "That", "Those"],
+        a: 1,
+        examples: [
+          "These are sweet ripe bananas.",
+          "These are my school books.",
+          "These are bright balloons.",
+          "These are warm socks.",
+          "These are clean spoons."
+        ]
+      },
+      {
+        q: "Do you see ___ moon high up in the sky?",
+        options: ["this", "these", "that", "those"],
+        a: 2,
+        examples: [
+          "That is a glowing star.",
+          "That is a high mountain peak.",
+          "That is a red roof far away.",
+          "That is a boat on the river.",
+          "That is a tall flag pole."
+        ]
+      },
+      {
+        q: "___ are wild animals behind the fence at the zoo.",
+        options: ["This", "These", "That", "Those"],
+        a: 3,
+        examples: [
+          "Those are green hills across the valley.",
+          "Those are distant street lights.",
+          "Those are big cows in the far field.",
+          "Those are high clouds.",
+          "Those are dark shadow trees."
+        ]
+      },
+      {
+        q: "___ pencil in my hand is very sharp.",
+        options: ["This", "These", "That", "Those"],
+        a: 0,
+        examples: [
+          "This bag is very light.",
+          "This milk is warm.",
+          "This dress is pretty.",
+          "This flower smells nice.",
+          "This clock is working."
+        ]
+      },
+      {
+        q: "Who is ___ boy standing far near the school gate?",
+        options: ["this", "these", "that", "those"],
+        a: 2,
+        examples: [
+          "That girl is my sister.",
+          "That man is a teacher.",
+          "That shop is open.",
+          "That dog is barking far away.",
+          "That bus is coming."
+        ]
+      },
+      {
+        q: "___ are my toys lying right here on my desk.",
+        options: ["This", "These", "That", "Those"],
+        a: 1,
+        examples: [
+          "These blocks are colorful.",
+          "These keys are on the desk.",
+          "These eggs are in the basket.",
+          "These coins are shiny.",
+          "These cups are full of milk."
+        ]
+      },
+      {
+        q: "___ are mountain peaks visible far away.",
+        options: ["This", "These", "That", "Those"],
+        a: 3,
+        examples: [
+          "Those houses are on the hill.",
+          "Those ships are on the sea.",
+          "Those lights are glowing far away.",
+          "Those monkeys are on the high branch.",
+          "Those children are playing in the far park."
+        ]
+      },
+      {
+        q: "___ is an eraser sitting on my desk.",
+        options: ["This", "These", "That", "Those"],
+        a: 0,
+        examples: [
+          "This is a clean page.",
+          "This is my ruler.",
+          "This is a glass of juice.",
+          "This is a pink flower.",
+          "This is a soft chair."
+        ]
+      },
+      {
+        q: "___ is a blue umbrella lying on that bench far over there.",
+        options: ["This", "These", "That", "Those"],
+        a: 2,
+        examples: [
+          "That is a green bench.",
+          "That is an old temple.",
+          "That is a fast train.",
+          "That is a deep lake.",
+          "That is a tall tower."
+        ]
+      },
+      {
+        q: "___ are my friends standing right beside me.",
+        options: ["This", "These", "That", "Those"],
+        a: 1,
+        examples: [
+          "These are my Section Section Section Section class teachers.",
+          "These are nice children.",
+          "These are my cousins.",
+          "These are smart students.",
+          "These are happy dancers."
+        ]
+      },
+      {
+        q: "___ are cows grazing far in the field.",
+        options: ["This", "These", "That", "Those"],
+        a: 3,
+        examples: [
+          "Those are white sheep on the mountain.",
+          "Those are flying ducks.",
+          "Those are green pine trees.",
+          "Those are distant boats.",
+          "Those are red cars on the highway."
+        ]
+      },
+      {
+        q: "___ flower in my hand smells lovely.",
+        options: ["This", "These", "That", "Those"],
+        a: 0,
+        examples: [
+          "This rose is red.",
+          "This leaf is green.",
+          "This apple is sweet.",
+          "This cat is soft.",
+          "This game is fun."
+        ]
+      },
+      {
+        q: "Look at ___ shining stars high in the sky!",
+        options: ["this", "these", "that", "those"],
+        a: 3,
+        examples: [
+          "Those clouds look like sheep.",
+          "Those planes are flying high.",
+          "Those birds are building nests far up.",
+          "Those lights are bright at night.",
+          "Those balloons are floating away."
+        ]
+      },
+      {
+        q: "___ is a yellow bus coming towards us from far away.",
+        options: ["This", "These", "That", "Those"],
+        a: 2,
+        examples: [
+          "That is a police car.",
+          "That is a cargo truck.",
+          "That is a red motorbike.",
+          "That is a blue bicycle.",
+          "That is a slow tractor."
+        ]
+      },
+      {
+        q: "___ are four books in my school bag.",
+        options: ["This", "These", "That", "Those"],
+        a: 1,
+        examples: [
+          "These are my storybooks.",
+          "These are my math notebooks.",
+          "These are clean papers.",
+          "These are sharp crayons.",
+          "These are my exam sheets."
+        ]
+      }
+    ]
     },
+  
+    // Place a comma after Class 2, then add Class 3:
     3: {
       "Present Simple": [
-        { q: "She ___ to school every day.", options: ["go", "goes", "going", "went"], a: 1 },
-        { q: "They ___ football on Saturdays.", options: ["play", "plays", "playing", "played"], a: 0 },
-        { q: "My father ___ tea every morning.", options: ["drink", "drinks", "drinking", "drank"], a: 1 },
-        { q: "We ___ our homework after school.", options: ["do", "does", "doing", "did"], a: 0 },
-        { q: "The sun ___ in the east.", options: ["rise", "rises", "rising", "rose"], a: 1 }
+        { q: "She ___ to school every day.", options: ["go", "goes", "going", "went"], a: 1, examples: ["He plays football every evening.", "The sun rises in the east.", "Rita sings very well.", "He reads a book before bed.", "My mother cooks delicious food."] },
+        { q: "They ___ football on Saturdays.", options: ["play", "plays", "playing", "played"], a: 0, examples: ["We eat breakfast together.", "They live near the market.", "You speak English well.", "Birds fly in the sky.", "Students study hard for exams."] },
+        { q: "My father ___ tea every morning.", options: ["drink", "drinks", "drinking", "drank"], a: 1, examples: ["He drinks cold water.", "She likes ice cream.", "The dog barks at strangers.", "Uncle works in a hospital.", "My teacher writes on the board."] },
+        { q: "We ___ our homework after school.", options: ["do", "does", "doing", "did"], a: 0, examples: ["I do my work on time.", "We clean our classroom.", "They wash their hands before eating.", "You do a great job.", "I brush my teeth twice a day."] },
+        { q: "The sun ___ in the east.", options: ["rise", "rises", "rising", "rose"], a: 1, examples: ["The earth revolves around the sun.", "Water freezes at zero degrees.", "Fire gives us heat.", "A cow gives milk.", "The river flows into the sea."] },
+        { q: "He ___ a bicycle to work.", options: ["ride", "rides", "riding", "rode"], a: 1, examples: ["She rides a horse.", "He drives a green car.", "Ram flies a colorful kite.", "The boy runs very fast.", "He walks in the park."] },
+        { q: "I ___ in Dharan.", options: ["live", "lives", "living", "lived"], a: 0, examples: ["I like chocolate.", "We stay in a small hotel.", "I know the answer.", "They work in a bank.", "I love my parents."] },
+        { q: "Cats ___ milk.", options: ["like", "likes", "liking", "liked"], a: 0, examples: ["Dogs love bones.", "Rabbits eat carrots.", "Monkeys like bananas.", "Cows eat grass.", "Fish live in water."] },
+        { q: "My sister ___ computer games.", options: ["play", "plays", "playing", "played"], a: 1, examples: ["My brother plays guitar.", "Sita plays the piano.", "He plays ludo with friends.", "The girl dances gracefully.", "She paints beautiful pictures."] },
+        { q: "Water ___ at 100 degrees Celsius.", options: ["boil", "boils", "boiling", "boiled"], a: 1, examples: ["Ice melts in heat.", "Wood floats on water.", "Iron sinks in water.", "Oil floats on top.", "Wind blows cold air."] },
+        { q: "You ___ very fast.", options: ["run", "runs", "running", "ran"], a: 0, examples: ["You walk slowly.", "We run together.", "They jump high.", "You draw nice figures.", "I run in the morning."] },
+        { q: "The train ___ at 8 o'clock.", options: ["arrive", "arrives", "arriving", "arrived"], a: 1, examples: ["The bus leaves at 9 AM.", "The school opens early.", "The shop closes at night.", "The bell rings loud.", "The flight lands soon."] },
+        { q: "Teachers ___ us new things.", options: ["teach", "teaches", "teaching", "taught"], a: 0, examples: ["Parents love their children.", "Doctors treat patients.", "Farmers grow crops.", "Pilots fly airplanes.", "Bakers make fresh bread."] },
+        { q: "A cobbler ___ shoes.", options: ["mend", "mends", "mending", "mended"], a: 1, examples: ["A tailor stitches clothes.", "A carpenter makes chairs.", "A painter paints houses.", "A mason builds walls.", "A driver drives buses."] },
+        { q: "She ___ not like spicy food.", options: ["do", "does", "doing", "did"], a: 1, examples: ["He does not play cricket.", "It does not rain today.", "She does not eat meat.", "Ramesh does not sleep late.", "She does not sing well."] },
+        { q: "We ___ not go to school on Saturdays.", options: ["do", "does", "doing", "did"], a: 0, examples: ["They do not know him.", "I do not drink tea.", "You do not need help.", "We do not waste water.", "They do not make noise."] },
+        { q: "My mother ___ up at 5 AM.", options: ["get", "gets", "getting", "got"], a: 1, examples: ["He wakes up early.", "She sleeps at 10 PM.", "Father comes back late.", "Grandmother prays daily.", "She brushes before sleeping."] },
+        { q: "Plants ___ sunlight to grow.", options: ["need", "needs", "needing", "needed"], a: 0, examples: ["Animals need food.", "Human beings need oxygen.", "Trees give us shade.", "Flowers smell sweet.", "Leaves change color."] },
+        { q: "A clock ___ us time.", options: ["tell", "tells", "telling", "told"], a: 1, examples: ["A map shows directions.", "A mirror reflects light.", "A watch keeps exact time.", "A book gives knowledge.", "A pen writes smoothly."] },
+        { q: "Does he ___ in Class 3?", options: ["study", "studies", "studying", "studied"], a: 0, examples: ["Does she speak English?", "Does it rain here?", "Does Ram work hard?", "Does Hari read books?", "Does she like fruit?"] }
       ],
       "Past Simple": [
-        { q: "Yesterday, I ___ my grandmother.", options: ["visit", "visits", "visited", "visiting"], a: 2 },
-        { q: "She ___ a letter last night.", options: ["write", "writes", "wrote", "writing"], a: 2 },
-        { q: "We ___ to the market this morning.", options: ["go", "goes", "went", "going"], a: 2 },
-        { q: "He ___ his homework before dinner.", options: ["finish", "finishes", "finished", "finishing"], a: 2 },
-        { q: "They ___ a movie last weekend.", options: ["watch", "watches", "watched", "watching"], a: 2 }
-      ]
-    },
-    4: {
-      "Present Continuous": [
-        { q: "She ___ her homework right now.", options: ["do", "does", "is doing", "did"], a: 2 },
-        { q: "The children ___ in the garden.", options: ["is playing", "are playing", "play", "played"], a: 1 },
-        { q: "I ___ a letter at the moment.", options: ["am writing", "is writing", "writes", "wrote"], a: 0 },
-        { q: "Look! It ___ heavily.", options: ["rain", "rains", "is raining", "rained"], a: 2 },
-        { q: "We ___ for the bus now.", options: ["wait", "waits", "are waiting", "waited"], a: 2 }
+        { q: "Yesterday, I ___ my grandmother.", options: ["visit", "visits", "visited", "visiting"], a: 2, examples: ["Last night, I watched television.", "We played football yesterday.", "She cooked soup last Sunday.", "They cleaned the room yesterday.", "He called me this morning."] },
+        { q: "She ___ a letter to her friend last night.", options: ["write", "writes", "wrote", "writing"], a: 2, examples: ["He wrote a song last year.", "I wrote my exam yesterday.", "They wrote a long story.", "Teacher wrote on the board.", "She wrote in her diary."] },
+        { q: "We ___ to the market this morning.", options: ["go", "goes", "went", "going"], a: 2, examples: ["He went to Pokhara last week.", "They went out for dinner.", "I went to bed early.", "She went to the park.", "We went on a school tour."] },
+        { q: "He ___ his homework before dinner.", options: ["finish", "finishes", "finished", "finishing"], a: 2, examples: ["I finished my lunch.", "She completed her project.", "They finished the match.", "He closed the door.", "We started the exam."] },
+        { q: "They ___ a movie last weekend.", options: ["watch", "watches", "watched", "watching"], a: 2, examples: ["We watched a drama.", "I watched the birds.", "She watched the game.", "He watched a funny video.", "They watched the sunset."] },
+        { q: "It ___ heavily yesterday.", options: ["rain", "rains", "rained", "raining"], a: 2, examples: ["Snow fell on the mountain.", "Wind blew hard last night.", "The sun shone brightly.", "It rained for two hours.", "The river flooded yesterday."] },
+        { q: "I ___ my keys in the bag.", options: ["find", "finds", "found", "finding"], a: 2, examples: ["She found a coin on the road.", "They found the lost puppy.", "He found his lost pen.", "We found a cool spot.", "I found my missing shoe."] },
+        { q: "The dog ___ loudly at the stranger.", options: ["bark", "barks", "barked", "barking"], a: 2, examples: ["The lion roared loudly.", "The cat meowed for milk.", "The baby cried last night.", "The birds chirped early.", "The horse jumped high."] },
+        { q: "She ___ a glass of milk before sleeping.", options: ["drink", "drinks", "drank", "drinking"], a: 2, examples: ["He drank cold juice.", "We drank fresh water.", "They drank hot tea.", "I drank lemon water.", "The cat drank the milk."] },
+        { q: "My uncle ___ us a new computer.", options: ["buy", "buys", "bought", "buying"], a: 2, examples: ["Father bought fresh apples.", "She bought a pink dress.", "I bought a notebook.", "They bought a new car.", "We bought tickets."] },
+        { q: "We ___ rice and curry for lunch.", options: ["eat", "eats", "ate", "eating"], a: 2, examples: ["He ate an apple.", "They ate pizza yesterday.", "She ate breakfast early.", "The dog ate its food.", "I ate a sweet mango."] },
+        { q: "The teacher ___ us a story.", options: ["tell", "tells", "told", "telling"], a: 2, examples: ["Grandmother told a tale.", "He told the truth.", "She told me her name.", "I told him the secret.", "They told us the news."] },
+        { q: "They ___ a big cake for her birthday.", options: ["make", "makes", "made", "making"], a: 2, examples: ["Mother made delicious tea.", "He made a paper boat.", "We made a poster.", "She made a mistake.", "They made a snowman."] },
+        { q: "I ___ my friend at the park.", options: ["meet", "meets", "met", "meeting"], a: 2, examples: ["We met the principal.", "She met her cousin.", "He met an old teacher.", "They met at the station.", "I met him yesterday."] },
+        { q: "The bird ___ high into the sky.", options: ["fly", "flies", "flew", "flying"], a: 2, examples: ["The kite flew away.", "An airplane flew over.", "The eagle flew fast.", "The insect flew inside.", "Paper flew in the wind."] },
+        { q: "He ___ his phone on the table.", options: ["leave", "leaves", "left", "leaving"], a: 2, examples: ["She left her bag at home.", "They left early today.", "We left the door open.", "I left my umbrella.", "He left the room silently."] },
+        { q: "She ___ a nice song during the function.", options: ["sing", "sings", "sang", "singing"], a: 2, examples: ["The choir sang well.", "He sang a folk song.", "We sang national anthem.", "Birds sang in the tree.", "She sang softly."] },
+        { q: "I ___ a loud noise outside.", options: ["hear", "hears", "heard", "hearing"], a: 2, examples: ["We heard the thunder.", "She heard a knock.", "They heard the music.", "He heard his friend's voice.", "I heard a bird chirp."] },
+        { q: "Ramesh ___ first in the race.", options: ["come", "comes", "came", "coming"], a: 2, examples: ["Guests came to our home.", "Rain came in the evening.", "She came to help me.", "He came late to class.", "We came back together."] },
+        { q: "The student ___ all the questions correctly.", options: ["answer", "answers", "answered", "answering"], a: 2, examples: ["She answered the phone.", "He answered politely.", "I answered the letter.", "They answered together.", "We answered the quiz."] }
       ],
-      "Subject-Verb Agreement": [
-        { q: "Each of the students ___ a book.", options: ["have", "has", "having", "had"], a: 1 },
-        { q: "The team ___ practicing hard.", options: ["is", "are", "am", "be"], a: 0 },
-        { q: "My sister and I ___ going to the fair.", options: ["is", "am", "are", "be"], a: 2 },
-        { q: "Neither of the boys ___ ready.", options: ["is", "are", "am", "be"], a: 0 },
-        { q: "The news ___ surprising.", options: ["was", "were", "are", "be"], a: 0 }
-      ]
+
+      "Singular and Plural": [
+      {
+        q: "What is the plural of 'child'?",
+        options: ["childs", "childes", "children", "childrens"],
+        a: 2,
+        examples: [
+          "One child is reading.",
+          "The children are playing outside.",
+          "All children love ice cream.",
+          "Three children raised their hands.",
+          "Keep the children safe."
+        ]
+      },
+      {
+        q: "What is the plural of 'tooth'?",
+        options: ["tooths", "teethes", "teeth", "toothesive"],
+        a: 2,
+        examples: [
+          "A tooth was loose.",
+          "Brush your teeth twice a day.",
+          "His front teeth are sharp.",
+          "Crocodiles have many teeth.",
+          "Healthy teeth are white."
+        ]
+      },
+      {
+        q: "What is the plural of 'leaf'?",
+        options: ["leafs", "leaves", "leafes", "leafe"],
+        a: 1,
+        examples: [
+          "A green leaf fell.",
+          "Dry leaves turn brown in autumn.",
+          "Trees shed their leaves.",
+          "Gather the fallen leaves.",
+          "These leaves smell nice."
+        ]
+      },
+      {
+        q: "What is the plural of 'city'?",
+        options: ["citys", "cityes", "cities", "citi"],
+        a: 2,
+        examples: [
+          "Kathmandu is a big city.",
+          "Nepal has many beautiful cities.",
+          "Busy cities have lots of traffic.",
+          "These cities are close to rivers.",
+          "Modern cities have tall buildings."
+        ]
+      },
+      {
+        q: "What is the plural of 'foot'?",
+        options: ["foots", "feets", "feet", "footies"],
+        a: 2,
+        examples: [
+          "Wipe your foot.",
+          "He stands on both feet.",
+          "My feet hurt after running.",
+          "Rinse your dirty feet.",
+          "Cold feet need warm socks."
+        ]
+      },
+      {
+        q: "What is the plural of 'man'?",
+        options: ["mans", "menes", "men", "mens"],
+        a: 2,
+        examples: [
+          "A wise man spoke.",
+          "Three men were waiting outside.",
+          "The men finished their work.",
+          "Brave men protect others.",
+          "Both men wear blue suits."
+        ]
+      },
+      {
+        q: "What is the plural of 'butterfly'?",
+        options: ["butterflys", "butterflies", "butterflyes", "butterfly"],
+        a: 1,
+        examples: [
+          "A butterfly landed on the flower.",
+          "Colorful butterflies fly in spring.",
+          "Butterflies have light wings.",
+          "Look at those two butterflies.",
+          "Butterflies drink nectar."
+        ]
+      },
+      {
+        q: "What is the plural of 'wolf'?",
+        options: ["wolfs", "wolfes", "wolves", "wolvis"],
+        a: 2,
+        examples: [
+          "A lone wolf howled.",
+          "A pack of wolves hunted together.",
+          "Wolves live in the forest.",
+          "Wild wolves run fast.",
+          "The wolves protected their pups."
+        ]
+      },
+      {
+        q: "What is the plural of 'woman'?",
+        options: ["womans", "women", "womens", "womanes"],
+        a: 1,
+        examples: [
+          "The woman is singing.",
+          "Three women entered the hall.",
+          "Women work hard in fields.",
+          "These women are teachers.",
+          "The women greeted us warmly."
+        ]
+      },
+      {
+        q: "What is the plural of 'baby'?",
+        options: ["babys", "babyes", "babies", "babyies"],
+        a: 2,
+        examples: [
+          "The baby is sleeping.",
+          "The babies are crying for milk.",
+          "Cute babies make us smile.",
+          "Two babies were born today.",
+          "Hold the babies gently."
+        ]
+      },
+      {
+        q: "What is the plural of 'knife'?",
+        options: ["knifes", "knifees", "knives", "knivs"],
+        a: 2,
+        examples: [
+          "Keep the sharp knife away.",
+          "Place the forks and knives on the table.",
+          "These knives cut easily.",
+          "Wash the kitchen knives.",
+          "Stainless steel knives last long."
+        ]
+      },
+      {
+        q: "What is the plural of 'mouse'?",
+        options: ["mouses", "mice", "mices", "meece"],
+        a: 1,
+        examples: [
+          "A small mouse ran by.",
+          "The cat chased three mice.",
+          "Mice like to eat cheese.",
+          "Tiny mice live in hole walls.",
+          "Keep food covered to stop mice."
+        ]
+      },
+      {
+        q: "What is the plural of 'story'?",
+        options: ["storys", "storyes", "stories", "stori"],
+        a: 2,
+        examples: [
+          "Read one short story.",
+          "Grandmother tells fun stories.",
+          "Moral stories teach us lessons.",
+          "Book of bedtime stories.",
+          "Write two funny stories."
+        ]
+      },
+      {
+        q: "What is the plural of 'life'?",
+        options: ["lifes", "lives", "lifees", "livs"],
+        a: 1,
+        examples: [
+          "Protect human life.",
+          "Doctors save many lives.",
+          "Wild animals live free lives.",
+          "Their lives changed for the better.",
+          "Safe driving saves lives."
+        ]
+      },
+      {
+        q: "What is the plural of 'family'?",
+        options: ["familys", "familyes", "families", "famili"],
+        a: 2,
+        examples: [
+          "I love my family.",
+          "Many families live in this building.",
+          "Different families gathered for the picnic.",
+          "Happy families support each other.",
+          "Three families joined the event."
+        ]
+      },
+      {
+        q: "What is the plural of 'goose'?",
+        options: ["gooses", "geese", "geeses", "goosies"],
+        a: 1,
+        examples: [
+          "A white goose swam near us.",
+          "A flock of geese flew south.",
+          "Geese honk loudly.",
+          "The geese waddled near the pond.",
+          "Geese have webbed feet."
+        ]
+      },
+      {
+        q: "What is the plural of 'shelf'?",
+        options: ["shelfs", "shelves", "shelfes", "shelvies"],
+        a: 1,
+        examples: [
+          "Put the book on the shelf.",
+          "Arrange books on the wooden shelves.",
+          "The shelves are dusty.",
+          "Clean all the library shelves.",
+          "Fix the broken shelves."
+        ]
+      },
+      {
+        q: "What is the plural of 'party'?",
+        options: ["partys", "partyes", "parties", "parti"],
+        a: 2,
+        examples: [
+          "We enjoyed the birthday party.",
+          "They attend many festival parties.",
+          "Dance parties are noisy.",
+          "Plan two small parties.",
+          "The parties were organized well."
+        ]
+      },
+      {
+        q: "What is the plural of 'half'?",
+        options: ["halfs", "halfes", "halves", "halvis"],
+        a: 2,
+        examples: [
+          "Cut the apple in half.",
+          "Divide the pizza into two halves.",
+          "Both halves are equal.",
+          "Combine the two broken halves.",
+          "Two halves make a whole."
+        ]
+      },
+      {
+        q: "What is the plural of 'person'?",
+        options: ["persons", "peoples", "people", "persones"],
+        a: 2,
+        examples: [
+          "One person is waiting.",
+          "Many people gathered in the hall.",
+          "Kind people help others.",
+          "Five people entered the shop.",
+          "The local people were friendly."
+        ]
+      }
+    ]
     },
-    5: {
-      "Present Perfect": [
-        { q: "She ___ already finished her homework.", options: ["has", "have", "had", "having"], a: 0 },
-        { q: "I ___ never been to Kathmandu.", options: ["have", "has", "had", "having"], a: 0 },
-        { q: "They ___ just arrived home.", options: ["has", "have", "had", "having"], a: 1 },
-        { q: "He ___ lived here for ten years.", options: ["has", "have", "had", "having"], a: 0 },
-        { q: "We ___ finished the project already.", options: ["has", "have", "had", "having"], a: 1 }
-      ],
-      "Modal Verbs": [
-        { q: "You ___ wear a helmet while cycling.", options: ["can", "should", "may", "will"], a: 1 },
-        { q: "___ I open the window, please?", options: ["Must", "May", "Should", "Will"], a: 1 },
-        { q: "Students ___ finish their homework on time.", options: ["must", "may", "could", "would"], a: 0 },
-        { q: "It ___ rain later, take an umbrella.", options: ["must", "might", "should", "shall"], a: 1 },
-        { q: "You ___ speak loudly in the library.", options: ["should", "must not", "may", "will"], a: 1 }
-      ]
-    }
   };
 
-  // ---------------------------------------------------------------
-  // STATE
-  // ---------------------------------------------------------------
+  
+
+
   let uid = null;
   let studentName = "";
   let selectedClass = null;
@@ -370,12 +1833,8 @@
   let answered = false;
 
   const el = (id) => document.getElementById(id);
-  const show = (id) => { ["step-name","step-class","step-topic","step-quiz","step-result"].forEach(s => el(s).classList.add("hidden")); el(id).classList.remove("hidden"); };
+  const show = (id) => { ["step-name","step-class","step-topic","step-quiz","step-result","step-leaderboard"].forEach(s => el(s).classList.add("hidden")); el(id).classList.remove("hidden"); };
 
-  // ---------------------------------------------------------------
-  // AUTH — anonymous sign-in so each student gets a stable uid.
-  // Their chosen name is stored alongside it in Firestore.
-  // ---------------------------------------------------------------
   onAuthStateChanged(auth, (user) => {
     if (user) {
       uid = user.uid;
@@ -388,7 +1847,6 @@
   });
   signInAnonymously(auth).catch((err) => {
     console.error("Auth error:", err);
-    el("saveStatus").textContent = "Could not connect to Firebase — check your config.";
   });
 
   async function ensureStudentDoc() {
@@ -400,7 +1858,6 @@
         name: studentName,
         class: selectedClass,
         points: 0,
-        skills: { grammar: 0 },
         createdAt: serverTimestamp()
       });
     } else if (studentName && snap.data().name !== studentName) {
@@ -408,9 +1865,6 @@
     }
   }
 
-  // ---------------------------------------------------------------
-  // STEP 1: NAME
-  // ---------------------------------------------------------------
   el("nameContinue").addEventListener("click", () => {
     const val = el("nameInput").value.trim();
     if (!val) { el("nameInput").focus(); return; }
@@ -420,9 +1874,6 @@
     show("step-class");
   });
 
-  // ---------------------------------------------------------------
-  // STEP 2: CLASS PICKER
-  // ---------------------------------------------------------------
   function renderClassGrid() {
     const grid = el("classGrid");
     grid.innerHTML = "";
@@ -439,16 +1890,13 @@
     });
   }
 
-  // ---------------------------------------------------------------
-  // STEP 3: TOPIC PICKER
-  // ---------------------------------------------------------------
   function renderTopicList() {
     el("topicTitle").textContent = `Class ${selectedClass} — Pick a topic`;
     const list = el("topicList");
     list.innerHTML = "";
     const topics = QUESTION_BANK[selectedClass];
     Object.keys(topics).forEach((topic) => {
-      const pill = document.createElement("button");
+      const pill = document.createElement("div");
       pill.className = "topic-pill";
       pill.innerHTML = `${topic} <small>${topics[topic].length} questions</small>`;
       pill.addEventListener("click", () => startQuiz(topic));
@@ -457,9 +1905,6 @@
   }
   el("backToClass").addEventListener("click", () => show("step-class"));
 
-  // ---------------------------------------------------------------
-  // STEP 4: QUIZ
-  // ---------------------------------------------------------------
   function startQuiz(topic) {
     selectedTopic = topic;
     quizQuestions = QUESTION_BANK[selectedClass][topic];
@@ -478,8 +1923,11 @@
     el("progressFill").style.width = `${(currentIndex / quizQuestions.length) * 100}%`;
     el("scoreLive").textContent = `${sessionPoints} pts`;
     el("questionText").textContent = item.q;
-    el("feedback").textContent = "";
-    el("feedback").className = "feedback";
+    
+    const box = el("feedbackBox");
+    box.className = "feedback-box hidden";
+    el("feedbackText").textContent = "";
+    el("examplesList").innerHTML = "";
     el("nextQuestion").disabled = true;
 
     const list = el("optionsList");
@@ -500,18 +1948,28 @@
     const allBtns = el("optionsList").querySelectorAll(".option");
     allBtns.forEach((b) => (b.disabled = true));
 
+    const box = el("feedbackBox");
+    box.classList.remove("hidden");
+    
+    const exList = el("examplesList");
+    item.examples.forEach(ex => {
+      const li = document.createElement("li");
+      li.innerHTML = ex;
+      exList.appendChild(li);
+    });
+
     if (idx === item.a) {
       btnEl.classList.add("correct");
       correctCount++;
       sessionPoints += 2;
-      el("feedback").textContent = "Correct! +2 points";
-      el("feedback").className = "feedback correct";
+      el("feedbackText").textContent = "Correct! +2 points. Similar examples:";
+      box.className = "feedback-box correct";
     } else {
       btnEl.classList.add("wrong");
       allBtns[item.a].classList.add("correct");
       sessionPoints -= 1;
-      el("feedback").textContent = "Not quite — the correct answer is highlighted. −1 point";
-      el("feedback").className = "feedback wrong";
+      el("feedbackText").textContent = "Incorrect. Correct answer highlighted. Reference examples:";
+      box.className = "feedback-box wrong";
     }
     el("scoreLive").textContent = `${sessionPoints} pts`;
     el("nextQuestion").disabled = false;
@@ -529,9 +1987,6 @@
 
   el("quitQuiz").addEventListener("click", () => show("step-topic"));
 
-  // ---------------------------------------------------------------
-  // STEP 5: RESULT + SAVE TO FIRESTORE
-  // ---------------------------------------------------------------
   async function finishQuiz() {
     el("resultScore").textContent = `${correctCount}/${quizQuestions.length}`;
     el("pointsEarned").textContent = sessionPoints;
@@ -557,22 +2012,47 @@
           pointsEarned: sessionPoints,
           timestamp: serverTimestamp()
         });
-        el("saveStatus").textContent = "Progress saved.";
+        el("saveStatus").textContent = "Progress saved successfully.";
       } else {
-        el("saveStatus").textContent = "Not connected — points weren't saved.";
+        el("saveStatus").textContent = "Offline mode — points not saved.";
       }
     } catch (err) {
       console.error(err);
-      el("saveStatus").textContent = "Couldn't save progress. Check your Firestore rules/config.";
+      el("saveStatus").textContent = "Error saving progress. Check permissions.";
     }
   }
 
-  el("tryAnother").addEventListener("click", () => {
-    renderTopicList();
-    show("step-topic");
+  // Leaderboard Feature
+  el("navLeaderboard").addEventListener("click", async () => {
+    show("step-leaderboard");
+    const listEl = el("leaderboardList");
+    listEl.innerHTML = "Loading top students...";
+    try {
+      const q = query(collection(db, "students"), orderBy("points", "desc"), limit(10));
+      const querySnapshot = await getDocs(q);
+      listEl.innerHTML = "";
+      if (querySnapshot.empty) {
+        listEl.innerHTML = "<div class='leaderboard-item'>No records found yet.</div>";
+        return;
+      }
+      let rank = 1;
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const item = document.createElement("div");
+        item.className = "leaderboard-item";
+        item.innerHTML = `<span>#${rank} ${data.name || "Anonymous"}</span> <b>${data.points || 0} pts</b>`;
+        listEl.appendChild(item);
+        rank++;
+      });
+    } catch (e) {
+      console.error(e);
+      listEl.innerHTML = "<div class='leaderboard-item'>Could not load leaderboard.</div>";
+    }
   });
-  el("playAgain").addEventListener("click", () => startQuiz(selectedTopic));
 
+  el("backFromLeaderboard").addEventListener("click", () => show("step-name"));
+  el("tryAnother").addEventListener("click", () => { renderTopicList(); show("step-topic"); });
+  el("playAgain").addEventListener("click", () => startQuiz(selectedTopic));
 </script>
 </body>
 </html>

@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAEBS Typing Arena – Class-Wise Analytics & Practice Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        accent: {
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .font-mono {
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* Highlight effects for typing text */
+        .char-correct {
+            color: #22c55e;
+            background-color: rgba(34, 197, 94, 0.15);
+        }
+        .char-wrong {
+            color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.2);
+            text-decoration: underline;
+        }
+        .char-current {
+            background-color: #6366f1;
+            color: #ffffff;
+            animation: pulse 1s infinite;
+            border-radius: 2px;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.3);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.5);
+        }
+
+        /* Virtual Keyboard key active state */
+        .key-active {
+            transform: translateY(2px);
+            background-color: #6366f1 !important;
+            color: white !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2) !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200">
+
+    <!-- Global Header -->
+    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-accent-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
+                    <i class="fa-solid fa-keyboard"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight bg-gradient-to-r from-brand-600 to-accent-600 bg-clip-text text-transparent">
+                        LAEBS Typing Arena
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Class-Wise Student Analytics & Practice Portal</p>
+                </div>
+            </div>
+
+            <!-- Action buttons header right -->
+            <div class="flex items-center space-x-3">
+                <div id="loggedInUserInfo" class="hidden flex items-center space-x-3 bg-slate-100 dark:bg-slate-700/60 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600">
+                    <div class="text-right">
+                        <div id="userDisplayName" class="text-xs font-bold text-slate-800 dark:text-slate-200">---</div>
+                        <div id="userDisplayDetails" class="text-[10px] text-slate-500 dark:text-slate-400">---</div>
+                    </div>
+                    <button onclick="logoutStudent()" title="Logout" class="text-red-500 hover:text-red-700 p-1">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+
+                <!-- Theme Toggle -->
+                <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:inline"></i>
+                </button>
+
+                <!-- Teacher Panel Button -->
+                <button onclick="openTeacherLoginModal()" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-user-gear text-accent-500"></i>
+                    <span>Teacher Panel</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- VIEW 1: STUDENT LOGIN & LEADERBOARD VIEW -->
+        <div id="loginView" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left Panel: Login Form -->
+            <div class="lg:col-span-5 flex flex-col justify-center">
+                <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700/80">
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-right-to-bracket text-brand-500"></i>
+                            Student Portal
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Select your class, section, and name to begin practicing.</p>
+                    </div>
+
+                    <form id="loginForm" onsubmit="handleStudentLogin(event)" class="space-y-4">
+                        <!-- Class Dropdown -->
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
+                                Select Class
+                            </label>
+                            <select id="loginClassSelect" onchange="onClassChange()" required
+                                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-brand-500 outline-none text-sm transition">
+                                <option value="" disabled selected>-- Select Class --</option>
+                            </select>
+                        </div>
+
+                        <!-- Section Dropdown -->
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
+                                Select Section
+                            </label>
+                            <select id="loginSectionSelect" onchange="onSectionChange()" required disabled
+                                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-brand-500 outline-none text-sm transition disabled:opacity-50">
+                                <option value="" disabled selected>-- Select Section --</option>
+                            </select>
+                        </div>
+
+                        <!-- Student Name Dropdown -->
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
+                                Select Student Name
+                            </label>
+                            <select id="loginStudentSelect" required disabled
+                                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-brand-500 outline-none text-sm transition disabled:opacity-50">
+                                <option value="" disabled selected>-- Select Student --</option>
+                            </select>
+                        </div>
+
+                        <!-- Login Button -->
+                        <button type="submit" class="w-full py-3 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/20 transition transform active:scale-95 flex items-center justify-center gap-2">
+                            <span>Start Typing Arena</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Panel: Global Leaderboard -->
+            <div class="lg:col-span-7">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700/80 p-6 h-full flex flex-col">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-trophy text-amber-500"></i>
+                                Top 10 Global Leaderboard
+                            </h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Best performances across all classes & sections</p>
+                        </div>
+
+                        <!-- Leaderboard metric filter toggle -->
+                        <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium">
+                            <button id="lbFilterWpm" onclick="setLeaderboardMetric('wpm')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 font-bold shadow-sm transition">
+                                <i class="fa-solid fa-bolt mr-1"></i> Top WPM
+                            </button>
+                            <button id="lbFilterAcc" onclick="setLeaderboardMetric('accuracy')" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">
+                                <i class="fa-solid fa-bullseye mr-1"></i> Top Accuracy
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Leaderboard Table -->
+                    <div class="overflow-x-auto flex-1">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="text-[11px] uppercase tracking-wider text-slate-400 dark:text-slate-500 border-b border-slate-200 dark:border-slate-700">
+                                    <th class="pb-3 pl-2">Rank</th>
+                                    <th class="pb-3">Student</th>
+                                    <th class="pb-3">Class</th>
+                                    <th class="pb-3 text-right">WPM</th>
+                                    <th class="pb-3 text-right pr-2">Accuracy</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboardTbody" class="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm">
+                                <!-- Dynamic dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Current Selected Student Standings indicator -->
+                    <div id="studentStandingsCard" class="mt-4 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-accent-500 text-base"></i>
+                            <span class="text-slate-600 dark:text-slate-400" id="standingCardText">Select a student from login to view standing position.</span>
+                        </div>
+                        <span id="standingCardBadge" class="px-2.5 py-1 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-[11px]">
+                            ---
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: STUDENT DASHBOARD & TYPING PRACTICE ARENA -->
+        <div id="studentDashboardView" class="hidden space-y-6">
+            
+            <!-- Dashboard Subheader Controls -->
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div>
+                        <h2 id="dashStudentName" class="text-lg font-bold text-slate-900 dark:text-white">---</h2>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                            <span id="dashStudentMeta">Class --</span>
+                            <span>•</span>
+                            <span id="dashStudentRankBadge" class="text-brand-600 dark:text-brand-400 font-semibold">Rank: --</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Difficulty Passage Selection -->
+                <div class="flex items-center gap-3">
+                    <label class="text-xs font-medium text-slate-500 dark:text-slate-400 hidden sm:inline">Passage Difficulty:</label>
+                    <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl text-xs font-semibold">
+                        <button onclick="setDifficulty('easy')" id="diffEasyBtn" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-brand-600 shadow-sm">Easy</button>
+                        <button onclick="setDifficulty('medium')" id="diffMediumBtn" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400">Medium</button>
+                        <button onclick="setDifficulty('hard')" id="diffHardBtn" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400">Hard</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Practice Main Card -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700/80 p-6 relative overflow-hidden">
+                
+                <!-- Realtime Stats Counter Header -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-slate-50 dark:bg-slate-900/70 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700 text-center">
+                        <div class="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Time Left</div>
+                        <div id="liveTimer" class="text-2xl font-black text-slate-800 dark:text-slate-100 font-mono mt-0.5">60s</div>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-900/70 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700 text-center">
+                        <div class="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Speed (WPM)</div>
+                        <div id="liveWpm" class="text-2xl font-black text-brand-600 dark:text-brand-400 font-mono mt-0.5">0</div>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-900/70 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700 text-center">
+                        <div class="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Accuracy</div>
+                        <div id="liveAccuracy" class="text-2xl font-black text-accent-500 font-mono mt-0.5">100%</div>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-900/70 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700 text-center">
+                        <div class="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Characters (CPM)</div>
+                        <div id="liveCpm" class="text-2xl font-black text-slate-800 dark:text-slate-100 font-mono mt-0.5">0</div>
+                    </div>
+                </div>
+
+                <!-- Text Display Container -->
+                <div id="passageContainer" onclick="focusTypingInput()" 
+                    class="min-h-[160px] p-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800 font-mono text-lg leading-relaxed select-none cursor-text transition shadow-inner relative overflow-y-auto max-h-[220px]">
+                    <div id="passageText">Loading practice passage...</div>
+                </div>
+
+                <!-- Hidden Input Receiver for typing -->
+                <input type="text" id="typingInput" oninput="handleTypingInput(event)" onkeydown="handleKeyDown(event)" class="opacity-0 absolute top-0 left-0 h-0 w-0" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+
+                <!-- Control Buttons & Instruction -->
+                <div class="mt-5 flex flex-wrap items-center justify-between gap-4">
+                    <div class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                        <span>Click the box above or start typing to begin test immediately.</span>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button onclick="resetTypingArena()" class="px-4 py-2 text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center gap-2">
+                            <i class="fa-solid fa-rotate-right"></i> Reset Test
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Virtual Keyboard Visualizer -->
+                <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700/80">
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-keyboard"></i> Live Key Visualizer
+                    </h4>
+                    <div class="max-w-3xl mx-auto space-y-1.5 select-none text-xs font-mono">
+                        <!-- Row 1 -->
+                        <div class="flex justify-center gap-1">
+                            <div id="key-q" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">Q</div>
+                            <div id="key-w" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">W</div>
+                            <div id="key-e" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">E</div>
+                            <div id="key-r" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">R</div>
+                            <div id="key-t" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">T</div>
+                            <div id="key-y" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">Y</div>
+                            <div id="key-u" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">U</div>
+                            <div id="key-i" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">I</div>
+                            <div id="key-o" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">O</div>
+                            <div id="key-p" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">P</div>
+                        </div>
+                        <!-- Row 2 -->
+                        <div class="flex justify-center gap-1">
+                            <div id="key-a" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">A</div>
+                            <div id="key-s" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">S</div>
+                            <div id="key-d" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">D</div>
+                            <div id="key-f" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">F</div>
+                            <div id="key-g" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">G</div>
+                            <div id="key-h" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">H</div>
+                            <div id="key-j" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">J</div>
+                            <div id="key-k" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">K</div>
+                            <div id="key-l" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">L</div>
+                        </div>
+                        <!-- Row 3 -->
+                        <div class="flex justify-center gap-1">
+                            <div id="key-z" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">Z</div>
+                            <div id="key-x" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">X</div>
+                            <div id="key-c" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">C</div>
+                            <div id="key-v" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">V</div>
+                            <div id="key-b" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">B</div>
+                            <div id="key-n" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">N</div>
+                            <div id="key-m" class="vkey w-8 h-9 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold transition">M</div>
+                        </div>
+                        <!-- Row 4 -->
+                        <div class="flex justify-center gap-1">
+                            <div id="key-space" class="vkey w-52 h-8 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] uppercase font-bold text-slate-500">Spacebar</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student History & Progress Table -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700/80 p-6">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-accent-500"></i>
+                    Your Personal Attempts History
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                                <th class="pb-3 pl-2">Date & Time</th>
+                                <th class="pb-3">Difficulty</th>
+                                <th class="pb-3 text-right">WPM</th>
+                                <th class="pb-3 text-right">CPM</th>
+                                <th class="pb-3 text-right pr-2">Accuracy</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentHistoryTbody" class="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm">
+                            <!-- Dynamic attempts content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: TEACHER PANEL WITH CLASS-WISE ANALYTICS -->
+        <div id="teacherPanelView" class="hidden space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield text-brand-600"></i>
+                        Teacher Management & Class Analytics
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Class-wise roster, attempt filtering, CSV imports, and real-time class summaries.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="teacherWhoLabel" class="text-xs text-slate-400"></span>
+                    <button onclick="closeTeacherPanel()" class="px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition">
+                        Exit Teacher Panel
+                    </button>
+                </div>
+            </div>
+
+            <!-- CLASS FILTER SELECTION BAR -->
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-md border border-slate-100 dark:border-slate-700 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                    <!-- Class Selector -->
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Filter Class</label>
+                        <select id="teacherClassFilter" onchange="onTeacherClassFilterChange()" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-xs font-bold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-brand-500 outline-none">
+                            <option value="ALL">All Classes (4 - 8)</option>
+                            <option value="4">Class 4</option>
+                            <option value="5">Class 5</option>
+                            <option value="6">Class 6</option>
+                            <option value="7">Class 7</option>
+                            <option value="8">Class 8</option>
+                        </select>
+                    </div>
+
+                    <!-- Section Selector -->
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Filter Section</label>
+                        <select id="teacherSectionFilter" onchange="renderTeacherTables()" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-xs font-bold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-brand-500 outline-none">
+                            <option value="ALL">All Sections</option>
+                        </select>
+                    </div>
+
+                    <!-- Search Box -->
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Search Keyword</label>
+                        <input type="text" id="teacherSearchInput" oninput="renderTeacherTables()" placeholder="Search name or roll..." class="px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+                    </div>
+                </div>
+
+                <!-- Export Class CSV Action -->
+                <div class="flex items-center gap-2">
+                    <button onclick="exportFilteredCSV()" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-brand-600 hover:bg-brand-700 text-white shadow-md transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-csv"></i>
+                        <span id="exportBtnLabel">Export Class CSV</span>
+                    </button>
+                    <button onclick="resetAllAttempts()" class="px-3 py-2 text-xs font-bold rounded-xl bg-red-100 text-red-600 hover:bg-red-200 transition">
+                        <i class="fa-solid fa-trash-can mr-1"></i> Reset Attempts
+                    </button>
+                </div>
+            </div>
+
+            <!-- CLASS PERFORMANCE METRICS SUMMARY CARDS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Class Roster</div>
+                        <div id="metricTotalStudents" class="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">0</div>
+                        <div class="text-[10px] text-slate-500">Enrolled Students</div>
+                    </div>
+                    <div class="w-11 h-11 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Class Avg Speed</div>
+                        <div id="metricAvgWpm" class="text-2xl font-black text-brand-600 dark:text-brand-400 mt-0.5">0 WPM</div>
+                        <div id="metricAvgAcc" class="text-[10px] text-slate-500">Avg Accuracy: 0%</div>
+                    </div>
+                    <div class="w-11 h-11 rounded-xl bg-brand-100 dark:bg-brand-950 text-brand-600 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-gauge-high"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Top Class Performer</div>
+                        <div id="metricTopPerformer" class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate max-w-[140px] mt-1">None</div>
+                        <div id="metricTopWpm" class="text-[10px] text-amber-600 font-semibold">Max: 0 WPM</div>
+                    </div>
+                    <div class="w-11 h-11 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Practice Attempts</div>
+                        <div id="metricTotalAttempts" class="text-2xl font-black text-accent-500 mt-0.5">0</div>
+                        <div class="text-[10px] text-slate-500">Recorded Tests</div>
+                    </div>
+                    <div class="w-11 h-11 rounded-xl bg-indigo-100 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-file-signature"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CLASS-WISE LEADERBOARD PREVIEW & CSV UPLOAD -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Class Leaderboard Card -->
+                <div class="lg:col-span-7 bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-md border border-slate-100 dark:border-slate-700/80">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-trophy text-amber-500"></i>
+                            <span id="classLeaderboardTitle">Class Top Performers</span>
+                        </h3>
+                        <span class="text-[10px] font-semibold bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-500">Top 5</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="text-[10px] uppercase text-slate-400 border-b border-slate-100 dark:border-slate-700">
+                                    <th class="pb-2">Rank</th>
+                                    <th class="pb-2">Student</th>
+                                    <th class="pb-2">Sec</th>
+                                    <th class="pb-2 text-right">WPM</th>
+                                    <th class="pb-2 text-right">Accuracy</th>
+                                </tr>
+                            </thead>
+                            <tbody id="classLeaderboardTbody" class="divide-y divide-slate-100 dark:divide-slate-700/50 text-xs">
+                                <!-- Dynamic dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Bulk CSV Import & Manual Add Card -->
+                <div class="lg:col-span-5 bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-md border border-slate-100 dark:border-slate-700/80 space-y-4">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
+                            <i class="fa-solid fa-file-csv text-emerald-500"></i> Bulk Class CSV Upload
+                        </h3>
+                        <p class="text-[11px] text-slate-500">Upload CSV with headers: <code>Name, Class, Section, Roll</code></p>
+                    </div>
+
+                    <input type="file" id="csvFileInput" accept=".csv" class="block w-full text-xs text-slate-500 dark:text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 cursor-pointer">
+                    
+                    <div class="flex items-center gap-2">
+                        <button onclick="importCSV()" class="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-upload"></i> Import CSV
+                        </button>
+                        <button onclick="downloadCSVTemplate()" class="px-3.5 py-1.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                            <i class="fa-solid fa-download"></i> Template
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEACHER DATA TABLES WITH TABS -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700/80 p-6">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">
+                    <div class="flex space-x-2">
+                        <button id="tabBtnStudents" onclick="switchTeacherTab('students')" class="pb-2 px-4 text-xs font-bold border-b-2 border-brand-500 text-brand-600 dark:text-brand-400">
+                            Student Roster
+                        </button>
+                        <button id="tabBtnAttempts" onclick="switchTeacherTab('attempts')" class="pb-2 px-4 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800">
+                            Class Practice Logs
+                        </button>
+                    </div>
+
+                    <button onclick="openAddStudentModal()" class="px-3 py-1.5 text-xs font-bold bg-accent-600 hover:bg-accent-700 text-white rounded-xl shadow-sm transition flex items-center gap-1">
+                        <i class="fa-solid fa-user-plus"></i> Add New Student
+                    </button>
+                </div>
+
+                <!-- Tab 1: Student Roster -->
+                <div id="tabStudentsContainer" class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                                <th class="pb-3 pl-2">Roll No</th>
+                                <th class="pb-3">Name</th>
+                                <th class="pb-3">Class</th>
+                                <th class="pb-3">Section</th>
+                                <th class="pb-3 text-right pr-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teacherStudentsTbody" class="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Tab 2: Attempts Records -->
+                <div id="tabAttemptsContainer" class="hidden overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                                <th class="pb-3 pl-2">Student</th>
+                                <th class="pb-3">Class / Sec</th>
+                                <th class="pb-3">Date</th>
+                                <th class="pb-3 text-right">WPM</th>
+                                <th class="pb-3 text-right">Accuracy</th>
+                                <th class="pb-3 text-right pr-2">Difficulty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teacherAttemptsTbody" class="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL 1: TEACHER LOGIN (real Firebase Auth, same account as your other admin pages) -->
+    <div id="teacherLoginModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-700 transform transition-all">
+            <div class="text-center mb-5">
+                <div class="w-12 h-12 bg-accent-100 dark:bg-accent-950 text-accent-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Teacher Sign In</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Same account as your other admin pages.</p>
+            </div>
+
+            <form onsubmit="handleTeacherLogin(event)" class="space-y-3">
+                <input type="email" id="teacherEmailInput" required placeholder="Email"
+                    class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-accent-500 text-sm">
+                <input type="password" id="teacherPasswordInput" required placeholder="Password"
+                    class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-accent-500 text-sm">
+
+                <div id="teacherLoginErrorMsg" class="hidden text-xs text-red-500 text-center font-medium"></div>
+
+                <div class="flex gap-2 pt-1">
+                    <button type="button" onclick="closeTeacherLoginModal()" class="w-1/2 py-2.5 text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="w-1/2 py-2.5 text-xs font-bold rounded-xl bg-accent-600 hover:bg-accent-700 text-white shadow-md transition">
+                        Sign In
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: MANUAL STUDENT ADDITION MODAL -->
+    <div id="addStudentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-user-plus text-accent-500"></i> Add New Student
+            </h3>
+            <form onsubmit="handleAddStudentManual(event)" class="space-y-3">
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-500">Student Full Name</label>
+                    <input type="text" id="addName" required placeholder="e.g. Dikshyant Shrestha" class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-500">Class</label>
+                        <select id="addClass" required class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs">
+                            <option value="4">Class 4</option>
+                            <option value="5" selected>Class 5</option>
+                            <option value="6">Class 6</option>
+                            <option value="7">Class 7</option>
+                            <option value="8">Class 8</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-500">Section</label>
+                        <input type="text" id="addSection" required placeholder="e.g. Manang" class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-500">Roll No (optional, for your records)</label>
+                    <input type="number" id="addRoll" placeholder="e.g. 1" class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeAddStudentModal()" class="px-4 py-2 text-xs font-bold border border-slate-300 dark:border-slate-600 rounded-xl">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-xs font-bold bg-accent-600 text-white rounded-xl shadow">Save Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: TYPING TEST RESULTS -->
+    <div id="resultModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-700 text-center">
+            <div class="w-16 h-16 bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                <i class="fa-solid fa-award"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Test Completed!</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Great job! Here is your typing speed breakdown.</p>
+
+            <div class="grid grid-cols-3 gap-3 my-6">
+                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block">WPM</span>
+                    <span id="modalWpm" class="text-2xl font-black text-brand-600 dark:text-brand-400 font-mono">0</span>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Accuracy</span>
+                    <span id="modalAccuracy" class="text-2xl font-black text-accent-500 font-mono">0%</span>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block">CPM</span>
+                    <span id="modalCpm" class="text-2xl font-black text-slate-800 dark:text-slate-100 font-mono">0</span>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeResultModal()" class="w-1/2 py-2.5 text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                    Try Again
+                </button>
+                <button onclick="saveResultAndContinue()" class="w-1/2 py-2.5 text-xs font-bold rounded-xl bg-brand-600 hover:bg-brand-700 text-white shadow-md transition">
+                    Save Record
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE (compat SDK, same pattern as every other page on this site) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script>
+        /* PASTE the SAME firebaseConfig you use everywhere else on your site */
+    const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Seed Default Demo Data (only used to pre-fill an empty database the first time)
+        const SEEDED_STUDENTS = [
+            { id: "s1", name: "Dikshyant", class: "5", section: "Manang", roll: "1" },
+            { id: "s2", name: "Aarav Sharma", class: "5", section: "Manang", roll: "2" },
+            { id: "s3", name: "Sita Gurung", class: "5", section: "Mustang", roll: "3" },
+            { id: "s4", name: "Bipul Karki", class: "6", section: "Everest", roll: "1" },
+            { id: "s5", name: "Prashant Rai", class: "7", section: "Kanchanjunga", roll: "4" },
+            { id: "s6", name: "Ananya Thapa", class: "8", section: "Lhotse", roll: "10" },
+            { id: "s7", name: "Kritika Shrestha", class: "4", section: "Makalu", roll: "5" }
+        ];
+
+        const PASSAGES = {
+            easy: [
+                "The quick brown fox jumps over the lazy dog. Typing every day helps build smooth keyboard accuracy and speed.",
+                "Computers are helpful tools for learning in school. Practice typing regularly to become fast and confident."
+            ],
+            medium: [
+                "LAEBS Typing Arena encourages students to master touch typing. Focus first on precision before pushing for raw speed.",
+                "Technology gives us power to create and communicate across the global world. Consistent practice builds permanent muscle memory."
+            ],
+            hard: [
+                "Algorithmic efficiency and rapid data input require focused concentration, spatial awareness, and flawless finger placement across all key rows.",
+                "In modern digital learning environments, proficiency in typing enables students to express ideas smoothly without mechanical friction."
+            ]
+        };
+
+        // Global State
+        window.appState = {
+            students: [],
+            attempts: [],
+            currentStudent: null,
+            leaderboardMetric: 'wpm',
+            teacherTab: 'students',
+            isTeacher: false,
+
+            // Typing Test State
+            currentDifficulty: "easy",
+            passageText: "",
+            charIndex: 0,
+            mistakes: 0,
+            timer: 60,
+            maxTime: 60,
+            timerInterval: null,
+            isTypingStarted: false,
+            totalTypedChars: 0,
+            latestCalculatedResult: null
+        };
+
+        function initApp() {
+            setupFirestoreListeners();
+            auth.onAuthStateChanged(user => {
+                window.appState.isTeacher = !!user;
+                const label = document.getElementById('teacherWhoLabel');
+                if (label) label.textContent = user ? user.email : '';
+            });
+        }
+
+        function setupFirestoreListeners() {
+            // Students collection (flat top-level, same convention as your other pages)
+            db.collection('typingStudents').onSnapshot(async (snapshot) => {
+                if (snapshot.empty) {
+                    await seedInitialStudents();
+                    return;
+                }
+                window.appState.students = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                window.populateLoginClassDropdown();
+                window.renderLeaderboard();
+                window.renderTeacherTables();
+            }, (err) => {
+                console.error("Firestore students snapshot error:", err);
+            });
+
+            // Attempts collection
+            db.collection('typingAttempts').onSnapshot((snapshot) => {
+                window.appState.attempts = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                window.renderLeaderboard();
+                window.renderTeacherTables();
+                if (window.appState.currentStudent) {
+                    window.renderStudentHistory();
+                }
+            }, (err) => {
+                console.error("Firestore attempts snapshot error:", err);
+            });
+        }
+
+        async function seedInitialStudents() {
+            for (let st of SEEDED_STUDENTS) {
+                await db.collection('typingStudents').doc(st.id).set(st);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initApp();
+            window.setDifficulty('easy');
+            window.addEventListener('keydown', window.handleGlobalKeyDown);
+            window.addEventListener('keyup', window.handleGlobalKeyUp);
+        });
+    </script>
+
+    <script>
+        // Global Theme Toggle
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // Login Logic — students just pick their name, no password.
+        // (A per-student roll-number "password" used to be shown in the SAME
+        // dropdown you pick your name from, which defeated its own purpose —
+        // removed entirely rather than patched, to match how every other
+        // student-facing tool on this site works: pick your name and go.)
+        function populateLoginClassDropdown() {
+            const classSelect = document.getElementById('loginClassSelect');
+            if (!classSelect) return;
+            classSelect.innerHTML = '<option value="" disabled selected>-- Select Class --</option>';
+            
+            const students = window.appState.students || [];
+            const classes = [...new Set(students.map(s => s.class))].sort((a,b) => a - b);
+            const defaultClasses = ["4", "5", "6", "7", "8"];
+            const allClasses = Array.from(new Set([...classes, ...defaultClasses])).sort((a,b) => a - b);
+
+            allClasses.forEach(cls => {
+                const opt = document.createElement('option');
+                opt.value = cls;
+                opt.textContent = `Class ${cls}`;
+                classSelect.appendChild(opt);
+            });
+        }
+
+        function onClassChange() {
+            const selectedClass = document.getElementById('loginClassSelect').value;
+            const sectionSelect = document.getElementById('loginSectionSelect');
+            const studentSelect = document.getElementById('loginStudentSelect');
+
+            sectionSelect.innerHTML = '<option value="" disabled selected>-- Select Section --</option>';
+            studentSelect.innerHTML = '<option value="" disabled selected>-- Select Student --</option>';
+            studentSelect.disabled = true;
+
+            const students = window.appState.students || [];
+            const availableSections = [...new Set(
+                students.filter(s => s.class === selectedClass).map(s => s.section)
+            )].sort();
+
+            if (availableSections.length > 0) {
+                availableSections.forEach(sec => {
+                    const opt = document.createElement('option');
+                    opt.value = sec;
+                    opt.textContent = sec;
+                    sectionSelect.appendChild(opt);
+                });
+                sectionSelect.disabled = false;
+            } else {
+                sectionSelect.disabled = true;
+            }
+        }
+
+        function onSectionChange() {
+            const selectedClass = document.getElementById('loginClassSelect').value;
+            const selectedSection = document.getElementById('loginSectionSelect').value;
+            const studentSelect = document.getElementById('loginStudentSelect');
+
+            studentSelect.innerHTML = '<option value="" disabled selected>-- Select Student --</option>';
+
+            const students = window.appState.students || [];
+            const filtered = students.filter(s => s.class === selectedClass && s.section === selectedSection);
+
+            if (filtered.length > 0) {
+                filtered.forEach(st => {
+                    const opt = document.createElement('option');
+                    opt.value = st.id;
+                    opt.textContent = st.name;
+                    studentSelect.appendChild(opt);
+                });
+                studentSelect.disabled = false;
+            } else {
+                studentSelect.disabled = true;
+            }
+        }
+
+        function handleStudentLogin(e) {
+            e.preventDefault();
+            const studentId = document.getElementById('loginStudentSelect').value;
+            const student = (window.appState.students || []).find(s => s.id === studentId);
+            if (!student) {
+                alert("Please select a valid student.");
+                return;
+            }
+            window.appState.currentStudent = student;
+            showStudentDashboard();
+        }
+
+        function showStudentDashboard() {
+            const st = window.appState.currentStudent;
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('teacherPanelView').classList.add('hidden');
+            document.getElementById('studentDashboardView').classList.remove('hidden');
+
+            document.getElementById('loggedInUserInfo').classList.remove('hidden');
+            document.getElementById('loggedInUserInfo').classList.add('flex');
+            document.getElementById('userDisplayName').textContent = st.name;
+            document.getElementById('userDisplayDetails').textContent = `Class ${st.class} - ${st.section}`;
+
+            document.getElementById('dashStudentName').textContent = st.name;
+            document.getElementById('dashStudentMeta').textContent = `Class ${st.class} | Section ${st.section}`;
+
+            updateStudentDashboardRank();
+            renderStudentHistory();
+            resetTypingArena();
+        }
+
+        function logoutStudent() {
+            window.appState.currentStudent = null;
+            document.getElementById('loggedInUserInfo').classList.add('hidden');
+            document.getElementById('loggedInUserInfo').classList.remove('flex');
+            document.getElementById('studentDashboardView').classList.add('hidden');
+            document.getElementById('teacherPanelView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+            renderLeaderboard();
+        }
+
+        function setLeaderboardMetric(metric) {
+            window.appState.leaderboardMetric = metric;
+            const btnWpm = document.getElementById('lbFilterWpm');
+            const btnAcc = document.getElementById('lbFilterAcc');
+
+            if (metric === 'wpm') {
+                btnWpm.className = "px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 font-bold shadow-sm transition";
+                btnAcc.className = "px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition";
+            } else {
+                btnAcc.className = "px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-accent-500 font-bold shadow-sm transition";
+                btnWpm.className = "px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition";
+            }
+            renderLeaderboard();
+        }
+
+        function getTop10Leaderboard() {
+            const attempts = window.appState.attempts || [];
+            const metric = window.appState.leaderboardMetric;
+            const bestMap = {};
+
+            attempts.forEach(att => {
+                const existing = bestMap[att.studentId];
+                if (!existing) {
+                    bestMap[att.studentId] = att;
+                } else {
+                    if (metric === 'wpm') {
+                        if (att.wpm > existing.wpm || (att.wpm === existing.wpm && att.accuracy > existing.accuracy)) {
+                            bestMap[att.studentId] = att;
+                        }
+                    } else {
+                        if (att.accuracy > existing.accuracy || (att.accuracy === existing.accuracy && att.wpm > existing.wpm)) {
+                            bestMap[att.studentId] = att;
+                        }
+                    }
+                }
+            });
+
+            return Object.values(bestMap).sort((a, b) => {
+                if (metric === 'wpm') return b.wpm - a.wpm || b.accuracy - a.accuracy;
+                return b.accuracy - a.accuracy || b.wpm - a.wpm;
+            });
+        }
+
+        function renderLeaderboard() {
+            const tbody = document.getElementById('leaderboardTbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const topList = getTop10Leaderboard().slice(0, 10);
+
+            if (topList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">No practice records available yet.</td></tr>`;
+                return;
+            }
+
+            topList.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/30 transition";
+
+                let rankBadge = `<span class="font-bold text-slate-500">${index + 1}</span>`;
+                if (index === 0) rankBadge = `<span class="w-6 h-6 rounded-full bg-amber-400 text-white flex items-center justify-center font-bold text-xs shadow">1</span>`;
+                if (index === 1) rankBadge = `<span class="w-6 h-6 rounded-full bg-slate-300 text-slate-800 flex items-center justify-center font-bold text-xs shadow">2</span>`;
+                if (index === 2) rankBadge = `<span class="w-6 h-6 rounded-full bg-amber-700 text-white flex items-center justify-center font-bold text-xs shadow">3</span>`;
+
+                tr.innerHTML = `
+                    <td class="py-3 pl-2">${rankBadge}</td>
+                    <td class="py-3 font-semibold text-slate-800 dark:text-slate-200">${escapeHtml(item.studentName)}</td>
+                    <td class="py-3 text-xs text-slate-500">Class ${item.class} (${item.section})</td>
+                    <td class="py-3 text-right font-mono font-bold text-brand-600 dark:text-brand-400">${item.wpm}</td>
+                    <td class="py-3 text-right pr-2 font-mono font-bold text-accent-500">${item.accuracy}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const currentStudent = window.appState.currentStudent;
+            if (currentStudent) {
+                const allRanked = getTop10Leaderboard();
+                const rankIndex = allRanked.findIndex(a => a.studentId === currentStudent.id);
+                const standingText = document.getElementById('standingCardText');
+                const standingBadge = document.getElementById('standingCardBadge');
+
+                if (rankIndex !== -1) {
+                    standingText.innerHTML = `<b>${escapeHtml(currentStudent.name)}</b> is currently ranked <b>#${rankIndex + 1}</b> globally!`;
+                    standingBadge.textContent = `Rank #${rankIndex + 1}`;
+                } else {
+                    standingText.innerHTML = `<b>${escapeHtml(currentStudent.name)}</b> has no recorded attempts yet.`;
+                    standingBadge.textContent = "Unranked";
+                }
+            }
+        }
+
+        function updateStudentDashboardRank() {
+            const currentStudent = window.appState.currentStudent;
+            if (!currentStudent) return;
+            const allRanked = getTop10Leaderboard();
+            const rankIndex = allRanked.findIndex(a => a.studentId === currentStudent.id);
+            const badgeEl = document.getElementById('dashStudentRankBadge');
+            if (rankIndex !== -1) {
+                badgeEl.textContent = `Global Rank: #${rankIndex + 1}`;
+            } else {
+                badgeEl.textContent = `Global Rank: Unranked`;
+            }
+        }
+
+        // Typing Engine Functions
+        function setDifficulty(diff) {
+            window.appState.currentDifficulty = diff;
+            ['Easy', 'Medium', 'Hard'].forEach(d => {
+                const btn = document.getElementById(`diff${d}Btn`);
+                if (btn) {
+                    if (d.toLowerCase() === diff) {
+                        btn.className = "px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 font-bold shadow-sm";
+                    } else {
+                        btn.className = "px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400";
+                    }
+                }
+            });
+            resetTypingArena();
+        }
+
+        function resetTypingArena() {
+            clearInterval(window.appState.timerInterval);
+            window.appState.isTypingStarted = false;
+            window.appState.timer = window.appState.maxTime;
+            window.appState.charIndex = 0;
+            window.appState.mistakes = 0;
+            window.appState.totalTypedChars = 0;
+
+            const pool = PASSAGES[window.appState.currentDifficulty];
+            window.appState.passageText = pool[Math.floor(Math.random() * pool.length)];
+
+            document.getElementById('liveTimer').textContent = `${window.appState.timer}s`;
+            document.getElementById('liveWpm').textContent = '0';
+            document.getElementById('liveAccuracy').textContent = '100%';
+            document.getElementById('liveCpm').textContent = '0';
+
+            renderPassageSpanText();
+            document.getElementById('typingInput').value = '';
+        }
+
+        function renderPassageSpanText() {
+            const container = document.getElementById('passageText');
+            container.innerHTML = '';
+
+            window.appState.passageText.split('').forEach((char, index) => {
+                const span = document.createElement('span');
+                span.innerText = char;
+                if (index === 0) span.classList.add('char-current');
+                container.appendChild(span);
+            });
+        }
+
+        function focusTypingInput() {
+            document.getElementById('typingInput').focus();
+        }
+
+        function handleTypingInput(e) {
+            const inputVal = e.target.value;
+            const charSpans = document.getElementById('passageText').querySelectorAll('span');
+
+            if (!window.appState.isTypingStarted && inputVal.length > 0) {
+                window.appState.isTypingStarted = true;
+                window.appState.timerInterval = setInterval(updateTimer, 1000);
+            }
+
+            const typedChar = inputVal.slice(-1);
+
+            if (window.appState.charIndex < charSpans.length && window.appState.timer > 0) {
+                if (inputVal.length < window.appState.charIndex) return;
+
+                const expectedChar = window.appState.passageText[window.appState.charIndex];
+
+                if (typedChar === expectedChar) {
+                    charSpans[window.appState.charIndex].className = 'char-correct';
+                } else {
+                    window.appState.mistakes++;
+                    charSpans[window.appState.charIndex].className = 'char-wrong';
+                }
+
+                window.appState.charIndex++;
+                window.appState.totalTypedChars++;
+
+                if (window.appState.charIndex < charSpans.length) {
+                    charSpans[window.appState.charIndex].classList.add('char-current');
+                    charSpans[window.appState.charIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+
+                calculateRealtimeStats();
+
+                if (window.appState.charIndex >= window.appState.passageText.length) {
+                    finishTypingTest();
+                }
+            }
+        }
+
+        function handleKeyDown(e) {
+            const charSpans = document.getElementById('passageText').querySelectorAll('span');
+            if (e.key === 'Backspace' && window.appState.charIndex > 0) {
+                if (charSpans[window.appState.charIndex]) {
+                    charSpans[window.appState.charIndex].classList.remove('char-current');
+                }
+                window.appState.charIndex--;
+                charSpans[window.appState.charIndex].className = 'char-current';
+                calculateRealtimeStats();
+            }
+        }
+
+        function updateTimer() {
+            if (window.appState.timer > 0) {
+                window.appState.timer--;
+                document.getElementById('liveTimer').textContent = `${window.appState.timer}s`;
+                calculateRealtimeStats();
+            } else {
+                finishTypingTest();
+            }
+        }
+
+        function calculateRealtimeStats() {
+            const timeSpentMinutes = (window.appState.maxTime - window.appState.timer) / 60 || 1/60;
+            const netCorrectChars = window.appState.charIndex - window.appState.mistakes;
+            const cpm = Math.max(0, Math.round(netCorrectChars / timeSpentMinutes));
+            const wpm = Math.max(0, Math.round(cpm / 5));
+
+            let accuracy = 100;
+            if (window.appState.totalTypedChars > 0) {
+                accuracy = Math.max(0, Math.round(((window.appState.totalTypedChars - window.appState.mistakes) / window.appState.totalTypedChars) * 100));
+            }
+
+            document.getElementById('liveWpm').textContent = wpm;
+            document.getElementById('liveCpm').textContent = cpm;
+            document.getElementById('liveAccuracy').textContent = `${accuracy}%`;
+
+            window.appState.latestCalculatedResult = { wpm, cpm, accuracy };
+        }
+
+        function finishTypingTest() {
+            clearInterval(window.appState.timerInterval);
+            calculateRealtimeStats();
+
+            document.getElementById('modalWpm').textContent = window.appState.latestCalculatedResult.wpm;
+            document.getElementById('modalAccuracy').textContent = `${window.appState.latestCalculatedResult.accuracy}%`;
+            document.getElementById('modalCpm').textContent = window.appState.latestCalculatedResult.cpm;
+
+            document.getElementById('resultModal').classList.remove('hidden');
+        }
+
+        function closeResultModal() {
+            document.getElementById('resultModal').classList.add('hidden');
+            resetTypingArena();
+        }
+
+        async function saveResultAndContinue() {
+            const st = window.appState.currentStudent;
+            const res = window.appState.latestCalculatedResult;
+            if (!st || !res) return;
+
+            const now = new Date();
+            const dateStr = now.toISOString().slice(0, 10) + ' ' + now.toTimeString().slice(0, 5);
+
+            const newAttempt = {
+                studentId: st.id,
+                studentName: st.name,
+                class: st.class,
+                section: st.section,
+                wpm: res.wpm,
+                cpm: res.cpm,
+                accuracy: res.accuracy,
+                difficulty: window.appState.currentDifficulty.charAt(0).toUpperCase() + window.appState.currentDifficulty.slice(1),
+                date: dateStr
+            };
+
+            try {
+                await db.collection('typingAttempts').add(newAttempt);
+            } catch(e) {
+                console.error("Could not save attempt:", e);
+                alert("Couldn't save your result — check your connection and try again.");
+                return;
+            }
+
+            closeResultModal();
+            renderStudentHistory();
+            updateStudentDashboardRank();
+        }
+
+        function renderStudentHistory() {
+            const st = window.appState.currentStudent;
+            if (!st) return;
+            const tbody = document.getElementById('studentHistoryTbody');
+            tbody.innerHTML = '';
+
+            const studentAttempts = (window.appState.attempts || []).filter(a => a.studentId === st.id);
+
+            if (studentAttempts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">No previous attempts recorded yet.</td></tr>`;
+                return;
+            }
+
+            studentAttempts.forEach(att => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/30 transition";
+                tr.innerHTML = `
+                    <td class="py-3 pl-2 text-xs text-slate-500">${att.date}</td>
+                    <td class="py-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-700">${att.difficulty}</span></td>
+                    <td class="py-3 text-right font-mono font-bold text-brand-600 dark:text-brand-400">${att.wpm}</td>
+                    <td class="py-3 text-right font-mono">${att.cpm}</td>
+                    <td class="py-3 text-right pr-2 font-mono font-bold text-accent-500">${att.accuracy}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function handleGlobalKeyDown(e) {
+            let key = e.key.toLowerCase();
+            if (e.code === 'Space') key = 'space';
+            const keyEl = document.getElementById(`key-${key}`);
+            if (keyEl) keyEl.classList.add('key-active');
+        }
+
+        function handleGlobalKeyUp(e) {
+            let key = e.key.toLowerCase();
+            if (e.code === 'Space') key = 'space';
+            const keyEl = document.getElementById(`key-${key}`);
+            if (keyEl) keyEl.classList.remove('key-active');
+        }
+
+        // TEACHER PANEL — real Firebase Auth, same account as your other admin pages.
+        // The old version compared a plain "1234" string sitting right in the
+        // page's source code — anyone using "View Source" could read it, and it
+        // did nothing to actually protect writes at the database level. Real
+        // sign-in plus your Firestore rules is what actually enforces this.
+        function openTeacherLoginModal() {
+            if (window.appState.isTeacher) {
+                showTeacherPanel();
+                return;
+            }
+            document.getElementById('teacherEmailInput').value = '';
+            document.getElementById('teacherPasswordInput').value = '';
+            document.getElementById('teacherLoginErrorMsg').classList.add('hidden');
+            document.getElementById('teacherLoginModal').classList.remove('hidden');
+        }
+
+        function closeTeacherLoginModal() {
+            document.getElementById('teacherLoginModal').classList.add('hidden');
+        }
+
+        function handleTeacherLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('teacherEmailInput').value.trim();
+            const password = document.getElementById('teacherPasswordInput').value;
+            const errEl = document.getElementById('teacherLoginErrorMsg');
+            errEl.classList.add('hidden');
+
+            auth.signInWithEmailAndPassword(email, password).then(() => {
+                closeTeacherLoginModal();
+                showTeacherPanel();
+            }).catch(err => {
+                errEl.textContent = err.message;
+                errEl.classList.remove('hidden');
+            });
+        }
+
+        function showTeacherPanel() {
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('studentDashboardView').classList.add('hidden');
+            document.getElementById('teacherPanelView').classList.remove('hidden');
+            onTeacherClassFilterChange();
+        }
+
+        function closeTeacherPanel() {
+            document.getElementById('teacherPanelView').classList.add('hidden');
+            if (window.appState.currentStudent) {
+                showStudentDashboard();
+            } else {
+                document.getElementById('loginView').classList.remove('hidden');
+            }
+        }
+
+        function onTeacherClassFilterChange() {
+            const classVal = document.getElementById('teacherClassFilter').value;
+            const sectionSelect = document.getElementById('teacherSectionFilter');
+            
+            sectionSelect.innerHTML = '<option value="ALL">All Sections</option>';
+
+            const students = window.appState.students || [];
+            let availableSections = [];
+
+            if (classVal === 'ALL') {
+                availableSections = [...new Set(students.map(s => s.section))].sort();
+            } else {
+                availableSections = [...new Set(students.filter(s => s.class === classVal).map(s => s.section))].sort();
+            }
+
+            availableSections.forEach(sec => {
+                const opt = document.createElement('option');
+                opt.value = sec;
+                opt.textContent = `Section ${sec}`;
+                sectionSelect.appendChild(opt);
+            });
+
+            const exportBtnLabel = document.getElementById('exportBtnLabel');
+            if (classVal === 'ALL') exportBtnLabel.textContent = "Export All CSV";
+            else exportBtnLabel.textContent = `Export Class ${classVal} CSV`;
+
+            renderTeacherTables();
+        }
+
+        function renderTeacherTables() {
+            const classFilter = document.getElementById('teacherClassFilter').value;
+            const sectionFilter = document.getElementById('teacherSectionFilter').value;
+            const query = document.getElementById('teacherSearchInput').value.toLowerCase();
+
+            const students = window.appState.students || [];
+            const attempts = window.appState.attempts || [];
+
+            const filteredStudents = students.filter(s => {
+                const matchClass = (classFilter === 'ALL' || s.class === classFilter);
+                const matchSection = (sectionFilter === 'ALL' || s.section === sectionFilter);
+                const matchSearch = s.name.toLowerCase().includes(query) || (s.roll||'').includes(query);
+                return matchClass && matchSection && matchSearch;
+            });
+
+            const filteredAttempts = attempts.filter(a => {
+                const matchClass = (classFilter === 'ALL' || a.class === classFilter);
+                const matchSection = (sectionFilter === 'ALL' || a.section === sectionFilter);
+                const matchSearch = a.studentName.toLowerCase().includes(query) || a.class.includes(query);
+                return matchClass && matchSection && matchSearch;
+            });
+
+            const tbodyStudents = document.getElementById('teacherStudentsTbody');
+            tbodyStudents.innerHTML = '';
+
+            filteredStudents.forEach(st => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/30 transition";
+                tr.innerHTML = `
+                    <td class="py-3 pl-2 font-mono">${st.roll || '—'}</td>
+                    <td class="py-3 font-semibold text-slate-800 dark:text-slate-200">${escapeHtml(st.name)}</td>
+                    <td class="py-3 text-xs">Class ${st.class}</td>
+                    <td class="py-3 text-xs">${escapeHtml(st.section)}</td>
+                    <td class="py-3 text-right pr-2">
+                        <button onclick="deleteStudent('${st.id}')" class="text-red-500 hover:text-red-700 text-xs font-semibold p-1">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbodyStudents.appendChild(tr);
+            });
+
+            const tbodyAttempts = document.getElementById('teacherAttemptsTbody');
+            tbodyAttempts.innerHTML = '';
+
+            filteredAttempts.forEach(att => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/30 transition";
+                tr.innerHTML = `
+                    <td class="py-3 pl-2 font-semibold text-slate-800 dark:text-slate-200">${escapeHtml(att.studentName)}</td>
+                    <td class="py-3 text-xs">Class ${att.class} (${escapeHtml(att.section)})</td>
+                    <td class="py-3 text-xs text-slate-500">${att.date}</td>
+                    <td class="py-3 text-right font-mono font-bold text-brand-600 dark:text-brand-400">${att.wpm}</td>
+                    <td class="py-3 text-right font-mono font-bold text-accent-500">${att.accuracy}%</td>
+                    <td class="py-3 text-right pr-2 text-xs">${att.difficulty}</td>
+                `;
+                tbodyAttempts.appendChild(tr);
+            });
+
+            renderClassMetrics(classFilter, sectionFilter);
+        }
+
+        function renderClassMetrics(classFilter, sectionFilter) {
+            const students = window.appState.students || [];
+            const attempts = window.appState.attempts || [];
+
+            const filteredStudents = students.filter(s => {
+                const matchClass = (classFilter === 'ALL' || s.class === classFilter);
+                const matchSection = (sectionFilter === 'ALL' || s.section === sectionFilter);
+                return matchClass && matchSection;
+            });
+
+            const filteredAttempts = attempts.filter(a => {
+                const matchClass = (classFilter === 'ALL' || a.class === classFilter);
+                const matchSection = (sectionFilter === 'ALL' || a.section === sectionFilter);
+                return matchClass && matchSection;
+            });
+
+            document.getElementById('metricTotalStudents').textContent = filteredStudents.length;
+            document.getElementById('metricTotalAttempts').textContent = filteredAttempts.length;
+
+            if (filteredAttempts.length > 0) {
+                const totalWpm = filteredAttempts.reduce((acc, cur) => acc + cur.wpm, 0);
+                const totalAcc = filteredAttempts.reduce((acc, cur) => acc + cur.accuracy, 0);
+                const avgWpm = Math.round(totalWpm / filteredAttempts.length);
+                const avgAcc = Math.round(totalAcc / filteredAttempts.length);
+
+                document.getElementById('metricAvgWpm').textContent = `${avgWpm} WPM`;
+                document.getElementById('metricAvgAcc').textContent = `Avg Accuracy: ${avgAcc}%`;
+
+                const bestAttempt = [...filteredAttempts].sort((a,b) => b.wpm - a.wpm || b.accuracy - a.accuracy)[0];
+                document.getElementById('metricTopPerformer').textContent = bestAttempt.studentName;
+                document.getElementById('metricTopWpm').textContent = `Max: ${bestAttempt.wpm} WPM (${bestAttempt.accuracy}%)`;
+            } else {
+                document.getElementById('metricAvgWpm').textContent = `0 WPM`;
+                document.getElementById('metricAvgAcc').textContent = `Avg Accuracy: 0%`;
+                document.getElementById('metricTopPerformer').textContent = `None`;
+                document.getElementById('metricTopWpm').textContent = `Max: 0 WPM`;
+            }
+
+            const lbTitle = document.getElementById('classLeaderboardTitle');
+            if (classFilter === 'ALL') lbTitle.textContent = "Global Top Performers";
+            else lbTitle.textContent = `Class ${classFilter} Top Performers`;
+
+            const tbodyLb = document.getElementById('classLeaderboardTbody');
+            tbodyLb.innerHTML = '';
+
+            const bestMap = {};
+            filteredAttempts.forEach(att => {
+                const existing = bestMap[att.studentId];
+                if (!existing || att.wpm > existing.wpm) bestMap[att.studentId] = att;
+            });
+
+            const top5 = Object.values(bestMap).sort((a,b) => b.wpm - a.wpm).slice(0, 5);
+
+            if (top5.length === 0) {
+                tbodyLb.innerHTML = `<tr><td colspan="5" class="py-3 text-center text-slate-400">No attempts for this class filter yet.</td></tr>`;
+                return;
+            }
+
+            top5.forEach((item, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-2 font-bold text-amber-500">#${idx + 1}</td>
+                    <td class="py-2 font-semibold">${escapeHtml(item.studentName)}</td>
+                    <td class="py-2 text-slate-400">${escapeHtml(item.section)}</td>
+                    <td class="py-2 text-right font-mono font-bold text-brand-600">${item.wpm}</td>
+                    <td class="py-2 text-right font-mono text-accent-500">${item.accuracy}%</td>
+                `;
+                tbodyLb.appendChild(tr);
+            });
+        }
+
+        function switchTeacherTab(tab) {
+            window.appState.teacherTab = tab;
+            const btnStudents = document.getElementById('tabBtnStudents');
+            const btnAttempts = document.getElementById('tabBtnAttempts');
+            const containerStudents = document.getElementById('tabStudentsContainer');
+            const containerAttempts = document.getElementById('tabAttemptsContainer');
+
+            if (tab === 'students') {
+                btnStudents.className = "pb-2 px-4 text-xs font-bold border-b-2 border-brand-500 text-brand-600 dark:text-brand-400";
+                btnAttempts.className = "pb-2 px-4 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800";
+                containerStudents.classList.remove('hidden');
+                containerAttempts.classList.add('hidden');
+            } else {
+                btnAttempts.className = "pb-2 px-4 text-xs font-bold border-b-2 border-brand-500 text-brand-600 dark:text-brand-400";
+                btnStudents.className = "pb-2 px-4 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800";
+                containerAttempts.classList.remove('hidden');
+                containerStudents.classList.add('hidden');
+            }
+        }
+
+        // Modals & Student Add
+        function openAddStudentModal() {
+            document.getElementById('addStudentModal').classList.remove('hidden');
+        }
+
+        function closeAddStudentModal() {
+            document.getElementById('addStudentModal').classList.add('hidden');
+        }
+
+        async function handleAddStudentManual(e) {
+            e.preventDefault();
+            const name = document.getElementById('addName').value.trim();
+            const cls = document.getElementById('addClass').value;
+            const section = document.getElementById('addSection').value.trim();
+            const roll = document.getElementById('addRoll').value.trim();
+
+            // dedupe: same name + class + section already exists?
+            const dup = (window.appState.students || []).find(s =>
+                s.name.toLowerCase() === name.toLowerCase() && s.class === cls && s.section.toLowerCase() === section.toLowerCase()
+            );
+            if (dup) {
+                alert(`${name} is already on the roster for Class ${cls} ${section}.`);
+                return;
+            }
+
+            const newStudent = { name, class: cls, section, roll };
+
+            try {
+                await db.collection('typingStudents').add(newStudent);
+            } catch(e) {
+                alert("Couldn't save student: " + e.message);
+                return;
+            }
+
+            closeAddStudentModal();
+            document.getElementById('addName').value = '';
+            document.getElementById('addSection').value = '';
+            document.getElementById('addRoll').value = '';
+
+            alert(`Student "${name}" added successfully!`);
+        }
+
+        async function deleteStudent(studentId) {
+            if (confirm("Are you sure you want to remove this student?")) {
+                try {
+                    await db.collection('typingStudents').doc(studentId).delete();
+                } catch(e) {
+                    alert("Couldn't delete: " + e.message);
+                }
+            }
+        }
+
+        // CSV Import / Export
+        async function importCSV() {
+            const fileInput = document.getElementById('csvFileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("Please select a valid CSV file.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                let count = 0, skipped = 0;
+                const existing = window.appState.students || [];
+
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (line) {
+                        const [name, cls, section, roll] = line.split(',').map(s => s ? s.trim() : '');
+                        if (name && cls && section) {
+                            const dup = existing.find(s =>
+                                s.name.toLowerCase() === name.toLowerCase() && s.class === cls && s.section.toLowerCase() === section.toLowerCase()
+                            );
+                            if (dup) { skipped++; continue; }
+                            try {
+                                await db.collection('typingStudents').add({ name, class: cls, section, roll: roll || '' });
+                                count++;
+                            } catch(err) { console.error(err); }
+                        }
+                    }
+                }
+                alert(`Imported ${count} students.` + (skipped ? ` Skipped ${skipped} already on the roster.` : ''));
+                fileInput.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function downloadCSVTemplate() {
+            const csvContent = "data:text/csv;charset=utf-8,Name,Class,Section,Roll\nJohn Doe,5,Manang,1\nJane Smith,6,Everest,2";
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "LAEBS_Student_Import_Template.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function exportFilteredCSV() {
+            const classFilter = document.getElementById('teacherClassFilter').value;
+            const sectionFilter = document.getElementById('teacherSectionFilter').value;
+            const students = window.appState.students || [];
+
+            const filtered = students.filter(s => {
+                const matchClass = (classFilter === 'ALL' || s.class === classFilter);
+                const matchSection = (sectionFilter === 'ALL' || s.section === sectionFilter);
+                return matchClass && matchSection;
+            });
+
+            let csvContent = "data:text/csv;charset=utf-8,Name,Class,Section,Roll\n";
+            filtered.forEach(s => {
+                csvContent += `"${s.name}",${s.class},"${s.section}",${s.roll||''}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `LAEBS_Class_${classFilter}_Roster.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        async function resetAllAttempts() {
+            if (!confirm("This permanently deletes every practice attempt for every student (rosters are kept). Continue?")) return;
+            const snap = await db.collection('typingAttempts').get();
+            const batch = db.batch();
+            snap.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            alert("All practice attempts cleared.");
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // Attach function references to window scope for inline onclick bindings
+        window.toggleTheme = toggleTheme;
+        window.populateLoginClassDropdown = populateLoginClassDropdown;
+        window.onClassChange = onClassChange;
+        window.onSectionChange = onSectionChange;
+        window.handleStudentLogin = handleStudentLogin;
+        window.logoutStudent = logoutStudent;
+        window.setLeaderboardMetric = setLeaderboardMetric;
+        window.renderLeaderboard = renderLeaderboard;
+        window.setDifficulty = setDifficulty;
+        window.resetTypingArena = resetTypingArena;
+        window.focusTypingInput = focusTypingInput;
+        window.handleTypingInput = handleTypingInput;
+        window.handleKeyDown = handleKeyDown;
+        window.closeResultModal = closeResultModal;
+        window.saveResultAndContinue = saveResultAndContinue;
+        window.renderStudentHistory = renderStudentHistory;
+        window.handleGlobalKeyDown = handleGlobalKeyDown;
+        window.handleGlobalKeyUp = handleGlobalKeyUp;
+        window.openTeacherLoginModal = openTeacherLoginModal;
+        window.closeTeacherLoginModal = closeTeacherLoginModal;
+        window.handleTeacherLogin = handleTeacherLogin;
+        window.closeTeacherPanel = closeTeacherPanel;
+        window.onTeacherClassFilterChange = onTeacherClassFilterChange;
+        window.renderTeacherTables = renderTeacherTables;
+        window.switchTeacherTab = switchTeacherTab;
+        window.openAddStudentModal = openAddStudentModal;
+        window.closeAddStudentModal = closeAddStudentModal;
+        window.handleAddStudentManual = handleAddStudentManual;
+        window.deleteStudent = deleteStudent;
+        window.importCSV = importCSV;
+        window.downloadCSVTemplate = downloadCSVTemplate;
+        window.exportFilteredCSV = exportFilteredCSV;
+        window.resetAllAttempts = resetAllAttempts;
+    </script>
+</body>
+</html>

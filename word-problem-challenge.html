@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Problem Challenge & Leaderboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 sm:p-8 flex flex-col items-center">
+
+    <div class="max-w-2xl w-full space-y-8">
+        
+        <!-- Header -->
+        <header class="text-center">
+            <h1 class="text-3xl font-extrabold text-amber-400 tracking-wide mb-2">🏆 Math Challenge & Leaderboard</h1>
+            <p class="text-slate-400 text-sm">Solve word problems and record your high scores!</p>
+        </header>
+
+        <!-- Student Profile Selection -->
+        <section class="bg-slate-800 rounded-xl p-5 border border-slate-700 shadow-xl">
+            <label for="studentName" class="block text-xs font-medium text-slate-400 mb-2">Active Student Profile</label>
+            <div class="flex gap-2">
+                <input type="text" id="studentName" list="recentStudents" required maxlength="30" placeholder="Type or select name..."
+                    class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                <datalist id="recentStudents"></datalist>
+                <button type="button" id="switchUserBtn" 
+                    class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-2 rounded-lg border border-slate-600 whitespace-nowrap">
+                    🔄 Switch User
+                </button>
+            </div>
+        </section>
+
+        <!-- Interactive Quiz Container -->
+        <section class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-2xl relative overflow-hidden">
+            
+            <!-- Setup View -->
+            <div id="quizSetup" class="space-y-4">
+                <h2 class="text-xl font-bold text-slate-200">Start a New Challenge</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Difficulty</label>
+                        <select id="gameLevel" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200">
+                            <option value="Easy">Easy (Addition / Subtraction)</option>
+                            <option value="Medium">Medium (Multiplication)</option>
+                            <option value="Hard">Hard (Mixed Multi-Step)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Questions</label>
+                        <select id="gameTotalQuestions" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200">
+                            <option value="5">5 Questions</option>
+                            <option value="10" selected>10 Questions</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="startQuizBtn" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-lg text-sm transition shadow-lg">
+                    🚀 Start Game
+                </button>
+            </div>
+
+            <!-- Active Play View -->
+            <div id="quizPlay" class="hidden space-y-6">
+                <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slate-700 pb-3">
+                    <span>Question <strong id="currentQNum" class="text-amber-400">1</strong> of <span id="totalQNum">10</span></span>
+                    <span>Time: <strong id="timerDisplay" class="text-amber-400">0s</strong></span>
+                </div>
+
+                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700/60 min-h-[90px] flex items-center">
+                    <p id="questionText" class="text-base text-slate-100 font-medium"></p>
+                </div>
+
+                <form id="answerForm" class="flex gap-2">
+                    <input type="number" id="userAnswer" required placeholder="Enter answer..."
+                        class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:ring-2 focus:ring-amber-500 text-sm">
+                    <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-6 py-2 rounded-lg text-sm">
+                        Submit
+                    </button>
+                </form>
+            </div>
+
+            <!-- Game Finished View -->
+            <div id="quizResult" class="hidden text-center space-y-4 py-4">
+                <h3 class="text-2xl font-extrabold text-amber-400">🎉 Challenge Complete!</h3>
+                <div class="grid grid-cols-3 gap-2 bg-slate-900 p-4 rounded-lg border border-slate-700 text-xs">
+                    <div><span class="block text-slate-400">Score</span><strong id="resScore" class="text-lg text-amber-400">0</strong></div>
+                    <div><span class="block text-slate-400">Accuracy</span><strong id="resAccuracy" class="text-lg text-slate-200">0%</strong></div>
+                    <div><span class="block text-slate-400">Time</span><strong id="resTime" class="text-lg text-slate-200">0s</strong></div>
+                </div>
+                <button id="postScoreBtn" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2.5 rounded-lg text-sm transition">
+                    🏆 Submit Score to Leaderboard
+                </button>
+            </div>
+
+        </section>
+
+        <!-- Leaderboard Table -->
+        <section class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-xl overflow-x-auto">
+            <h2 class="text-lg font-bold text-slate-200 mb-4">Global Leaderboard</h2>
+            <table class="w-full text-left text-sm border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-700 text-slate-400 uppercase text-xs">
+                        <th class="py-3 px-2">Rank</th>
+                        <th class="py-3 px-2">Student</th>
+                        <th class="py-3 px-2">Level</th>
+                        <th class="py-3 px-2 text-center">Score</th>
+                        <th class="py-3 px-2 text-center">Accuracy</th>
+                        <th class="py-3 px-2 text-right">Time</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody" class="divide-y divide-slate-700/50 text-slate-300">
+                    <tr><td colspan="6" class="text-center py-6 text-slate-500 italic">Loading leaderboard records...</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+    </div>
+
+    <!-- Firebase App and Firestore SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+ const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const recordsCollection = collection(db, "wordProblemRecords");
+
+        // Profile Storage Logic
+        const LOCAL_STORAGE_KEY = "leaderboard_recent_students";
+        function getSavedStudents() { return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]"); }
+        function saveStudentName(name) {
+            let students = getSavedStudents().filter(s => s.toLowerCase() !== name.toLowerCase());
+            students.unshift(name);
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(students.slice(0, 5)));
+            populateStudentDropdown();
+        }
+        function populateStudentDropdown() {
+            const datalist = document.getElementById("recentStudents");
+            const nameInput = document.getElementById("studentName");
+            const students = getSavedStudents();
+            datalist.innerHTML = "";
+            students.forEach(s => { datalist.innerHTML += `<option value="${s}">`; });
+            if (students.length > 0 && !nameInput.value) nameInput.value = students[0];
+        }
+        populateStudentDropdown();
+        document.getElementById("switchUserBtn").addEventListener("click", () => {
+            const nameInput = document.getElementById("studentName");
+            nameInput.value = "";
+            nameInput.focus();
+        });
+
+        // Question Generator Engine
+        function generateWordProblem(level) {
+            const names = ["Emma", "Liam", "Noah", "Olivia", "Ava", "Lucas"];
+            const items = ["apples", "books", "pencils", "stickers", "marbles"];
+            const pName = names[Math.floor(Math.random() * names.length)];
+            const pItem = items[Math.floor(Math.random() * items.length)];
+
+            let qText = "", ans = 0;
+            if (level === "Easy") {
+                const a = Math.floor(Math.random() * 15) + 5;
+                const b = Math.floor(Math.random() * 15) + 5;
+                if (Math.random() > 0.5) {
+                    qText = `${pName} had ${a} ${pItem} and bought ${b} more. How many ${pItem} does ${pName} have in total?`;
+                    ans = a + b;
+                } else {
+                    const total = a + b;
+                    qText = `${pName} had ${total} ${pItem} and gave away ${a} of them. How many ${pItem} are left?`;
+                    ans = b;
+                }
+            } else if (level === "Medium") {
+                const boxes = Math.floor(Math.random() * 6) + 3;
+                const perBox = Math.floor(Math.random() * 8) + 3;
+                qText = `${pName} bought ${boxes} boxes of ${pItem}. Each box contains ${perBox} ${pItem}. How many total ${pItem} are there?`;
+                ans = boxes * perBox;
+            } else {
+                const start = Math.floor(Math.random() * 20) + 10;
+                const groups = Math.floor(Math.random() * 4) + 2;
+                const perGroup = Math.floor(Math.random() * 5) + 2;
+                qText = `${pName} started with ${start} ${pItem}. Then ${pName} received ${groups} packs of ${perGroup} ${pItem} each. How many ${pItem} does ${pName} have now?`;
+                ans = start + (groups * perGroup);
+            }
+            return { question: qText, answer: ans };
+        }
+
+        // Quiz State Variables
+        let gameState = {
+            level: "Easy", totalQ: 10, currentQ: 0, correct: 0,
+            startTime: null, timerInterval: null, elapsedSeconds: 0, currentProblem: null
+        };
+
+        // UI View Controller
+        function setView(view) {
+            document.getElementById("quizSetup").classList.toggle("hidden", view !== "setup");
+            document.getElementById("quizPlay").classList.toggle("hidden", view !== "play");
+            document.getElementById("quizResult").classList.toggle("hidden", view !== "result");
+        }
+
+        // Quiz Logic Handlers
+        document.getElementById("startQuizBtn").addEventListener("click", () => {
+            const studentName = document.getElementById("studentName").value.trim();
+            if (!studentName) { alert("Please enter a student name first!"); return; }
+
+            gameState.level = document.getElementById("gameLevel").value;
+            gameState.totalQ = parseInt(document.getElementById("gameTotalQuestions").value, 10);
+            gameState.currentQ = 0;
+            gameState.correct = 0;
+            gameState.elapsedSeconds = 0;
+            gameState.startTime = Date.now();
+
+            document.getElementById("totalQNum").textContent = gameState.totalQ;
+            setView("play");
+
+            gameState.timerInterval = setInterval(() => {
+                gameState.elapsedSeconds = Math.floor((Date.now() - gameState.startTime) / 1000);
+                document.getElementById("timerDisplay").textContent = `${gameState.elapsedSeconds}s`;
+            }, 1000);
+
+            nextQuestion();
+        });
+
+        function nextQuestion() {
+            if (gameState.currentQ >= gameState.totalQ) { finishQuiz(); return; }
+            gameState.currentQ++;
+            document.getElementById("currentQNum").textContent = gameState.currentQ;
+            gameState.currentProblem = generateWordProblem(gameState.level);
+            document.getElementById("questionText").textContent = gameState.currentProblem.question;
+            document.getElementById("userAnswer").value = "";
+            document.getElementById("userAnswer").focus();
+        }
+
+        document.getElementById("answerForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const val = parseInt(document.getElementById("userAnswer").value, 10);
+            if (val === gameState.currentProblem.answer) gameState.correct++;
+            nextQuestion();
+        });
+
+        function finishQuiz() {
+            clearInterval(gameState.timerInterval);
+            const accuracy = Math.round((gameState.correct / gameState.totalQ) * 100);
+            const score = gameState.correct * 100;
+
+            document.getElementById("resScore").textContent = score;
+            document.getElementById("resAccuracy").textContent = `${accuracy}%`;
+            document.getElementById("resTime").textContent = `${gameState.elapsedSeconds}s`;
+            setView("result");
+        }
+
+        document.getElementById("postScoreBtn").addEventListener("click", async () => {
+            const btn = document.getElementById("postScoreBtn");
+            btn.disabled = true;
+            btn.textContent = "Submitting...";
+
+            const studentName = document.getElementById("studentName").value.trim();
+            const accuracy = Math.round((gameState.correct / gameState.totalQ) * 100);
+            const score = gameState.correct * 100;
+
+            try {
+                await addDoc(recordsCollection, {
+                    studentName: studentName,
+                    level: gameState.level,
+                    score: score,
+                    correct: gameState.correct,
+                    total: gameState.totalQ,
+                    accuracy: accuracy,
+                    durationSeconds: gameState.elapsedSeconds,
+                    createdAt: serverTimestamp()
+                });
+                saveStudentName(studentName);
+                setView("setup");
+            } catch (err) {
+                console.error("Firestore Error: ", err);
+                alert("Submission failed. Ensure Firestore security rules are applied.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "🏆 Submit Score to Leaderboard";
+            }
+        });
+
+        // Realtime Firestore Leaderboard
+        const leaderboardQuery = query(recordsCollection, orderBy("score", "desc"), limit(20));
+        onSnapshot(leaderboardQuery, (snapshot) => {
+            const tbody = document.getElementById("leaderboardBody");
+            tbody.innerHTML = "";
+            if (snapshot.empty) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-500">No records found yet. Play a game to post a score!</td></tr>`;
+                return;
+            }
+            snapshot.docs.forEach((doc, index) => {
+                const data = doc.data();
+                const rankDisplay = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `#${index + 1}`;
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-700/30 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-2 font-bold">${rankDisplay}</td>
+                    <td class="py-3 px-2 font-medium text-amber-300">${escapeHtml(data.studentName)}</td>
+                    <td class="py-3 px-2 text-xs"><span class="bg-slate-700 px-2 py-0.5 rounded text-slate-300">${data.level || 'Easy'}</span></td>
+                    <td class="py-3 px-2 text-center font-bold text-amber-400">${data.score}</td>
+                    <td class="py-3 px-2 text-center text-xs">${data.correct}/${data.total} (${data.accuracy}%)</td>
+                    <td class="py-3 px-2 text-right text-xs text-slate-400">${data.durationSeconds}s</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+
+        function escapeHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    </script>
+</body>
+</html>

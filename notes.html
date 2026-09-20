@@ -127,7 +127,7 @@ function loadGrades(){
   db.collection('grades').get().then(snap => {
     if(snap.empty){ content.innerHTML = '<div class="empty">No grades published yet.</div>'; return; }
     const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderTiles(items, item => { path = [item.id, item.name || item.id]; route(); }, 'name');
+    renderTiles(items, (item, label) => { path = [item.id, label]; route(); });
   }).catch(err => showError(err));
 }
 
@@ -136,7 +136,7 @@ function loadSubjects(gradeId){
   db.collection('grades').doc(gradeId).collection('subjects').get().then(snap => {
     if(snap.empty){ content.innerHTML = '<div class="empty">No subjects yet for this grade.</div>'; return; }
     const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderTiles(items, item => { path = [...path, item.id, item.name || item.id]; route(); }, 'name');
+    renderTiles(items, (item, label) => { path = [...path, item.id, label]; route(); });
   }).catch(err => showError(err));
 }
 
@@ -145,7 +145,7 @@ function loadUnits(gradeId, subjectId){
   db.collection('grades').doc(gradeId).collection('subjects').doc(subjectId).collection('units').get().then(snap => {
     if(snap.empty){ content.innerHTML = '<div class="empty">No units yet for this subject.</div>'; return; }
     const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderTiles(items, item => { path = [...path, item.id, item.name || item.id]; route(); }, 'name');
+    renderTiles(items, (item, label) => { path = [...path, item.id, label]; route(); });
   }).catch(err => showError(err));
 }
 
@@ -165,14 +165,15 @@ function loadFiles(gradeId, subjectId, unitId){
   }).catch(err => showError(err));
 }
 
-function renderTiles(items, onClick, labelField){
+function renderTiles(items, onClick){
   const wrap = document.createElement('div');
   wrap.className = 'list';
   items.forEach(item => {
+    const label = item.title || item.name || item.id;
     const btn = document.createElement('button');
     btn.className = 'tile';
-    btn.innerHTML = `<h3>${escapeHtml(item[labelField] || item.id)}</h3><div class="sub">Tap to open</div>`;
-    btn.addEventListener('click', () => onClick(item));
+    btn.innerHTML = `<h3>${escapeHtml(label)}</h3><div class="sub">Tap to open</div>`;
+    btn.addEventListener('click', () => onClick(item, label));
     wrap.appendChild(btn);
   });
   content.innerHTML = '';

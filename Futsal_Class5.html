@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class 5 Futsal Tournament</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .team-Alpha { background-color: #ef4444; color: white; }
+        .team-Beta { background-color: #3b82f6; color: white; }
+        .team-Gamma { background-color: #10b981; color: white; }
+        .team-Delta { background-color: #f59e0b; color: #0f172a; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-12 font-sans antialiased">
+
+    <!-- Sticky Header -->
+    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 shadow-lg">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <h1 class="text-xl font-bold tracking-tight text-amber-400 flex items-center gap-2">
+                ⚽ Class 5 Futsal
+                <span id="syncStatus" class="text-xs font-normal text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-2 py-0.5 rounded-full">⚡ Live Syncing</span>
+            </h1>
+            <nav id="nav" class="flex gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 text-xs font-medium"></nav>
+        </div>
+    </header>
+
+    <!-- Main View Area -->
+    <main id="app" class="max-w-6xl mx-auto px-4 py-6 space-y-6"></main>
+
+    <!-- Global Modal Container -->
+    <div id="modalOverlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div id="modalContent" class="bg-slate-900 border border-slate-800 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4"></div>
+    </div>
+
+    <!-- Firebase App & Firestore Modular SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getFirestore, doc, setDoc, onSnapshot, collection, getDocs, writeBatch 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // -------------------------------------------------------------
+        // ⚠️ REPLACE THIS CONFIG WITH YOUR FIREBASE PROJECT CONFIG
+        // -------------------------------------------------------------
+ const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const docRef = doc(db, "futsalTournaments", "class5_tournament");
+
+        const TEAM_NAMES = ['Alpha', 'Beta', 'Gamma', 'Delta'];
+        const POSITIONS = ['GK', 'Defender', 'Midfielder', 'Forward'];
+
+        function uid() { return 'p' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
+
+        function defaultState() {
+            const teams = {};
+            TEAM_NAMES.forEach(t => teams[t] = { coach: '', captain: '', vc: '', playerIds: [] });
+            const fixtures = [];
+            for (let i = 0; i < TEAM_NAMES.length; i++) {
+                for (let j = i + 1; j < TEAM_NAMES.length; j++) {
+                    fixtures.push({
+                        id: TEAM_NAMES[i] + '-' + TEAM_NAMES[j],
+                        home: TEAM_NAMES[i], away: TEAM_NAMES[j],
+                        status: 'scheduled',
+                        events: [],
+                        initialOnCourt: null,
+                        timerSeconds: 0, timerRunning: false
+                    });
+                }
+            }
+            return {
+                students: [],
+                playerPositions: {},
+                teams,
+                fixtures,
+                tab: 'dashboard'
+            };
+        }
+
+        let state = defaultState();
+        let timerInterval = null;
+        let isSaving = false;
+
+        // Firestore Real-Time Listener
+        onSnapshot(docRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.data();
+                const currentTab = state.tab; // Keep local active tab
+                state = data;
+                state.tab = currentTab;
+                document.getElementById('syncStatus').textContent = '⚡ Live Synced';
+                document.getElementById('syncStatus').className = 'text-xs font-normal text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-2 py-0.5 rounded-full';
+            } else {
+                saveStateRemote(defaultState());
+            }
+            render();
+        }, (error) => {
+            console.error("Firestore sync error:", error);
+            document.getElementById('syncStatus').textContent = '⚠️ Sync Error';
+            document.getElementById('syncStatus').className = 'text-xs font-normal text-rose-400 bg-rose-950/60 border border-rose-800 px-2 py-0.5 rounded-full';
+        });
+
+        async function saveStateRemote(newState) {
+            try {
+                isSaving = true;
+                const dataToSave = JSON.parse(JSON.stringify(newState || state));
+                delete dataToSave.tab; // Exclude tab selection from cloud sync
+                await setDoc(docRef, dataToSave, { merge: true });
+            } catch (err) {
+                console.error("Error writing to Firestore:", err);
+            } finally {
+                isSaving = false;
+            }
+        }
+
+        // ---------- Helpers ----------
+        function studentById(id) { return state.students.find(s => s.id === id); }
+        function studentName(id) { const s = studentById(id); return s ? s.name : '(removed)'; }
+        function teamOfStudent(id) {
+            for (const t of TEAM_NAMES) { if (state.teams[t].playerIds.includes(id)) return t; }
+            return null;
+        }
+        function fmtTime(sec) {
+            sec = Math.max(0, Math.floor(sec));
+            const m = String(Math.floor(sec / 60)).padStart(2, '0');
+            const s = String(sec % 60).padStart(2, '0');
+            return m + ':' + s;
+        }
+        function getFixture(id) { return state.fixtures.find(f => f.id === id); }
+
+        function computeCourt(fx) {
+            if (!fx.initialOnCourt) return { home: [], away: [], benchHome: [], benchAway: [] };
+            let home = [...fx.initialOnCourt.home];
+            let away = [...fx.initialOnCourt.away];
+            const homeAll = state.teams[fx.home].playerIds;
+            const awayAll = state.teams[fx.away].playerIds;
+            fx.events.filter(e => e.type === 'sub').forEach(e => {
+                if (e.team === fx.home) {
+                    home = home.filter(id => id !== e.outId); home.push(e.inId);
+                } else {
+                    away = away.filter(id => id !== e.outId); away.push(e.inId);
+                }
+            });
+            const benchHome = homeAll.filter(id => !home.includes(id));
+            const benchAway = awayAll.filter(id => !away.includes(id));
+            return { home, away, benchHome, benchAway };
+        }
+
+        function computeScore(fx) {
+            let home = 0, away = 0;
+            fx.events.filter(e => e.type === 'goal').forEach(e => {
+                if (e.team === fx.home) home++; else away++;
+            });
+            return { home, away };
+        }
+
+        function tournamentTable() {
+            const table = {};
+            TEAM_NAMES.forEach(t => table[t] = { team: t, P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0, GD: 0, Pts: 0 });
+            state.fixtures.filter(f => f.status === 'completed').forEach(fx => {
+                const s = computeScore(fx);
+                const h = table[fx.home], a = table[fx.away];
+                h.P++; a.P++;
+                h.GF += s.home; h.GA += s.away; a.GF += s.away; a.GA += s.home;
+                if (s.home > s.away) { h.W++; a.L++; h.Pts += 3; }
+                else if (s.home < s.away) { a.W++; h.L++; a.Pts += 3; }
+                else { h.D++; a.D++; h.Pts += 1; a.Pts += 1; }
+            });
+            Object.values(table).forEach(t => t.GD = t.GF - t.GA);
+            return Object.values(table).sort((x, y) => y.Pts - x.Pts || y.GD - x.GD || y.GF - x.GF);
+        }
+
+        function playerStats() {
+            const stats = {};
+            function ensure(id) { if (!stats[id]) stats[id] = { goals: 0, assists: 0, saves: 0, subIn: 0, subOut: 0 }; return stats[id]; }
+            state.fixtures.forEach(fx => {
+                fx.events.forEach(e => {
+                    if (e.type === 'goal') { ensure(e.scorerId).goals++; if (e.assistId) ensure(e.assistId).assists++; }
+                    if (e.type === 'save') { ensure(e.gkId).saves++; }
+                    if (e.type === 'sub') { ensure(e.inId).subIn++; ensure(e.outId).subOut++; }
+                });
+            });
+            return state.students.map(s => ({
+                id: s.id, name: s.name, team: teamOfStudent(s.id) || '-',
+                ...(stats[s.id] || { goals: 0, assists: 0, saves: 0, subIn: 0, subOut: 0 })
+            }));
+        }
+
+        // ---------- Navigation / Rendering ----------
+        const TABS = [
+            ['dashboard', 'Dashboard'], ['teams', 'Teams'], ['fixtures', 'Fixtures'],
+            ['live', 'Live Match'], ['stats', 'Statistics']
+        ];
+
+        window.setTab = function(t) {
+            state.tab = t;
+            if (t !== 'live') stopTimerLoop();
+            render();
+        };
+
+        function renderNav() {
+            const nav = document.getElementById('nav');
+            nav.innerHTML = TABS.map(([id, label]) =>
+                `<button onclick="setTab('${id}')" class="px-3 py-1.5 rounded-lg whitespace-nowrap transition-all ${state.tab === id ? 'bg-amber-500 text-slate-950 font-semibold shadow-md' : 'text-slate-400 hover:bg-slate-800'}">${label}</button>`
+            ).join('');
+        }
+
+        function render() {
+            renderNav();
+            const app = document.getElementById('app');
+            if (state.tab === 'dashboard') app.innerHTML = renderDashboard();
+            else if (state.tab === 'teams') app.innerHTML = renderTeams();
+            else if (state.tab === 'fixtures') app.innerHTML = renderFixtures();
+            else if (state.tab === 'live') { app.innerHTML = renderLive(); startTimerLoopIfNeeded(); }
+            else if (state.tab === 'stats') app.innerHTML = renderStats();
+        }
+
+        // ---------- Dashboard ----------
+        function renderDashboard() {
+            const played = state.fixtures.filter(f => f.status === 'completed').length;
+            const stats = playerStats();
+            const topScorer = [...stats].sort((a, b) => b.goals - a.goals)[0];
+            const topAssist = [...stats].sort((a, b) => b.assists - a.assists)[0];
+            const topSaves = [...stats].sort((a, b) => b.saves - a.saves)[0];
+            const table = tournamentTable();
+
+            return `
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
+                    <div class="text-2xl font-bold text-amber-400">${played}/6</div>
+                    <div class="text-xs uppercase tracking-wider text-slate-400 font-medium">Matches Played</div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
+                    <div class="text-lg font-bold text-slate-100 truncate">${topScorer && topScorer.goals > 0 ? topScorer.name : '-'}</div>
+                    <div class="text-xs uppercase tracking-wider text-slate-400 font-medium">Top Scorer ${topScorer && topScorer.goals > 0 ? `(${topScorer.goals})` : ''}</div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
+                    <div class="text-lg font-bold text-slate-100 truncate">${topAssist && topAssist.assists > 0 ? topAssist.name : '-'}</div>
+                    <div class="text-xs uppercase tracking-wider text-slate-400 font-medium">Top Assist ${topAssist && topAssist.assists > 0 ? `(${topAssist.assists})` : ''}</div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
+                    <div class="text-lg font-bold text-slate-100 truncate">${topSaves && topSaves.saves > 0 ? topSaves.name : '-'}</div>
+                    <div class="text-xs uppercase tracking-wider text-slate-400 font-medium">Most Saves ${topSaves && topSaves.saves > 0 ? `(${topSaves.saves})` : ''}</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-3">
+                <h2 class="text-sm uppercase tracking-wider font-semibold text-amber-400">Current Standings</h2>
+                ${renderTableHtml(table)}
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-3">
+                <h2 class="text-sm uppercase tracking-wider font-semibold text-slate-400">Database Management</h2>
+                <div class="flex gap-3 flex-wrap">
+                    <button onclick="exportBackup()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs px-4 py-2 rounded-lg font-medium">⬇ Export JSON</button>
+                    <button onclick="resetTournament()" class="bg-rose-950/80 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs px-4 py-2 rounded-lg font-medium">⚠ Reset Tournament</button>
+                </div>
+            </div>`;
+        }
+
+        function renderTableHtml(table) {
+            return `
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="uppercase bg-slate-950/50 text-slate-400">
+                        <tr>
+                            <th class="p-2.5">Team</th>
+                            <th class="p-2.5 text-center">P</th>
+                            <th class="p-2.5 text-center">W</th>
+                            <th class="p-2.5 text-center">D</th>
+                            <th class="p-2.5 text-center">L</th>
+                            <th class="p-2.5 text-center">GF</th>
+                            <th class="p-2.5 text-center">GA</th>
+                            <th class="p-2.5 text-center">GD</th>
+                            <th class="p-2.5 text-center font-bold text-amber-400">Pts</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                        ${table.map(t => `
+                            <tr>
+                                <td class="p-2.5"><span class="team-${t.team} px-2 py-0.5 rounded text-[11px] font-bold">${t.team}</span></td>
+                                <td class="p-2.5 text-center">${t.P}</td>
+                                <td class="p-2.5 text-center">${t.W}</td>
+                                <td class="p-2.5 text-center">${t.D}</td>
+                                <td class="p-2.5 text-center">${t.L}</td>
+                                <td class="p-2.5 text-center">${t.GF}</td>
+                                <td class="p-2.5 text-center">${t.GA}</td>
+                                <td class="p-2.5 text-center">${t.GD}</td>
+                                <td class="p-2.5 text-center font-bold text-amber-400">${t.Pts}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        // ---------- Teams ----------
+        function renderTeams() {
+            let html = `
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-400">Import Student Roster (CSV)</h2>
+                <p class="text-xs text-slate-400">Required CSV Columns: <code class="bg-slate-800 px-1 rounded text-slate-200">Name, Roll, Section</code></p>
+                <input type="file" accept=".csv" onchange="handleCsvUpload(event)" class="text-xs bg-slate-950 border border-slate-800 rounded-lg p-2 w-full text-slate-300">
+                <p id="importMsg" class="text-xs text-emerald-400"></p>
+                ${state.students.length ? `<p class="text-xs text-slate-400">${state.students.length} students currently registered.</p>` : ''}
+            </div>`;
+
+            TEAM_NAMES.forEach(t => {
+                const team = state.teams[t];
+                const assignedElsewhere = state.students.filter(s => !team.playerIds.includes(s.id) && teamOfStudent(s.id) && teamOfStudent(s.id) !== t);
+                const available = state.students.filter(s => !assignedElsewhere.includes(s));
+
+                html += `
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h2 class="text-base font-bold"><span class="team-${t} px-3 py-1 rounded-lg">${t}</span></h2>
+                        <span class="text-xs text-slate-400">Roster Count: ${team.playerIds.length}</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Coach</label>
+                            <input value="${team.coach || ''}" onchange="updateTeamField('${t}','coach',this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Captain</label>
+                            <select onchange="updateTeamField('${t}','captain',this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs">
+                                <option value="">-- None --</option>
+                                ${team.playerIds.map(id => `<option value="${id}" ${team.captain === id ? 'selected' : ''}>${studentName(id)}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Vice Captain</label>
+                            <select onchange="updateTeamField('${t}','vc',this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs">
+                                <option value="">-- None --</option>
+                                ${team.playerIds.map(id => `<option value="${id}" ${team.vc === id ? 'selected' : ''}>${studentName(id)}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="text-xs font-medium uppercase tracking-wider text-slate-400">Assigned Roster</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            ${team.playerIds.map(id => `
+                                <div class="bg-slate-950 border border-slate-800 rounded-lg p-2.5 flex items-center justify-between">
+                                    <div class="flex items-center gap-2 text-xs">
+                                        <span class="font-medium text-slate-200">${studentName(id)}</span>${team.captain === id ? '<span class="bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-bold px-1.5 py-0.5 rounded">C</span>' : ''}
+                                        ${team.vc === id ? '<span class="bg-blue-500/20 text-blue-400 border border-blue-500/40 text-[10px] font-bold px-1.5 py-0.5 rounded">VC</span>' : ''}
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <select onchange="setPosition('${id}',this.value)" class="bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[11px] text-slate-300">
+                                            ${POSITIONS.map(p => `<option value="${p}" ${state.playerPositions[id] === p ? 'selected' : ''}>${p}</option>`).join('')}
+                                        </select>
+                                        <button onclick="removeFromTeam('${t}','${id}')" class="text-rose-400 hover:text-rose-300 text-xs px-2 py-1 bg-rose-950/40 rounded border border-rose-900/50">×</button>
+                                    </div>
+                                </div>
+                            `).join('') || '<p class="text-xs text-slate-500 italic">No players assigned yet.</p>'}
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="text-xs font-medium uppercase tracking-wider text-slate-400">Available Students</div>
+                        <div class="max-h-40 overflow-y-auto border border-slate-800 rounded-lg p-2 bg-slate-950 space-y-1">
+                            ${available.filter(s => !team.playerIds.includes(s.id)).map(s => `
+                                <div class="flex items-center justify-between text-xs py-1 border-b border-slate-900 last:border-0">
+                                    <span>${s.name} <span class="text-slate-500">(Roll ${s.roll}, Sec${s.section})</span></span>
+                                    <button onclick="addToTeam('${t}','${s.id}')" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-2 py-0.5 rounded text-[11px]">+</button>
+                                </div>
+                            `).join('') || '<p class="text-xs text-slate-500 italic">No available students to add.</p>'}
+                        </div>
+                    </div>
+                </div>`;
+            });
+            return html;
+        }
+
+        window.handleCsvUpload = function(ev) {
+            const file = ev.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const text = e.target.result;
+                    const lines = text.split(/\r?\n/).filter(l => l.trim().length);
+                    let start = 0;
+                    let cols = { name: 0, roll: 1, section: 2 };
+                    if (lines.length && /name/i.test(lines[0])) {
+                        const header = lines[0].split(',').map(h => h.trim().toLowerCase());
+                        cols.name = header.findIndex(h => h.includes('name'));
+                        cols.roll = header.findIndex(h => h.includes('roll'));
+                        cols.section = header.findIndex(h => h.includes('section'));
+                        start = 1;
+                    }
+                    let added = 0;
+                    for (let i = start; i < lines.length; i++) {
+                        const parts = lines[i].split(',').map(p => p.trim());
+                        const name = parts[cols.name >= 0 ? cols.name : 0];
+                        if (!name) continue;
+                        state.students.push({
+                            id: uid(),
+                            name,
+                            roll: parts[cols.roll >= 0 ? cols.roll : 1] || '',
+                            section: parts[cols.section >= 0 ? cols.section : 2] || ''
+                        });
+                        added++;
+                    }
+                    document.getElementById('importMsg').textContent = `Imported ${added} students successfully.`;
+                    saveStateRemote();
+                } catch (err) {
+                    document.getElementById('importMsg').textContent = 'Error parsing CSV file.';
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        window.updateTeamField = function(team, field, value) { state.teams[team][field] = value; saveStateRemote(); };
+        window.setPosition = function(id, pos) { state.playerPositions[id] = pos; saveStateRemote(); };
+        window.addToTeam = function(team, id) {
+            if (teamOfStudent(id)) return;
+            state.teams[team].playerIds.push(id);
+            if (!state.playerPositions[id]) state.playerPositions[id] = 'Midfielder';
+            saveStateRemote();
+        };
+        window.removeFromTeam = function(team, id) {
+            state.teams[team].playerIds = state.teams[team].playerIds.filter(x => x !== id);
+            if (state.teams[team].captain === id) state.teams[team].captain = '';
+            if (state.teams[team].vc === id) state.teams[team].vc = '';
+            saveStateRemote();
+        };
+
+        // ---------- Fixtures ----------
+        function renderFixtures() {
+            return `
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-400">Tournament Fixtures</h2>
+                <div class="space-y-3">
+                    ${state.fixtures.map(fx => {
+                        const score = computeScore(fx);
+                        return `
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div class="flex items-center gap-2">
+                                <span class="team-${fx.home} px-2.5 py-1 rounded text-xs font-bold">${fx.home}</span>
+                                <span class="text-xs text-slate-500 font-semibold">VS</span>
+                                <span class="team-${fx.away} px-2.5 py-1 rounded text-xs font-bold">${fx.away}</span>
+                                <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${fx.status === 'live' ? 'bg-rose-950/60 text-rose-400 border-rose-800' : fx.status === 'completed' ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800' : 'bg-slate-800 text-slate-400 border-slate-700'}">${fx.status}</span>
+                            </div>
+                            <div class="text-xl font-extrabold text-amber-400 tracking-wider">
+                                ${fx.status === 'scheduled' ? '— : —' : `${score.home} - ${score.away}`}
+                            </div>
+                            <div>
+                                ${fx.status === 'scheduled' ? `<button onclick="startMatch('${fx.id}')" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs px-4 py-2 rounded-lg">Start Match</button>` :
+                                `<button onclick="openMatch('${fx.id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs px-4 py-2 rounded-lg font-medium">${fx.status === 'live' ? '⚡ Open Live Deck' : 'View Recap'}</button>`}
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>`;
+        }
+
+        window.startMatch = function(id) {
+            const fx = getFixture(id);
+            const homePlayers = state.teams[fx.home].playerIds;
+            const awayPlayers = state.teams[fx.away].playerIds;
+            if (homePlayers.length === 0 || awayPlayers.length === 0) {
+                alert('Both teams require assigned roster players prior to kickoff.'); return;
+            }
+            fx.status = 'live';
+            fx.initialOnCourt = {
+                home: homePlayers.slice(0, Math.min(5, homePlayers.length)),
+                away: awayPlayers.slice(0, Math.min(5, awayPlayers.length))
+            };
+            saveStateRemote();
+            openMatch(id);
+        };
+
+        window.openMatch = function(id) { window._liveMatchId = id; state.tab = 'live'; render(); };
+
+        // ---------- Live Match Deck ----------
+        function renderLive() {
+            const id = window._liveMatchId || (state.fixtures.find(f => f.status === 'live') || {}).id;
+            if (!id) return `<div class="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center text-slate-400 text-xs">No active match selected. Initiate a fixture from the Fixtures tab.</div>`;
+            const fx = getFixture(id);
+            if (!fx) return `<div class="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center text-slate-400 text-xs">Selected match could not be retrieved.</div>`;
+            window._liveMatchId = id;
+            const score = computeScore(fx);
+            const court = computeCourt(fx);
+
+            function renderTeamControlPanel(teamKey, courtIds, benchIds) {
+                return `
+                <div class="space-y-3">
+                    <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">${teamKey} — On Court</div>
+                    <div class="space-y-2">
+                        ${courtIds.map(pid => {
+                            const isGK = state.playerPositions[pid] === 'GK';
+                            return `
+                            <div onclick="${isGK ? `recordSave('${fx.id}','${teamKey}','${pid}')` : `openGoalModal('${fx.id}','${teamKey}','${pid}')`}" 
+                                class="bg-slate-950 border ${isGK ? 'border-amber-500/50 hover:bg-amber-950/20' : 'border-slate-800 hover:bg-slate-800/50'} rounded-lg p-2.5 flex items-center justify-between cursor-pointer transition">
+                                <span class="text-xs font-medium text-slate-200">${studentName(pid)}${isGK ? '🧤' : ''}</span>
+                                <span class="text-[10px] font-semibold ${isGK ? 'text-amber-400' : 'text-emerald-400'}">${isGK ? 'Tap = Save' : 'Tap = Goal'}</span>
+                            </div>`;
+                        }).join('') || '<p class="text-xs text-slate-500 italic">No players on court.</p>'}
+                    </div>
+
+                    <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 pt-2">Bench Players (${benchIds.length})</div>
+                    <p class="text-xs text-slate-500">${benchIds.map(studentName).join(', ') || 'Empty'}</p>
+                </div>`;
+            }
+
+            return `
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4 text-center">
+                <div class="flex items-center justify-between">
+                    <span class="team-${fx.home} px-3 py-1 rounded text-xs font-bold">${fx.home}</span>
+                    <span class="text-xs uppercase tracking-widest font-bold text-slate-400">${fx.status}</span>
+                    <span class="team-${fx.away} px-3 py-1 rounded text-xs font-bold">${fx.away}</span>
+                </div>
+
+                <div class="text-4xl font-black text-amber-400 tracking-wider">${score.home} - ${score.away}</div>
+
+                <div class="text-3xl font-mono font-bold text-slate-100" id="timerDisplay">${fmtTime(fx.timerSeconds)}</div>
+
+                <div class="flex justify-center gap-2 flex-wrap">
+                    <button onclick="timerStart('${fx.id}')" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs px-3.5 py-1.5 rounded-lg">Start</button>
+                    <button onclick="timerPause('${fx.id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs px-3.5 py-1.5 rounded-lg">Pause</button>
+                    <button onclick="timerResume('${fx.id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs px-3.5 py-1.5 rounded-lg">Resume</button>
+                    <button onclick="timerReset('${fx.id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs px-3.5 py-1.5 rounded-lg">Reset</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">${renderTeamControlPanel(fx.home, court.home, court.benchHome)}</div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">${renderTeamControlPanel(fx.away, court.away, court.benchAway)}</div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-wrap justify-between items-center gap-3">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Match Actions</span>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="openSubModal('${fx.id}')" class="bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg">🔄 Substitution</button>
+                    <button onclick="undoLast('${fx.id}')" class="bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg">↩ Undo Event</button>
+                    <button onclick="finishMatch('${fx.id}')" class="bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 text-xs font-bold px-3 py-1.5 rounded-lg">🏁 Complete Match</button>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                <h2 class="text-xs font-semibold uppercase tracking-wider text-amber-400">Live Timeline</h2>
+                <div class="space-y-2 divide-y divide-slate-800/60 max-h-60 overflow-y-auto">
+                    ${[...fx.events].reverse().map(e => renderEventLine(e)).join('') || '<p class="text-xs text-slate-500 italic">No events logged yet.</p>'}
+                </div>
+            </div>`;
+        }
+
+        function renderEventLine(e) {
+            if (e.type === 'goal') return `<div class="pt-2 text-xs flex justify-between items-center"><span class="text-slate-400 font-mono">${e.time}</span> <span>⚽ <strong>${studentName(e.scorerId)}</strong> scored for <span class="team-${e.team} px-1.5 py-0.5 rounded text-[10px] font-bold">${e.team}</span> ${e.assistId ? `<span class="text-slate-500">(Assist: ${studentName(e.assistId)})</span>` : ''}</span></div>`;
+            if (e.type === 'save') return `<div class="pt-2 text-xs flex justify-between items-center"><span class="text-slate-400 font-mono">${e.time}</span> <span>🧤 <strong>${studentName(e.gkId)}</strong> saved for <span class="team-${e.team} px-1.5 py-0.5 rounded text-[10px] font-bold">${e.team}</span></span></div>`;
+            if (e.type === 'sub') return `<div class="pt-2 text-xs flex justify-between items-center"><span class="text-slate-400 font-mono">${e.time}</span> <span>🔄 Sub (<span class="team-${e.team} px-1.5 py-0.5 rounded text-[10px] font-bold">${e.team}</span>): <span class="text-emerald-400">${studentName(e.inId)} IN</span> ➔ <span class="text-rose-400">${studentName(e.outId)} OUT</span></span></div>`;
+            return '';
+        }
+
+        // ---------- Timer Engine ----------
+        function startTimerLoopIfNeeded() {
+            stopTimerLoop();
+            const id = window._liveMatchId;
+            if (!id) return;
+            const fx = getFixture(id);
+            if (fx && fx.timerRunning) {
+                timerInterval = setInterval(() => {
+                    fx.timerSeconds++;
+                    const disp = document.getElementById('timerDisplay');
+                    if (disp) disp.textContent = fmtTime(fx.timerSeconds);
+                    saveStateRemote();
+                }, 1000);
+            }
+        }
+
+        function stopTimerLoop() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
+        window.timerStart = function(id) { const fx = getFixture(id); fx.timerRunning = true; saveStateRemote(); };
+        window.timerPause = function(id) { const fx = getFixture(id); fx.timerRunning = false; saveStateRemote(); };
+        window.timerResume = function(id) { const fx = getFixture(id); fx.timerRunning = true; saveStateRemote(); };
+        window.timerReset = function(id) { const fx = getFixture(id); fx.timerSeconds = 0; fx.timerRunning = false; saveStateRemote(); };
+
+        // ---------- Modals ----------
+        function showModal(html) {
+            const overlay = document.getElementById('modalOverlay');
+            const content = document.getElementById('modalContent');
+            content.innerHTML = html;
+            overlay.classList.remove('hidden');
+        }
+
+        window.closeModal = function() {
+            document.getElementById('modalOverlay').classList.add('hidden');
+        };
+
+        window.openGoalModal = function(fxId, teamKey, scorerId) {
+            const fx = getFixture(fxId);
+            const court = computeCourt(fx);
+            const teammates = (teamKey === fx.home ? court.home : court.away).filter(id => id !== scorerId);
+            showModal(`
+                <h3 class="text-base font-bold text-amber-400">⚽ Log Goal</h3>
+                <p class="text-xs text-slate-300">Scorer: <strong>${studentName(scorerId)}</strong></p>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Assist By</label>
+                    <select id="assistSelect" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200">
+                        <option value="">No Assist</option>
+                        ${teammates.map(id => `<option value="${id}">${studentName(id)}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button onclick="closeModal()" class="bg-slate-800 text-xs px-3 py-1.5 rounded-lg">Cancel</button>
+                    <button onclick="recordGoal('${fxId}','${teamKey}','${scorerId}')" class="bg-emerald-500 font-bold text-slate-950 text-xs px-3 py-1.5 rounded-lg">Save Goal</button>
+                </div>`);
+        };
+
+        window.recordGoal = function(fxId, teamKey, scorerId) {
+            const fx = getFixture(fxId);
+            const assistId = document.getElementById('assistSelect').value || null;
+            fx.events.push({ type: 'goal', team: teamKey, scorerId, assistId, time: fmtTime(fx.timerSeconds) });
+            closeModal();
+            saveStateRemote();
+        };
+
+        window.recordSave = function(fxId, teamKey, gkId) {
+            const fx = getFixture(fxId);
+            fx.events.push({ type: 'save', team: teamKey, gkId, time: fmtTime(fx.timerSeconds) });
+            saveStateRemote();
+        };
+
+        window.openSubModal = function(fxId) {
+            const fx = getFixture(fxId);
+            showModal(`
+                <h3 class="text-base font-bold text-amber-400">🔄 Player Substitution</h3>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Team</label>
+                    <select id="subTeam" onchange="refreshSubOptions('${fxId}')" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs">
+                        <option value="${fx.home}">${fx.home}</option>
+                        <option value="${fx.away}">${fx.away}</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Player OUT (On Court)</label>
+                    <select id="subOut" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs"></select>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Player IN (Bench)</label>
+                    <select id="subIn" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs"></select>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button onclick="closeModal()" class="bg-slate-800 text-xs px-3 py-1.5 rounded-lg">Cancel</button>
+                    <button onclick="recordSub('${fxId}')" class="bg-emerald-500 font-bold text-slate-950 text-xs px-3 py-1.5 rounded-lg">Confirm Sub</button>
+                </div>`);
+            refreshSubOptions(fxId);
+        };
+
+        window.refreshSubOptions = function(fxId) {
+            const fx = getFixture(fxId);
+            const court = computeCourt(fx);
+            const team = document.getElementById('subTeam').value;
+            const onCourt = team === fx.home ? court.home : court.away;
+            const bench = team === fx.home ? court.benchHome : court.benchAway;
+            document.getElementById('subOut').innerHTML = onCourt.map(id => `<option value="${id}">${studentName(id)}</option>`).join('') || '<option value="">-- None --</option>';
+            document.getElementById('subIn').innerHTML = bench.map(id => `<option value="${id}">${studentName(id)}</option>`).join('') || '<option value="">-- None --</option>';
+        };
+
+        window.recordSub = function(fxId) {
+            const fx = getFixture(fxId);
+            const team = document.getElementById('subTeam').value;
+            const outId = document.getElementById('subOut').value;
+            const inId = document.getElementById('subIn').value;
+            if (!outId || !inId) { alert('Select both OUT and IN players.'); return; }
+            fx.events.push({ type: 'sub', team, outId, inId, time: fmtTime(fx.timerSeconds) });
+            closeModal();
+            saveStateRemote();
+        };
+
+        window.undoLast = function(fxId) {
+            const fx = getFixture(fxId);
+            if (fx.events.length === 0) return;
+            fx.events.pop();
+            saveStateRemote();
+        };
+
+        window.finishMatch = function(fxId) {
+            if (!confirm('Conclude match and finalize result?')) return;
+            const fx = getFixture(fxId);
+            fx.status = 'completed';
+            fx.timerRunning = false;
+            stopTimerLoop();
+            state.tab = 'fixtures';
+            saveStateRemote();
+        };
+
+        // ---------- Statistics View ----------
+        function renderStats() {
+            const stats = playerStats().filter(p => p.team !== '-');
+            const byGoals = [...stats].sort((a, b) => b.goals - a.goals).slice(0, 5);
+            const byAssists = [...stats].sort((a, b) => b.assists - a.assists).slice(0, 5);
+            const bySaves = [...stats].sort((a, b) => b.saves - a.saves).slice(0, 5);
+
+            return `
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-400">Tournament Standings</h2>
+                ${renderTableHtml(tournamentTable())}
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400">Individual Statistics</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="uppercase bg-slate-950/50 text-slate-400">
+                            <tr>
+                                <th class="p-2.5">Player</th>
+                                <th class="p-2.5">Team</th>
+                                <th class="p-2.5 text-center">Goals</th>
+                                <th class="p-2.5 text-center">Assists</th>
+                                <th class="p-2.5 text-center">Saves</th>
+                                <th class="p-2.5 text-center">Sub In</th>
+                                <th class="p-2.5 text-center">Sub Out</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60">
+                            ${stats.map(p => `
+                                <tr>
+                                    <td class="p-2.5 font-medium text-slate-200">${p.name}</td>
+                                    <td class="p-2.5"><span class="team-${p.team} px-2 py-0.5 rounded text-[11px] font-bold">${p.team}</span></td>
+                                    <td class="p-2.5 text-center font-bold text-amber-400">${p.goals}</td>
+                                    <td class="p-2.5 text-center">${p.assists}</td>
+                                    <td class="p-2.5 text-center">${p.saves}</td>
+                                    <td class="p-2.5 text-center">${p.subIn}</td>
+                                    <td class="p-2.5 text-center">${p.subOut}</td>
+                                </tr>
+                            `).join('') || '<tr><td colspan="7" class="p-4 text-center text-slate-500 italic">No player stats logged.</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400">Top Scorers</h3>
+                    ${byGoals.map(p => `<div class="flex justify-between items-center text-xs border-b border-slate-800/60 py-1.5"><span>${p.name} <span class="team-${p.team} px-1 rounded text-[10px]">${p.team}</span></span><strong class="text-amber-400">${p.goals}</strong></div>`).join('') || '<p class="text-xs text-slate-500 italic">-</p>'}
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400">Top Assists</h3>
+                    ${byAssists.map(p => `<div class="flex justify-between items-center text-xs border-b border-slate-800/60 py-1.5"><span>${p.name} <span class="team-${p.team} px-1 rounded text-[10px]">${p.team}</span></span><strong class="text-amber-400">${p.assists}</strong></div>`).join('') || '<p class="text-xs text-slate-500 italic">-</p>'}
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400">Most Saves</h3>
+                    ${bySaves.map(p => `<div class="flex justify-between items-center text-xs border-b border-slate-800/60 py-1.5"><span>${p.name} <span class="team-${p.team} px-1 rounded text-[10px]">${p.team}</span></span><strong class="text-amber-400">${p.saves}</strong></div>`).join('') || '<p class="text-xs text-slate-500 italic">-</p>'}
+                </div>
+            </div>`;
+        }
+
+        // ---------- Data Backup & Reset ----------
+        window.exportBackup = function() {
+            const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `futsal-backup-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+        };
+
+        window.resetTournament = function() {
+            if (!confirm('This will permanently delete all students, fixtures, and events from Firestore. Proceed?')) return;
+            saveStateRemote(defaultState());
+        };
+    </script>
+</body>
+</html>

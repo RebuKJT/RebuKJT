@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Class 5 Futsal Tournament</title>
+<style>
+  :root{
+    --alpha:#e74c3c; --beta:#2980b9; --gamma:#27ae60; --delta:#f39c12;
+    --bg:#0f1115; --panel:#171a21; --panel2:#1f232c; --border:#2b303b;
+    --text:#eef1f6; --muted:#93a0b4; --accent:#5dade2; --good:#2ecc71; --bad:#e74c3c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  header{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;}
+  header h1{font-size:18px;margin:0;}
+  nav{display:flex;gap:6px;flex-wrap:wrap;}
+  nav button{background:transparent;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;}
+  nav button.active{background:var(--accent);color:#06202f;border-color:var(--accent);font-weight:600;}
+  main{max-width:1100px;margin:0 auto;padding:16px;}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;}
+  .card h2{margin-top:0;font-size:16px;color:var(--accent);}
+  .grid{display:grid;gap:12px;}
+  .grid-4{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
+  .stat-box{background:var(--panel2);border-radius:10px;padding:14px;text-align:center;}
+  .stat-box .num{font-size:26px;font-weight:700;}
+  .stat-box .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th,td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--border);}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;}
+  td:first-child,th:first-child{text-align:left;}
+  input,select,button,textarea{font-family:inherit;font-size:14px;}
+  input,select,textarea{background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;}
+  .btn{background:var(--accent);color:#06202f;border:none;padding:9px 16px;border-radius:8px;cursor:pointer;font-weight:600;}
+  .btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--border);}
+  .btn.danger{background:var(--bad);color:#fff;}
+  .btn.small{padding:5px 10px;font-size:12px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .team-tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:700;color:#0b0d10;}
+  .team-Alpha{background:var(--alpha);color:#fff;}
+  .team-Beta{background:var(--beta);color:#fff;}
+  .team-Gamma{background:var(--gamma);color:#fff;}
+  .team-Delta{background:var(--delta);}
+  .fixture-card{display:flex;align-items:center;justify-content:space-between;background:var(--panel2);border-radius:10px;padding:12px;margin-bottom:10px;border:1px solid var(--border);}
+  .fixture-score{font-size:20px;font-weight:700;}
+  .badge{font-size:11px;padding:3px 8px;border-radius:20px;background:var(--panel);border:1px solid var(--border);color:var(--muted);}
+  .badge.live{background:#3a1414;color:#ff8080;border-color:#5a1f1f;}
+  .badge.completed{background:#123522;color:#7be3a4;border-color:#1e5233;}
+  .player-chip{display:flex;align-items:center;justify-content:space-between;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px;cursor:pointer;}
+  .player-chip:hover{border-color:var(--accent);}
+  .player-chip.gk{border-color:#8e6f00;}
+  .col2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:700px){.col2{grid-template-columns:1fr;}}
+  .timer{font-size:36px;font-weight:800;letter-spacing:.05em;text-align:center;}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:100;}
+  .modal{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;width:340px;max-width:90vw;}
+  .modal h3{margin-top:0;}
+  .event-line{padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;}
+  .event-line .t{color:var(--muted);font-size:12px;margin-right:8px;}
+  .muted{color:var(--muted);font-size:13px;}
+  .checklist{max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;}
+  .checkitem{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;}
+  .section-title{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px;}
+  .lb-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px;}
+  .warn{color:#ffb347;font-size:12px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚽ Class 5 Futsal</h1>
+  <nav id="nav"></nav>
+</header>
+<main id="app"></main>
+
+<script>
+const TEAM_NAMES = ['Alpha','Beta','Gamma','Delta'];
+const POSITIONS = ['GK','Defender','Midfielder','Forward'];
+const STORE_KEY = 'futsalTournamentStateV1';
+
+function uid(){ return 'p'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); }
+
+function defaultState(){
+  const teams = {};
+  TEAM_NAMES.forEach(t=> teams[t] = {coach:'', captain:'', vc:'', playerIds:[]});
+  const fixtures = [];
+  for(let i=0;i<TEAM_NAMES.length;i++){
+    for(let j=i+1;j<TEAM_NAMES.length;j++){
+      fixtures.push({
+        id: TEAM_NAMES[i]+'-'+TEAM_NAMES[j],
+        home: TEAM_NAMES[i], away: TEAM_NAMES[j],
+        status:'scheduled', // scheduled | live | completed
+        events: [], // {type, team, time, ...}
+        initialOnCourt: null, // {home:[ids], away:[ids]}
+        timerSeconds:0, timerRunning:false
+      });
+    }
+  }
+  return {
+    students: [], // {id, name, roll, section}
+    playerPositions: {}, // studentId -> position
+    teams,
+    fixtures,
+    tab:'dashboard'
+  };
+}
+
+let state = loadState();
+let timerInterval = null;
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){ console.error('load failed', e); }
+  return defaultState();
+}
+function saveState(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+  catch(e){ console.error('save failed', e); }
+}
+
+// ---------- helpers ----------
+function studentById(id){ return state.students.find(s=>s.id===id); }
+function studentName(id){ const s=studentById(id); return s? s.name : '(removed)'; }
+function teamOfStudent(id){
+  for(const t of TEAM_NAMES){ if(state.teams[t].playerIds.includes(id)) return t; }
+  return null;
+}
+function fmtTime(sec){
+  sec = Math.max(0,Math.floor(sec));
+  const m = String(Math.floor(sec/60)).padStart(2,'0');
+  const s = String(sec%60).padStart(2,'0');
+  return m+':'+s;
+}
+function getFixture(id){ return state.fixtures.find(f=>f.id===id); }
+
+// compute on-court/bench for a fixture by replaying sub events from initialOnCourt
+function computeCourt(fx){
+  if(!fx.initialOnCourt) return {home:[],away:[],benchHome:[],benchAway:[]};
+  let home = [...fx.initialOnCourt.home];
+  let away = [...fx.initialOnCourt.away];
+  const homeAll = state.teams[fx.home].playerIds;
+  const awayAll = state.teams[fx.away].playerIds;
+  fx.events.filter(e=>e.type==='sub').forEach(e=>{
+    if(e.team===fx.home){
+      home = home.filter(id=>id!==e.outId); home.push(e.inId);
+    } else {
+      away = away.filter(id=>id!==e.outId); away.push(e.inId);
+    }
+  });
+  const benchHome = homeAll.filter(id=>!home.includes(id));
+  const benchAway = awayAll.filter(id=>!away.includes(id));
+  return {home, away, benchHome, benchAway};
+}
+function computeScore(fx){
+  let home=0, away=0;
+  fx.events.filter(e=>e.type==='goal').forEach(e=>{
+    if(e.team===fx.home) home++; else away++;
+  });
+  return {home, away};
+}
+function computeMatchResult(fx){
+  const score = computeScore(fx);
+  return {home:fx.home, away:fx.away, homeScore:score.home, awayScore:score.away};
+}
+
+// aggregate tournament table from completed matches
+function tournamentTable(){
+  const table = {};
+  TEAM_NAMES.forEach(t=> table[t]={team:t,P:0,W:0,D:0,L:0,GF:0,GA:0,GD:0,Pts:0});
+  state.fixtures.filter(f=>f.status==='completed').forEach(fx=>{
+    const s = computeScore(fx);
+    const h = table[fx.home], a = table[fx.away];
+    h.P++; a.P++;
+    h.GF+=s.home; h.GA+=s.away; a.GF+=s.away; a.GA+=s.home;
+    if(s.home>s.away){ h.W++; a.L++; h.Pts+=3; }
+    else if(s.home<s.away){ a.W++; h.L++; a.Pts+=3; }
+    else { h.D++; a.D++; h.Pts+=1; a.Pts+=1; }
+  });
+  Object.values(table).forEach(t=> t.GD = t.GF-t.GA);
+  return Object.values(table).sort((x,y)=> y.Pts-x.Pts || y.GD-x.GD || y.GF-x.GF);
+}
+
+// aggregate player stats across all matches (live + completed)
+function playerStats(){
+  const stats = {}; // id -> {goals,assists,saves,subIn,subOut}
+  function ensure(id){ if(!stats[id]) stats[id]={goals:0,assists:0,saves:0,subIn:0,subOut:0}; return stats[id]; }
+  state.fixtures.forEach(fx=>{
+    fx.events.forEach(e=>{
+      if(e.type==='goal'){ ensure(e.scorerId).goals++; if(e.assistId) ensure(e.assistId).assists++; }
+      if(e.type==='save'){ ensure(e.gkId).saves++; }
+      if(e.type==='sub'){ ensure(e.inId).subIn++; ensure(e.outId).subOut++; }
+    });
+  });
+  return state.students.map(s=>({
+    id:s.id, name:s.name, team:teamOfStudent(s.id)||'-',
+    ...(stats[s.id]||{goals:0,assists:0,saves:0,subIn:0,subOut:0})
+  }));
+}
+
+// ---------- nav / render ----------
+const TABS = [
+  ['dashboard','Dashboard'], ['teams','Teams'], ['fixtures','Fixtures'],
+  ['live','Live Match'], ['stats','Statistics']
+];
+function renderNav(){
+  const nav = document.getElementById('nav');
+  nav.innerHTML = TABS.map(([id,label])=>
+    `<button class="${state.tab===id?'active':''}" onclick="setTab('${id}')">${label}</button>`
+  ).join('');
+}
+function setTab(t){ state.tab=t; if(t!=='live') stopTimerLoop(); render(); }
+function render(){
+  renderNav();
+  const app = document.getElementById('app');
+  if(state.tab==='dashboard') app.innerHTML = renderDashboard();
+  else if(state.tab==='teams') app.innerHTML = renderTeams();
+  else if(state.tab==='fixtures') app.innerHTML = renderFixtures();
+  else if(state.tab==='live') { app.innerHTML = renderLive(); startTimerLoopIfNeeded(); }
+  else if(state.tab==='stats') app.innerHTML = renderStats();
+  saveState();
+}
+
+// ---------- Dashboard ----------
+function renderDashboard(){
+  const played = state.fixtures.filter(f=>f.status==='completed').length;
+  const stats = playerStats();
+  const topScorer = [...stats].sort((a,b)=>b.goals-a.goals)[0];
+  const topAssist = [...stats].sort((a,b)=>b.assists-a.assists)[0];
+  const topSaves = [...stats].sort((a,b)=>b.saves-a.saves)[0];
+  const table = tournamentTable();
+  return `
+  <div class="grid grid-4">
+    <div class="stat-box"><div class="num">${played}/6</div><div class="lbl">Matches Played</div></div>
+    <div class="stat-box"><div class="num">${topScorer&&topScorer.goals>0? topScorer.name:'-'}</div><div class="lbl">Top Scorer${topScorer&&topScorer.goals>0?' ('+topScorer.goals+')':''}</div></div>
+    <div class="stat-box"><div class="num">${topAssist&&topAssist.assists>0? topAssist.name:'-'}</div><div class="lbl">Top Assist${topAssist&&topAssist.assists>0?' ('+topAssist.assists+')':''}</div></div>
+    <div class="stat-box"><div class="num">${topSaves&&topSaves.saves>0? topSaves.name:'-'}</div><div class="lbl">Most Saves${topSaves&&topSaves.saves>0?' ('+topSaves.saves+')':''}</div></div>
+  </div>
+  <div class="card">
+    <h2>Current Standings</h2>
+    ${renderTableHtml(table)}
+  </div>
+  <div class="card">
+    <h2>Data</h2>
+    <div class="row">
+      <button class="btn secondary" onclick="exportBackup()">⬇ Export Backup JSON</button>
+      <button class="btn danger" onclick="resetTournament()">⚠ Reset Tournament</button>
+    </div>
+  </div>`;
+}
+function renderTableHtml(table){
+  return `<table><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr></thead>
+  <tbody>${table.map(t=>`<tr><td><span class="team-tag team-${t.team}">${t.team}</span></td><td>${t.P}</td><td>${t.W}</td><td>${t.D}</td><td>${t.L}</td><td>${t.GF}</td><td>${t.GA}</td><td>${t.GD}</td><td><b>${t.Pts}</b></td></tr>`).join('')}</tbody></table>`;
+}
+
+// ---------- Teams ----------
+function renderTeams(){
+  let html = `<div class="card"><h2>Import Students (CSV)</h2>
+    <p class="muted">CSV columns: Student Name, Roll No., Section</p>
+    <input type="file" accept=".csv" onchange="handleCsvUpload(event)">
+    <p class="muted" id="importMsg"></p>
+    ${state.students.length? `<p class="muted">${state.students.length} students loaded.</p>`:''}
+  </div>`;
+
+  TEAM_NAMES.forEach(t=>{
+    const team = state.teams[t];
+    const assignedElsewhere = state.students.filter(s=> !team.playerIds.includes(s.id) && teamOfStudent(s.id) && teamOfStudent(s.id)!==t );
+    const available = state.students.filter(s=> !assignedElsewhere.includes(s));
+    html += `<div class="card">
+      <h2><span class="team-tag team-${t}">${t}</span></h2>
+      <div class="row">
+        <div><label class="muted">Coach<br><input value="${team.coach||''}" oninput="updateTeamField('${t}','coach',this.value)"></label></div>
+        <div><label class="muted">Captain<br>
+          <select onchange="updateTeamField('${t}','captain',this.value)">
+            <option value="">-- none --</option>
+            ${team.playerIds.map(id=>`<option value="${id}" ${team.captain===id?'selected':''}>${studentName(id)}</option>`).join('')}
+          </select></label></div>
+        <div><label class="muted">Vice-Captain<br>
+          <select onchange="updateTeamField('${t}','vc',this.value)">
+            <option value="">-- none --</option>
+            ${team.playerIds.map(id=>`<option value="${id}" ${team.vc===id?'selected':''}>${studentName(id)}</option>`).join('')}
+          </select></label></div>
+      </div>
+      <div class="section-title">Roster (${team.playerIds.length})</div>
+      ${team.playerIds.map(id=>`
+        <div class="player-chip ${state.playerPositions[id]==='GK'?'gk':''}">
+          <span>${studentName(id)} ${team.captain===id?'<span class="badge">C</span>':''}${team.vc===id?'<span class="badge">VC</span>':''}</span>
+          <span class="row">
+            <select onchange="setPosition('${id}',this.value)">
+              ${POSITIONS.map(p=>`<option value="${p}" ${state.playerPositions[id]===p?'selected':''}>${p}</option>`).join('')}
+            </select>
+            <button class="btn small danger" onclick="removeFromTeam('${t}','${id}')">Remove</button>
+          </span>
+        </div>`).join('') || '<p class="muted">No players yet.</p>'}
+      <div class="section-title">Add players to ${t}</div>
+      <div class="checklist">
+        ${available.filter(s=>!team.playerIds.includes(s.id)).map(s=>`
+          <div class="checkitem">
+            <button class="btn small" onclick="addToTeam('${t}','${s.id}')">+</button>
+            <span>${s.name} <span class="muted">(Roll ${s.roll}, ${s.section})</span></span>
+          </div>`).join('') || '<p class="muted">No available students.</p>'}
+      </div>
+    </div>`;
+  });
+  return html;
+}
+function handleCsvUpload(ev){
+  const file = ev.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const text = e.target.result;
+      const lines = text.split(/\r?\n/).filter(l=>l.trim().length);
+      let start = 0;
+      let cols = {name:0, roll:1, section:2};
+      if(lines.length && /name/i.test(lines[0])){
+        const header = lines[0].split(',').map(h=>h.trim().toLowerCase());
+        cols.name = header.findIndex(h=>h.includes('name'));
+        cols.roll = header.findIndex(h=>h.includes('roll'));
+        cols.section = header.findIndex(h=>h.includes('section'));
+        start = 1;
+      }
+      let added = 0;
+      for(let i=start;i<lines.length;i++){
+        const parts = lines[i].split(',').map(p=>p.trim());
+        const name = parts[cols.name>=0?cols.name:0];
+        if(!name) continue;
+        state.students.push({
+          id: uid(),
+          name,
+          roll: parts[cols.roll>=0?cols.roll:1] || '',
+          section: parts[cols.section>=0?cols.section:2] || ''
+        });
+        added++;
+      }
+      document.getElementById('importMsg').textContent = `Imported ${added} students.`;
+      render();
+    }catch(err){
+      document.getElementById('importMsg').textContent = 'Failed to parse CSV.';
+    }
+  };
+  reader.readAsText(file);
+}
+function updateTeamField(team, field, value){ state.teams[team][field]=value; render(); }
+function setPosition(id, pos){ state.playerPositions[id]=pos; render(); }
+function addToTeam(team, id){
+  if(teamOfStudent(id)) return;
+  state.teams[team].playerIds.push(id);
+  if(!state.playerPositions[id]) state.playerPositions[id]='Midfielder';
+  render();
+}
+function removeFromTeam(team, id){
+  state.teams[team].playerIds = state.teams[team].playerIds.filter(x=>x!==id);
+  if(state.teams[team].captain===id) state.teams[team].captain='';
+  if(state.teams[team].vc===id) state.teams[team].vc='';
+  render();
+}
+
+// ---------- Fixtures ----------
+function renderFixtures(){
+  return `<div class="card"><h2>Fixtures</h2>
+    ${state.fixtures.map(fx=>{
+      const score = computeScore(fx);
+      return `<div class="fixture-card">
+        <div>
+          <span class="team-tag team-${fx.home}">${fx.home}</span> vs <span class="team-tag team-${fx.away}">${fx.away}</span>
+          <span class="badge ${fx.status}">${fx.status}</span>
+        </div>
+        <div class="fixture-score">${fx.status==='scheduled' ? '— vs —' : score.home+' - '+score.away}</div>
+        <div>
+          ${fx.status==='scheduled' ? `<button class="btn small" onclick="startMatch('${fx.id}')">Start</button>` :
+            `<button class="btn small secondary" onclick="openMatch('${fx.id}')">${fx.status==='live'?'Continue':'View'}</button>`}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function startMatch(id){
+  const fx = getFixture(id);
+  const homePlayers = state.teams[fx.home].playerIds;
+  const awayPlayers = state.teams[fx.away].playerIds;
+  if(homePlayers.length===0 || awayPlayers.length===0){
+    alert('Both teams need players assigned before starting.'); return;
+  }
+  fx.status='live';
+  fx.initialOnCourt = {
+    home: homePlayers.slice(0, Math.min(5, homePlayers.length)),
+    away: awayPlayers.slice(0, Math.min(5, awayPlayers.length))
+  };
+  openMatch(id);
+}
+function openMatch(id){ window._liveMatchId = id; state.tab='live'; render(); }
+
+// ---------- Live Match ----------
+function renderLive(){
+  const id = window._liveMatchId || (state.fixtures.find(f=>f.status==='live')||{}).id;
+  if(!id) return `<div class="card"><h2>Live Match</h2><p class="muted">No match selected. Start one from Fixtures.</p></div>`;
+  const fx = getFixture(id);
+  if(!fx) return `<div class="card"><p class="muted">Match not found.</p></div>`;
+  window._liveMatchId = id;
+  const score = computeScore(fx);
+  const court = computeCourt(fx);
+
+  function renderTeamPanel(teamKey, courtIds, benchIds){
+    return `<div class="section-title">${teamKey} — On Court</div>
+      ${courtIds.map(pid=>{
+        const isGK = state.playerPositions[pid]==='GK';
+        return `<div class="player-chip ${isGK?'gk':''}" onclick="${isGK?`recordSave('${fx.id}','${teamKey}','${pid}')`:`openGoalModal('${fx.id}','${teamKey}','${pid}')`}">
+          <span>${studentName(pid)} ${isGK?'🧤':''}</span>
+          <span class="muted">${isGK?'Tap = Save':'Tap = Goal'}</span>
+        </div>`;
+      }).join('') || '<p class="muted">No players on court.</p>'}
+      <div class="section-title">${teamKey} — Bench (${benchIds.length})</div>
+      <p class="muted">${benchIds.map(studentName).join(', ') || 'Empty'}</p>`;
+  }
+
+  return `
+  <div class="card">
+    <div class="row" style="justify-content:space-between;">
+      <h2 style="margin:0;"><span class="team-tag team-${fx.home}">${fx.home}</span> vs <span class="team-tag team-${fx.away}">${fx.away}</span></h2>
+      <span class="badge ${fx.status}">${fx.status}</span>
+    </div>
+    <div class="fixture-score" style="text-align:center;font-size:34px;margin:10px 0;">${fx.home} ${score.home} — ${score.away} ${fx.away}</div>
+    <div class="timer" id="timerDisplay">${fmtTime(fx.timerSeconds)}</div>
+    <div class="row" style="justify-content:center;">
+      <button class="btn" onclick="timerStart('${fx.id}')">Start</button>
+      <button class="btn secondary" onclick="timerPause('${fx.id}')">Pause</button>
+      <button class="btn secondary" onclick="timerResume('${fx.id}')">Resume</button>
+      <button class="btn secondary" onclick="timerReset('${fx.id}')">Reset</button>
+    </div>
+  </div>
+
+  <div class="col2">
+    <div class="card">${renderTeamPanel(fx.home, court.home, court.benchHome)}</div>
+    <div class="card">${renderTeamPanel(fx.away, court.away, court.benchAway)}</div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;">
+      <h2 style="margin:0;">Actions</h2>
+      <div class="row">
+        <button class="btn secondary" onclick="openSubModal('${fx.id}')">🔄 Substitution</button>
+        <button class="btn secondary" onclick="undoLast('${fx.id}')">↩ Undo Last Event</button>
+        <button class="btn danger" onclick="finishMatch('${fx.id}')">🏁 Finish Match</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Event Timeline</h2>
+    ${[...fx.events].reverse().map(e=>renderEventLine(e)).join('') || '<p class="muted">No events yet.</p>'}
+  </div>`;
+}
+function renderEventLine(e){
+  if(e.type==='goal') return `<div class="event-line"><span class="t">${e.time}</span>⚽ ${studentName(e.scorerId)} <span class="team-tag team-${e.team}">${e.team}</span>${e.assistId?`<br><span class="muted" style="margin-left:60px;">Assist: ${studentName(e.assistId)}</span>`:''}</div>`;
+  if(e.type==='save') return `<div class="event-line"><span class="t">${e.time}</span>🧤 ${studentName(e.gkId)} — Save <span class="team-tag team-${e.team}">${e.team}</span></div>`;
+  if(e.type==='sub') return `<div class="event-line"><span class="t">${e.time}</span>🔄 ${studentName(e.inId)} IN → ${studentName(e.outId)} OUT <span class="team-tag team-${e.team}">${e.team}</span></div>`;
+  return '';
+}
+
+// timer controls
+function startTimerLoopIfNeeded(){
+  stopTimerLoop();
+  const id = window._liveMatchId;
+  if(!id) return;
+  const fx = getFixture(id);
+  if(fx && fx.timerRunning){
+    timerInterval = setInterval(()=>{
+      fx.timerSeconds++;
+      const disp = document.getElementById('timerDisplay');
+      if(disp) disp.textContent = fmtTime(fx.timerSeconds);
+      saveState();
+    },1000);
+  }
+}
+function stopTimerLoop(){ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } }
+function timerStart(id){ const fx=getFixture(id); fx.timerRunning=true; render(); }
+function timerPause(id){ const fx=getFixture(id); fx.timerRunning=false; render(); }
+function timerResume(id){ const fx=getFixture(id); fx.timerRunning=true; render(); }
+function timerReset(id){ const fx=getFixture(id); fx.timerSeconds=0; fx.timerRunning=false; render(); }
+
+// ---------- Modals ----------
+function showModal(html){
+  const bg = document.createElement('div');
+  bg.className='modal-bg'; bg.id='modalBg';
+  bg.innerHTML = `<div class="modal">${html}</div>`;
+  bg.onclick = (e)=>{ if(e.target===bg) closeModal(); };
+  document.body.appendChild(bg);
+}
+function closeModal(){ const bg=document.getElementById('modalBg'); if(bg) bg.remove(); }
+
+function openGoalModal(fxId, teamKey, scorerId){
+  const fx = getFixture(fxId);
+  const court = computeCourt(fx);
+  const teammates = (teamKey===fx.home? court.home : court.away).filter(id=>id!==scorerId);
+  showModal(`
+    <h3>⚽ Goal</h3>
+    <p><b>Scorer:</b> ${studentName(scorerId)}</p>
+    <label class="muted">Assist</label><br>
+    <select id="assistSelect" style="width:100%;margin:8px 0;">
+      <option value="">No Assist</option>
+      ${teammates.map(id=>`<option value="${id}">${studentName(id)}</option>`).join('')}
+    </select><br>
+    <div class="row" style="justify-content:flex-end;margin-top:10px;">
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="recordGoal('${fxId}','${teamKey}','${scorerId}')">Record Goal</button>
+    </div>`);
+}
+function recordGoal(fxId, teamKey, scorerId){
+  const fx = getFixture(fxId);
+  const assistId = document.getElementById('assistSelect').value || null;
+  fx.events.push({type:'goal', team:teamKey, scorerId, assistId, time:fmtTime(fx.timerSeconds)});
+  closeModal(); render();
+}
+function recordSave(fxId, teamKey, gkId){
+  const fx = getFixture(fxId);
+  fx.events.push({type:'save', team:teamKey, gkId, time:fmtTime(fx.timerSeconds)});
+  render();
+}
+function openSubModal(fxId){
+  const fx = getFixture(fxId);
+  const court = computeCourt(fx);
+  showModal(`
+    <h3>🔄 Substitution</h3>
+    <label class="muted">Team</label><br>
+    <select id="subTeam" style="width:100%;margin:8px 0;" onchange="refreshSubOptions('${fxId}')">
+      <option value="${fx.home}">${fx.home}</option>
+      <option value="${fx.away}">${fx.away}</option>
+    </select>
+    <label class="muted">OUT (on court)</label><br>
+    <select id="subOut" style="width:100%;margin:8px 0;"></select>
+    <label class="muted">IN (bench)</label><br>
+    <select id="subIn" style="width:100%;margin:8px 0;"></select>
+    <div class="row" style="justify-content:flex-end;margin-top:10px;">
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="recordSub('${fxId}')">Confirm</button>
+    </div>`);
+  refreshSubOptions(fxId);
+}
+function refreshSubOptions(fxId){
+  const fx = getFixture(fxId);
+  const court = computeCourt(fx);
+  const team = document.getElementById('subTeam').value;
+  const onCourt = team===fx.home? court.home : court.away;
+  const bench = team===fx.home? court.benchHome : court.benchAway;
+  document.getElementById('subOut').innerHTML = onCourt.map(id=>`<option value="${id}">${studentName(id)}</option>`).join('') || '<option value="">-- none --</option>';
+  document.getElementById('subIn').innerHTML = bench.map(id=>`<option value="${id}">${studentName(id)}</option>`).join('') || '<option value="">-- none --</option>';
+}
+function recordSub(fxId){
+  const fx = getFixture(fxId);
+  const team = document.getElementById('subTeam').value;
+  const outId = document.getElementById('subOut').value;
+  const inId = document.getElementById('subIn').value;
+  if(!outId || !inId){ alert('Select both an OUT and an IN player.'); return; }
+  fx.events.push({type:'sub', team, outId, inId, time:fmtTime(fx.timerSeconds)});
+  closeModal(); render();
+}
+function undoLast(fxId){
+  const fx = getFixture(fxId);
+  if(fx.events.length===0) return;
+  fx.events.pop();
+  render();
+}
+function finishMatch(fxId){
+  if(!confirm('Finish this match? This will lock the result.')) return;
+  const fx = getFixture(fxId);
+  fx.status='completed'; fx.timerRunning=false;
+  stopTimerLoop();
+  state.tab='fixtures';
+  render();
+}
+
+// ---------- Statistics ----------
+function renderStats(){
+  const stats = playerStats().filter(p=>p.team!=='-');
+  const byGoals = [...stats].sort((a,b)=>b.goals-a.goals).slice(0,5);
+  const byAssists = [...stats].sort((a,b)=>b.assists-a.assists).slice(0,5);
+  const bySaves = [...stats].sort((a,b)=>b.saves-a.saves).slice(0,5);
+  return `
+  <div class="card"><h2>Tournament Table</h2>${renderTableHtml(tournamentTable())}</div>
+  <div class="card"><h2>Player Statistics</h2>
+    <table><thead><tr><th>Player</th><th>Team</th><th>Goals</th><th>Assists</th><th>Saves</th><th>Sub In</th><th>Sub Out</th></tr></thead>
+    <tbody>${stats.map(p=>`<tr><td>${p.name}</td><td><span class="team-tag team-${p.team}">${p.team}</span></td><td>${p.goals}</td><td>${p.assists}</td><td>${p.saves}</td><td>${p.subIn}</td><td>${p.subOut}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">No players yet.</td></tr>'}</tbody></table>
+  </div>
+  <div class="col2">
+    <div class="card"><h2>Top Scorers</h2>${byGoals.map(p=>`<div class="lb-item"><span>${p.name} <span class="team-tag team-${p.team}">${p.team}</span></span><b>${p.goals}</b></div>`).join('')||'<p class="muted">-</p>'}</div>
+    <div class="card"><h2>Top Assists</h2>${byAssists.map(p=>`<div class="lb-item"><span>${p.name} <span class="team-tag team-${p.team}">${p.team}</span></span><b>${p.assists}</b></div>`).join('')||'<p class="muted">-</p>'}</div>
+  </div>
+  <div class="card"><h2>Most Saves</h2>${bySaves.map(p=>`<div class="lb-item"><span>${p.name} <span class="team-tag team-${p.team}">${p.team}</span></span><b>${p.saves}</b></div>`).join('')||'<p class="muted">-</p>'}</div>`;
+}
+
+// ---------- data mgmt ----------
+function exportBackup(){
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'futsal-tournament-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+}
+function resetTournament(){
+  if(!confirm('This will erase ALL students, teams, and match data. Continue?')) return;
+  state = defaultState();
+  window._liveMatchId = null;
+  render();
+}
+
+// init
+render();
+</script>
+</body>
+</html>

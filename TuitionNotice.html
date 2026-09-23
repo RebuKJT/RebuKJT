@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LAEBS Tuition Hub</title>
+  <link rel="shortcut icon" href="#">
+  <style>
+    :root {
+      --primary: #0284c7;
+      --bg-slate: #f8fafc;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --whatsapp-green: #25d366;
+      --whatsapp-hover: #1eb857;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg-slate); color: var(--text-main); padding: 20px; }
+
+    .container { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+    header { background: #fff; padding: 20px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    header h1 { font-size: 1.5rem; color: var(--text-main); }
+
+    .card { background: #ffffff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .card-title { display: flex; align-items: center; gap: 8px; font-size: 1.2rem; font-weight: 700; }
+    .badge { background: var(--primary); color: #fff; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; }
+
+    .notice-filter-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; }
+    .filter-chip { background: #f1f5f9; border: 1px solid #cbd5e1; color: var(--text-muted); padding: 4px 14px; font-size: 0.85rem; border-radius: 16px; cursor: pointer; white-space: nowrap; }
+    .filter-chip.active { background: var(--text-main); color: #fff; border-color: var(--text-main); }
+
+    .notice-list { display: flex; flex-direction: column; gap: 12px; max-height: 420px; overflow-y: auto; }
+    .notice-item { border: 1px solid var(--border); border-left: 5px solid #94a3b8; border-radius: 8px; padding: 14px; background: #fff; }
+    .notice-item.pinned { background: #fffbeb; border-color: #fde68a; border-left-color: #f59e0b; }
+    .notice-item.priority-Urgent { border-left-color: #ef4444; }
+    .notice-item.priority-Important { border-left-color: #f59e0b; }
+    .notice-item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+    .notice-item-title { font-weight: 700; font-size: 1rem; }
+    .notice-item-content { font-size: 0.92rem; color: #334155; line-height: 1.45; white-space: pre-line; margin: 6px 0; }
+    .notice-item-footer { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .form-row { display: flex; gap: 12px; }
+    .flex-1 { flex: 1; }
+    label { font-size: 0.85rem; font-weight: 600; color: #334155; }
+    input, textarea { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; }
+    .char-count { font-size: 0.75rem; color: var(--text-muted); text-align: right; margin-top: 4px; }
+
+    .contact-actions { display: flex; gap: 12px; margin-top: 8px; }
+    .btn { padding: 10px 18px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; flex: 1; }
+    .btn-whatsapp { background: var(--whatsapp-green); color: #fff; }
+    .btn-whatsapp:hover { background: var(--whatsapp-hover); }
+    .btn-community { background: var(--text-main); color: #fff; }
+    .btn-community:hover { background: #1e293b; }
+
+    @media (max-width: 640px) {
+      .form-row { flex-direction: column; }
+      .contact-actions { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>📚 LAEBS Tuition Hub</h1>
+    </header>
+
+    <!-- Teacher Notice Board -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📌 Teacher Notice Board <span id="noticeCountBadge" class="badge">0</span></div>
+      </div>
+
+      <div class="notice-filter-bar">
+        <button class="filter-chip active" onclick="filterNotices('All', this)">All</button>
+        <button class="filter-chip" onclick="filterNotices('Class 2', this)">Class 2</button>
+        <button class="filter-chip" onclick="filterNotices('Class 4', this)">Class 3</button>
+        <button class="filter-chip" onclick="filterNotices('Class 4', this)">Class 4</button>
+        <button class="filter-chip" onclick="filterNotices('Class 5', this)">Class 5</button>
+        <button class="filter-chip" onclick="filterNotices('Class 6', this)">Class 6</button>
+        <button class="filter-chip" onclick="filterNotices('Class 7', this)">Class 7</button>
+        <button class="filter-chip" onclick="filterNotices('Class 8', this)">Class 8</button>
+      </div>
+
+      <div id="noticeListContainer" class="notice-list">
+        <div style="text-align: center; color: var(--text-muted); padding: 20px;">Loading notices...</div>
+      </div>
+    </div>
+
+    <!-- Student Contact Form -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">💬 Message the Teacher</div>
+      </div>
+
+      <form id="studentContactForm" onsubmit="event.preventDefault();">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="senderName">Your Name *</label>
+            <input type="text" id="senderName" placeholder="e.g. Aarav Sharma" required />
+          </div>
+          <div class="form-group flex-1">
+            <label for="senderClass">Class & Section *</label>
+            <input type="text" id="senderClass" placeholder="e.g. Class 5-A" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="senderMessage">Message (Max 250 characters) *</label>
+          <textarea id="senderMessage" rows="3" maxlength="250" placeholder="Write your message here..." oninput="updateCharCount(this)" required></textarea>
+          <div class="char-count"><span id="charCount">0</span>/250 characters</div>
+        </div>
+
+        <div class="contact-actions">
+          <button type="button" class="btn btn-whatsapp" onclick="sendViaWhatsApp()">💬 Direct WhatsApp</button>
+          <button type="button" class="btn btn-community" onclick="sendToCommunity()">🌐 Post to Community</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Approved Community Feed -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🌐 Student Community Feed</div>
+      </div>
+      <div id="communityFeedContainer" class="notice-list">
+        <div style="text-align: center; color: var(--text-muted); padding: 15px;">Loading community posts...</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+ const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+
+    const TEACHER_WHATSAPP_NUMBER = "9779800000000";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let rawNotices = [];
+    let activeFilter = "All";
+
+    // 1. Stream Teacher Notices
+    onSnapshot(query(collection(db, "teacherNotices"), orderBy("createdAt", "desc")), (snapshot) => {
+      rawNotices = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderNotices();
+    });
+
+    function renderNotices() {
+      const container = document.getElementById("noticeListContainer");
+      const filtered = rawNotices.filter(item => activeFilter === "All" || item.targetAudience === "All" || item.targetAudience === activeFilter);
+      filtered.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
+
+      document.getElementById("noticeCountBadge").innerText = filtered.length;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">No announcements found for ${activeFilter}.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => `
+        <div class="notice-item ${item.isPinned ? 'pinned' : ''} priority-${item.priority}">
+          <div class="notice-item-header">
+            <span class="notice-item-title">${escapeHtml(item.title)}</span>
+            <div>
+              ${item.isPinned ? '📌 ' : ''}
+              <span class="badge" style="background:#cbd5e1; color:#0f172a">${item.targetAudience}</span>
+            </div>
+          </div>
+          <div class="notice-item-content">${escapeHtml(item.content)}</div>
+          <div class="notice-item-footer">
+            <span>${item.createdAt ? new Date(item.createdAt.toDate()).toLocaleDateString() : 'Just now'}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 2. Stream Approved Community Feed (Client-side sorted to bypass missing index error)
+    onSnapshot(query(collection(db, "studentMessages"), where("status", "==", "approved")), (snapshot) => {
+      const container = document.getElementById("communityFeedContainer");
+      if (!container) return;
+
+      if (snapshot.empty) {
+        container.innerHTML = `<div style="text-align:center; padding: 15px; color: var(--text-muted);">No community posts published yet.</div>`;
+        return;
+      }
+
+      const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      docs.sort((a, b) => {
+        const timeA = a.createdAt ? a.createdAt.toMillis() : Date.now();
+        const timeB = b.createdAt ? b.createdAt.toMillis() : Date.now();
+        return timeB - timeA;
+      });
+
+      container.innerHTML = docs.map(data => `
+        <div class="notice-item" style="border-left-color: #0284c7;">
+          <div class="notice-item-header">
+            <strong>${escapeHtml(data.studentName)} (${escapeHtml(data.class)})</strong>
+          </div>
+          <div class="notice-item-content">${escapeHtml(data.message)}</div>
+        </div>
+      `).join('');
+    });
+
+    window.filterNotices = (category, btn) => {
+      activeFilter = category;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      renderNotices();
+    };
+
+    window.updateCharCount = (textarea) => {
+      document.getElementById("charCount").innerText = textarea.value.length;
+    };
+
+    window.sendViaWhatsApp = () => {
+      const name = document.getElementById("senderName").value.trim();
+      const sClass = document.getElementById("senderClass").value.trim();
+      const msg = document.getElementById("senderMessage").value.trim();
+
+      if (!name || !sClass || !msg) { alert("Please complete all fields."); return; }
+
+      const text = `Name: ${name}%0AClass: ${sClass}%0A%0AMessage:%0A${encodeURIComponent(msg)}`;
+      window.open(`https://wa.me/${TEACHER_WHATSAPP_NUMBER}?text=${text}`, "_blank");
+    };
+
+    window.sendToCommunity = async () => {
+      const name = document.getElementById("senderName").value.trim();
+      const sClass = document.getElementById("senderClass").value.trim();
+      const msg = document.getElementById("senderMessage").value.trim();
+
+      if (!name || !sClass || !msg) { alert("Please complete all fields."); return; }
+
+      try {
+        await addDoc(collection(db, "studentMessages"), {
+          studentName: name,
+          class: sClass,
+          message: msg,
+          status: "pending",
+          createdAt: serverTimestamp()
+        });
+        alert("Your message was submitted to the teacher for review!");
+        document.getElementById("studentContactForm").reset();
+        document.getElementById("charCount").innerText = "0";
+      } catch (e) {
+        alert("Error sending message: " + e.message);
+      }
+    };
+
+    function escapeHtml(str) { return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  </script>
+</body>
+</html>

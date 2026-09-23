@@ -180,9 +180,96 @@
 <div class="container-fluid page-header py-5">
     <div class="container text-center py-5">
 
-        <h1 class="display-2 text-white mb-4 animated slideInDown">
-            Tuition
-        </h1>
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 p-4 rounded-4 shadow-lg position-relative overflow-hidden navy-card-bg border border-blue-glow">
+    
+    <!-- Left Side: Animated Icon + Title + Subtext -->
+    <div class="d-flex align-items-center gap-3">
+        <!-- Notice Symbol with Pulsing Alert Badge -->
+        <div class="position-relative flex-shrink-0">
+            <div class="icon-box bg-blue-subtle text-cyan p-3 rounded-circle border border-cyan-subtle shadow-sm">
+                <!-- Megaphone / Announcement Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-megaphone-fill" viewBox="0 0 16 16">
+                    <path d="M13 2.5a1.5 1.5 0 0 1 3 0v11a1.5 1.5 0 0 1-3 0zm-1 .724c-2.067.95-4.539 1.481-7 1.656v6.237a25 25 0 0 1 7 1.656zm-8 7.042V5.634a16 16 0 0 1 1 0v4.632c-.362.008-.724.02-1 .032m-1 .046c-.57.027-1.12.065-1.637.113a.5.5 0 0 1-.563-.495V4.2a.5.5 0 0 1 .563-.495c.518.048 1.067.086 1.637.113zm0 1.002c.795-.038 1.613-.07 2.45-.091v2.532a.5.5 0 0 1-.5.5c-.838 0-1.637-.2-2.382-.562a.5.5 0 0 1-.268-.438z"/>
+                </svg>
+            </div>
+            <!-- Pulsing Alert Badge -->
+            <span class="position-absolute top-0 start-100 translate-middle p-1-5 bg-warning border border-dark rounded-circle pulse-ring">
+                <span class="visually-hidden">New Notice</span>
+            </span>
+        </div>
+
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h1 class="display-5 fw-bold text-white mb-0 tracking-tight">Tuition</h1>
+                <span class="badge bg-warning text-dark rounded-pill px-2-5 py-1 fs-7 fw-bold uppercase-track">
+                    ⚡ Official Notice
+                </span>
+            </div>
+            <p class="text-light-subtle mb-0 fs-6">
+                Important details on class timings, exam routines, test, tuition routines, and deadlines.
+            </p>
+        </div>
+    </div>
+
+    <!-- Right Side: Action Button -->
+    <a href="TuitionNotice.html" class="btn btn-warning btn-lg rounded-pill px-4 py-3 text-dark fw-bold shadow-sm transition-all hover-glow d-inline-flex align-items-center justify-content-center gap-2 text-nowrap ms-md-auto">
+        <span>Click Here for Full Notice</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-right-circle-fill transition-transform" viewBox="0 0 16 16">
+            <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0M4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5z"/>
+        </svg>
+    </a>
+</div>
+
+<!-- Supporting CSS -->
+<style>
+    /* Dark Navy Custom Theme */
+    .navy-card-bg {
+        background: linear-gradient(135deg, #0a1f44 0%, #112d57 100%);
+    }
+    .border-blue-glow {
+        border-color: rgba(0, 212, 255, 0.25) !important;
+    }
+    .bg-blue-subtle {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+    .text-cyan {
+        color: #00d4ff;
+    }
+    .border-cyan-subtle {
+        border-color: rgba(0, 212, 255, 0.3) !important;
+    }
+    .text-light-subtle {
+        color: #cbd5e1;
+    }
+
+    /* Pulsing Alert Ring */
+    .pulse-ring {
+        animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+        70% { box-shadow: 0 0 0 8px rgba(255, 193, 7, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+    }
+
+    /* Button Glow Effect */
+    .hover-glow {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .hover-glow:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4) !important;
+        background-color: #ffca2c !important;
+    }
+    .hover-glow:hover svg {
+        transform: translateX(4px);
+    }
+    
+    .uppercase-track {
+        letter-spacing: 0.5px;
+        font-size: 0.75rem;
+    }
+</style>
 
         <!-- Tuition Navigation -->
         <div class="tuition-nav-buttons animated slideInDown">
@@ -257,10 +344,19 @@
                 </div>
             </div>
 
+          
+
         </div>
     </div>
 </div>
 <!-- Fact End -->
+
+
+
+<!-- Tuition Notice-->
+
+
+
 
 
        <!-- Contact Start -->
@@ -296,7 +392,7 @@
                             </div>
                             <div class="ms-3">
                                 <h4 class="text-primary">Contact</h4>
-                                <a class="h5" href="tel: +9779819028742" target="_blank">9819028742</a>
+                                <a class="h5" href="tel: +9779802701683" target="_blank">9802701683</a>
                             </div>
                         </div>
                     </div>
@@ -450,10 +546,10 @@ const db = firebase.firestore();
    ===================================================== */
 
 const factClasses = [
-    "Class 4",
-    "Class 3",
+    "Class 2",
     "Class 5",
-    "Class 6"
+    "Class 6",
+    "Class 7"
 ];
 
 async function loadTuitionFacts() {

@@ -67,6 +67,34 @@
 <main>
   <div class="msg-banner">Read honestly. Read with focus. Understand what you read.</div>
 
+  <!-- PUBLIC NOTICE BOARD -->
+  <div class="card" id="notice-board">
+    <h2>📌 Announcements & Notices</h2>
+    <p id="notice-text" style="font-size:0.88rem; color:var(--ink-soft); margin:0; line-height:1.4;">
+      Welcome to the Lovely Angels Reading Tracker! Daily reading logs build long-term study discipline. Earn 10 points for every full hour read plus 1 point per 10 minutes.
+    </p>
+  </div>
+
+  <!-- PUBLIC LEADERBOARD -->
+  <div class="card">
+    <h2>🏆 Top Readers (This Week)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 50px;">Rank</th>
+          <th>Student</th>
+          <th style="text-align: right;">Points</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboard-body">
+        <tr>
+          <td colspan="3" style="text-align:center; color:var(--ink-soft);">Loading leaderboard…</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- STUDENT SELECTION -->
   <div class="card">
     <h2>Who are you?</h2>
     <div class="row">
@@ -122,7 +150,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 /* PASTE the SAME firebaseConfig used everywhere else */
-const firebaseConfig = {
+ const firebaseConfig = {
     apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
     authDomain: "teacher-resource-hub.firebaseapp.com",
     projectId: "teacher-resource-hub",
@@ -152,8 +180,56 @@ function fmtDuration(mins){
 }
 function timeToMinutes(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
 
-/* ---------- sessions & students (public mirror of Tuition Ledger data —
-   the real tuitionSessions/tuitionStudents collections stay login-only) ---------- */
+/* ---------- public leaderboard ---------- */
+function loadLeaderboard(){
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 6 * 86400000).toISOString().slice(0, 10);
+
+  db.collection('readingLogs')
+    .where('date', '>=', weekAgo)
+    .get()
+    .then(snap => {
+      const studentTotals = {};
+
+      snap.forEach(doc => {
+        const data = doc.data();
+        if (data.status !== 'flagged') {
+          const name = data.studentName || 'Unknown Student';
+          studentTotals[name] = (studentTotals[name] || 0) + (data.points || 0);
+        }
+      });
+
+      const sorted = Object.entries(studentTotals)
+        .map(([name, points]) => ({ name, points: Math.round(points * 100) / 100 }))
+        .sort((a, b) => b.points - a.points)
+        .slice(0, 5);
+
+      renderLeaderboard(sorted);
+    })
+    .catch(err => console.error("Leaderboard fetch error:", err));
+}
+
+function renderLeaderboard(list){
+  const body = document.getElementById('leaderboard-body');
+  if(!list.length){
+    body.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--ink-soft);">No reading entries recorded this week yet.</td></tr>';
+    return;
+  }
+  
+  const badges = ['🥇', '🥈', '🥉'];
+  body.innerHTML = list.map((item, index) => `
+    <tr>
+      <td><b>${badges[index] || (index + 1)}</b></td>
+      <td>${escapeHtml(item.name)}</td>
+      <td style="text-align: right;"><b>${item.points}</b> pts</td>
+    </tr>
+  `).join('');
+}
+
+/* Initial public fetch */
+loadLeaderboard();
+
+/* ---------- sessions & students ---------- */
 const sessionSelect = document.getElementById('p-session');
 const studentSelect = document.getElementById('p-student');
 let sessions = [], studentsInSession = [];
@@ -203,7 +279,7 @@ function updatePreview(){
 document.getElementById('r-start').addEventListener('change', updatePreview);
 document.getElementById('r-end').addEventListener('change', updatePreview);
 
-/* ---------- submit ---------- */
+/* ---------- submit entry ---------- */
 document.getElementById('btn-submit').addEventListener('click', () => {
   const st = document.getElementById('submit-status');
   st.textContent = '';
@@ -225,7 +301,6 @@ document.getElementById('btn-submit').addEventListener('click', () => {
 
   const startMin = timeToMinutes(start), endMin = timeToMinutes(end);
 
-  // check overlap + daily total against this student's existing entries for the same date
   db.collection('readingLogs')
     .where('studentId','==',currentStudent.id)
     .where('date','==',date)
@@ -245,7 +320,7 @@ document.getElementById('btn-submit').addEventListener('click', () => {
       }
 
       const points = calcPoints(mins);
-      const flagged = dailyTotal > 240; // 4 hours/day soft cap
+      const flagged = dailyTotal > 240; // 4 hours daily cap trigger
 
       db.collection('readingLogs').add({
         studentId: currentStudent.id,
@@ -268,11 +343,12 @@ document.getElementById('btn-submit').addEventListener('click', () => {
         document.getElementById('r-note').value = '';
         document.getElementById('r-preview').textContent = 'Fill in start and end time to see your points.';
         loadHistoryAndStats();
+        loadLeaderboard(); // Update global leaderboard in real time
       }).catch(e => { st.textContent = e.message; st.className='status-msg err'; });
     });
 });
 
-/* ---------- history + stats + streak ---------- */
+/* ---------- student personal history & stats ---------- */
 function loadHistoryAndStats(){
   db.collection('readingLogs').where('studentId','==',currentStudent.id).get().then(snap => {
     const entries = snap.docs.map(d => ({ id:d.id, ...d.data() }));

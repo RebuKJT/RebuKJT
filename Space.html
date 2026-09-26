@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space</title>
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#ffffff;
+  --text:#172033;
+  --muted:#64748b;
+  --border:#dbe3ef;
+  --primary:#2563eb;
+  --primary-dark:#1d4ed8;
+  --success:#16a34a;
+  --danger:#dc2626;
+  --warning:#f59e0b;
+  --shadow:0 12px 35px rgba(15,23,42,.10);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+
+header{
+  background:#0f172a;
+  color:#fff;
+  padding:14px 24px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+}
+.brand{font-size:clamp(20px,3vw,32px);font-weight:800}
+.header-actions{display:flex;gap:8px}
+.header-actions button{
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.1);
+  color:#fff;
+  border-radius:9px;
+  padding:8px 12px;
+}
+
+.container{width:min(1400px,96%);margin:0 auto}
+.setup{
+  padding:25px 0 40px;
+}
+
+/* PhET Simulation Styling */
+.phet-module-card {
+  max-width: 1000px;
+  margin: 24px auto;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.phet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.phet-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.phet-subtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.phet-select {
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.phet-select:focus {
+  border-color: #0284c7;
+}
+
+/* 16:9 Responsive Aspect Ratio Container */
+.phet-iframe-container {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  background: #0f172a;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+}
+
+.phet-iframe-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+</style>
+</head>
+
+<body>
+<header>
+  <div class="brand">Space Simulation</div>
+  <div class="header-actions">
+    <button id="fullscreenBtn">Fullscreen</button>
+  </div>
+</header>
+<!-- PhET Science Simulation Module -->
+<div class="phet-module-card">
+  <div class="phet-header">
+    <div>
+      <h3 class="phet-title">⚡ Interactive Science Lab</h3>
+      <p class="phet-subtitle">Select a topic to explore hands-on physics and chemistry concepts.</p>
+    </div>
+    
+
+  <!-- Responsive Iframe Wrapper -->
+  <div class="phet-iframe-container">
+    <iframe 
+      id="phetFrame" 
+      src="https://www.solarsystemscope.com/iframe" 
+      allowfullscreen 
+      loading="lazy">
+    </iframe>
+  </div>
+</div>
+
+<!-- Firebase (for storing game history) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+"use strict";
+
+
+const $ = id => document.getElementById(id);
+
+function switchLabTool(toolKey) {
+  const toolUrls = {
+    // PhET Science
+    forces: "https://phet.colorado.edu/sims/html/forces-and-motion-basics/latest/forces-and-motion-basics_all.html",
+    states: "https://phet.colorado.edu/sims/html/states-of-matter-basics/latest/states-of-matter-basics_all.html",
+    
+    // GeoGebra Math
+    fractions: "https://www.geogebra.org/material/iframe/id/RkWp7A8t/width/800/height/500/rc/false/ai/false",
+    
+    // Amplify Polypad
+    polypad: "https://polypad.amplify.com/embed",
+    
+    // NASA / Astronomy
+    solarSystem: "https://www.solarsystemscope.com/iframe"
+  };
+
+  const frame = document.getElementById("phetFrame");
+  if (frame && toolUrls[toolKey]) {
+    frame.src = toolUrls[toolKey];
+  }
+}
+
+$("fullscreenBtn").addEventListener("click",async()=>{
+  try{
+    if(!document.fullscreenElement) await document.documentElement.requestFullscreen();
+    else await document.exitFullscreen();
+  }catch(e){}
+});
+</script>
+</body>
+</html>

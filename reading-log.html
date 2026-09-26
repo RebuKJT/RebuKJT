@@ -26,6 +26,15 @@
   main{max-width:760px; margin:0 auto; padding:24px 18px 60px;}
   .card{background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:20px; margin-bottom:18px;}
   .card h2{font-size:1.05rem;}
+  
+  /* Header layout with filter tabs */
+  .card-header{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;}
+  .card-header h2{margin:0;}
+  
+  .filter-tabs{display:flex; gap:6px; background:var(--paper); padding:4px; border-radius:8px;}
+  .tab-btn{border:none; background:transparent; padding:6px 12px; font-size:0.75rem; font-weight:600; border-radius:6px; color:var(--ink-soft); cursor:pointer; transition:all 0.2s;}
+  .tab-btn.active{background:#fff; color:var(--chalk-green); box-shadow:0 2px 4px rgba(0,0,0,0.08);}
+
   .field{margin-bottom:10px;}
   .field label{display:block; font-size:0.78rem; font-weight:600; color:var(--ink-soft); margin-bottom:3px;}
   .field input, .field select, .field textarea{width:100%; padding:8px 10px; border:1.5px solid var(--paper-line); border-radius:6px; font-size:0.88rem;}
@@ -67,18 +76,24 @@
 <main>
   <div class="msg-banner">Read honestly. Read with focus. Understand what you read.</div>
 
-  <!-- PUBLIC NOTICE BOARD -->
+  <!-- PUBLIC TUITION NOTICE BOARD -->
   <div class="card" id="notice-board">
-    <h2>📌 Announcements & Notices</h2>
+    <h2>📌 Tuition Announcements & Notices</h2>
     <p id="notice-text" style="font-size:0.88rem; color:var(--ink-soft); margin:0; line-height:1.4;">
-      Welcome to the Lovely Angels Tuition Reading Tracker! Daily reading logs build long-term study discipline. 
-      Earn 10 points for every full hour read plus 1 point per 10 minutes.
+      Loading official tuition notices…
     </p>
   </div>
 
-  <!-- PUBLIC LEADERBOARD -->
+  <!-- PUBLIC LEADERBOARD WITH TIMEFRAME SWITCHER -->
   <div class="card">
-    <h2>🏆 Top Readers (This Week)</h2>
+    <div class="card-header">
+      <h2 id="leaderboard-title">🏆 Top Readers (This Week)</h2>
+      <div class="filter-tabs">
+        <button class="tab-btn active" id="tab-week" onclick="switchLeaderboard('week')">This Week</button>
+        <button class="tab-btn" id="tab-month" onclick="switchLeaderboard('month')">This Month</button>
+        <button class="tab-btn" id="tab-overall" onclick="switchLeaderboard('overall')">Overall</button>
+      </div>
+    </div>
     <table>
       <thead>
         <tr>
@@ -150,7 +165,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
-/* PASTE the SAME firebaseConfig used everywhere else */
+/* PASTE your firebaseConfig object here */
  const firebaseConfig = {
     apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
     authDomain: "teacher-resource-hub.firebaseapp.com",
@@ -159,15 +174,13 @@
     messagingSenderId: "331374983102",
     appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
   };
+
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
 
-/* ---------- points formula ----------
-   Full hours = 10 pts each. Leftover minutes = 1 pt per 10 min.
-   e.g. 130 min -> 2 full hours (20) + 10 leftover (1) = 21
-*/
+/* ---------- points formula ---------- */
 function calcPoints(totalMinutes){
   const fullHours = Math.floor(totalMinutes / 60);
   const remainder = totalMinutes % 60;
@@ -181,39 +194,83 @@ function fmtDuration(mins){
 }
 function timeToMinutes(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
 
-/* ---------- public leaderboard ---------- */
+/* ---------- tuition notice board ---------- */
+function loadNoticeBoard(){
+  db.collection('publicNotice').doc('latest').get().then(doc => {
+    if(doc.exists && doc.data().text){
+      document.getElementById('notice-text').textContent = doc.data().text;
+    } else {
+      document.getElementById('notice-text').textContent = 
+        "Welcome to Lovely Angels Tuition! Daily reading logs build long-term study discipline. Earn 10 points for every full hour read plus 1 point per 10 minutes.";
+    }
+  }).catch(() => {
+    document.getElementById('notice-text').textContent = 
+      "Welcome to Lovely Angels Tuition! Daily reading logs build long-term study discipline. Earn 10 points for every full hour read plus 1 point per 10 minutes.";
+  });
+}
+loadNoticeBoard();
+
+/* ---------- dynamic public leaderboard ---------- */
+let currentLeaderboardFilter = 'week';
+
+function switchLeaderboard(mode){
+  currentLeaderboardFilter = mode;
+  
+  // Update active button state
+  document.getElementById('tab-week').className = 'tab-btn' + (mode === 'week' ? ' active' : '');
+  document.getElementById('tab-month').className = 'tab-btn' + (mode === 'month' ? ' active' : '');
+  document.getElementById('tab-overall').className = 'tab-btn' + (mode === 'overall' ? ' active' : '');
+  
+  // Update title
+  const titles = { week: '🏆 Top Readers (This Week)', month: '🏆 Top Readers (This Month)', overall: '🏆 Top Readers (Overall)' };
+  document.getElementById('leaderboard-title').textContent = titles[mode];
+
+  loadLeaderboard();
+}
+
 function loadLeaderboard(){
+  const body = document.getElementById('leaderboard-body');
+  body.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--ink-soft);">Loading leaderboard…</td></tr>';
+
+  let queryRef = db.collection('readingLogs');
   const now = new Date();
-  const weekAgo = new Date(now.getTime() - 6 * 86400000).toISOString().slice(0, 10);
 
-  db.collection('readingLogs')
-    .where('date', '>=', weekAgo)
-    .get()
-    .then(snap => {
-      const studentTotals = {};
+  if(currentLeaderboardFilter === 'week'){
+    const weekAgo = new Date(now.getTime() - 6 * 86400000).toISOString().slice(0, 10);
+    queryRef = queryRef.where('date', '>=', weekAgo);
+  } else if(currentLeaderboardFilter === 'month'){
+    const monthStart = now.toISOString().slice(0, 7) + '-01';
+    queryRef = queryRef.where('date', '>=', monthStart);
+  }
+  // overall: no date filter applied
 
-      snap.forEach(doc => {
-        const data = doc.data();
-        if (data.status !== 'flagged') {
-          const name = data.studentName || 'Unknown Student';
-          studentTotals[name] = (studentTotals[name] || 0) + (data.points || 0);
-        }
-      });
+  queryRef.get().then(snap => {
+    const studentTotals = {};
 
-      const sorted = Object.entries(studentTotals)
-        .map(([name, points]) => ({ name, points: Math.round(points * 100) / 100 }))
-        .sort((a, b) => b.points - a.points)
-        .slice(0, 5);
+    snap.forEach(doc => {
+      const data = doc.data();
+      if (data.status !== 'flagged') {
+        const name = data.studentName || 'Unknown Student';
+        studentTotals[name] = (studentTotals[name] || 0) + (data.points || 0);
+      }
+    });
 
-      renderLeaderboard(sorted);
-    })
-    .catch(err => console.error("Leaderboard fetch error:", err));
+    const sorted = Object.entries(studentTotals)
+      .map(([name, points]) => ({ name, points: Math.round(points * 100) / 100 }))
+      .sort((a, b) => b.points - a.points)
+      .slice(0, 5);
+
+    renderLeaderboard(sorted);
+  }).catch(err => {
+    console.error("Leaderboard fetch error:", err);
+    body.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--margin-red);">Failed to load leaderboard data.</td></tr>';
+  });
 }
 
 function renderLeaderboard(list){
   const body = document.getElementById('leaderboard-body');
   if(!list.length){
-    body.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--ink-soft);">No reading entries recorded this week yet.</td></tr>';
+    body.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--ink-soft);">No reading entries recorded for ${currentLeaderboardFilter === 'overall' ? 'all time' : currentLeaderboardFilter === 'week' ? 'this week' : 'this month'} yet.</td></tr>`;
     return;
   }
   
@@ -227,7 +284,7 @@ function renderLeaderboard(list){
   `).join('');
 }
 
-/* Initial public fetch */
+/* Initial fetch */
 loadLeaderboard();
 
 /* ---------- sessions & students ---------- */
@@ -344,7 +401,7 @@ document.getElementById('btn-submit').addEventListener('click', () => {
         document.getElementById('r-note').value = '';
         document.getElementById('r-preview').textContent = 'Fill in start and end time to see your points.';
         loadHistoryAndStats();
-        loadLeaderboard(); // Update global leaderboard in real time
+        loadLeaderboard(); // Refresh leaderboard live
       }).catch(e => { st.textContent = e.message; st.className='status-msg err'; });
     });
 });

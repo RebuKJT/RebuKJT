@@ -14,6 +14,7 @@
       --text-muted: #64748b;
       --whatsapp-green: #25d366;
       --whatsapp-hover: #1eb857;
+      --accent-red: #ef4444;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -32,15 +33,36 @@
     .filter-chip { background: #f1f5f9; border: 1px solid #cbd5e1; color: var(--text-muted); padding: 4px 14px; font-size: 0.85rem; border-radius: 16px; cursor: pointer; white-space: nowrap; }
     .filter-chip.active { background: var(--text-main); color: #fff; border-color: var(--text-main); }
 
-    .notice-list { display: flex; flex-direction: column; gap: 12px; max-height: 420px; overflow-y: auto; }
-    .notice-item { border: 1px solid var(--border); border-left: 5px solid #94a3b8; border-radius: 8px; padding: 14px; background: #fff; }
+    .notice-list { display: flex; flex-direction: column; gap: 16px; max-height: 520px; overflow-y: auto; }
+    .notice-item { border: 1px solid var(--border); border-left: 5px solid #94a3b8; border-radius: 8px; padding: 16px; background: #fff; display: flex; flex-direction: column; gap: 10px; }
     .notice-item.pinned { background: #fffbeb; border-color: #fde68a; border-left-color: #f59e0b; }
     .notice-item.priority-Urgent { border-left-color: #ef4444; }
     .notice-item.priority-Important { border-left-color: #f59e0b; }
-    .notice-item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+    .notice-item-header { display: flex; justify-content: space-between; align-items: flex-start; }
     .notice-item-title { font-weight: 700; font-size: 1rem; }
-    .notice-item-content { font-size: 0.92rem; color: #334155; line-height: 1.45; white-space: pre-line; margin: 6px 0; }
-    .notice-item-footer { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; }
+    .notice-item-content { font-size: 0.92rem; color: #334155; line-height: 1.45; white-space: pre-line; }
+    .notice-item-footer { display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--text-muted); border-top: 1px solid #f1f5f9; padding-top: 10px; margin-top: 4px; }
+
+    /* Interactive Actions (Like/Comment) */
+    .notice-actions { display: flex; gap: 12px; align-items: center; }
+    .action-btn { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 16px; padding: 4px 12px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
+    .action-btn:hover { background: #e2e8f0; }
+    .action-btn.liked { background: #fee2e2; border-color: #fca5a5; color: var(--accent-red); }
+
+    /* Comment Section */
+    .comments-wrapper { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: none; flex-direction: column; gap: 12px; margin-top: 8px; }
+    .comments-wrapper.open { display: flex; }
+    .comments-feed { display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; }
+    .comment-bubble { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-size: 0.85rem; }
+    .comment-header { display: flex; justify-content: space-between; font-weight: 600; color: #1e293b; margin-bottom: 2px; }
+    .comment-time { font-size: 0.7rem; color: var(--text-muted); font-weight: normal; }
+    .comment-text { color: #334155; word-break: break-word; }
+
+    .comment-form { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+    .comment-inputs { display: flex; gap: 8px; }
+    .comment-inputs input { padding: 6px 10px; font-size: 0.85rem; }
+    .btn-post { background: var(--primary); color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+    .btn-post:hover { background: #0369a1; }
 
     .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
     .form-row { display: flex; gap: 12px; }
@@ -57,8 +79,7 @@
     .btn-community:hover { background: #1e293b; }
 
     @media (max-width: 640px) {
-      .form-row { flex-direction: column; }
-      .contact-actions { flex-direction: column; }
+      .form-row, .comment-inputs, .contact-actions { flex-direction: column; }
     }
   </style>
 </head>
@@ -78,7 +99,7 @@
       <div class="notice-filter-bar">
         <button class="filter-chip active" onclick="filterNotices('All', this)">All</button>
         <button class="filter-chip" onclick="filterNotices('Class 2', this)">Class 2</button>
-        <button class="filter-chip" onclick="filterNotices('Class 4', this)">Class 3</button>
+        <button class="filter-chip" onclick="filterNotices('Class 3', this)">Class 3</button>
         <button class="filter-chip" onclick="filterNotices('Class 4', this)">Class 4</button>
         <button class="filter-chip" onclick="filterNotices('Class 5', this)">Class 5</button>
         <button class="filter-chip" onclick="filterNotices('Class 6', this)">Class 6</button>
@@ -135,9 +156,12 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { 
+      getFirestore, collection, query, where, orderBy, onSnapshot, 
+      addDoc, doc, setDoc, deleteDoc, runTransaction, serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
- const firebaseConfig = {
+   const firebaseConfig = {
     apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
     authDomain: "teacher-resource-hub.firebaseapp.com",
     projectId: "teacher-resource-hub",
@@ -153,6 +177,17 @@
 
     let rawNotices = [];
     let activeFilter = "All";
+    const commentUnsubscribers = {}; // Stores comment real-time listeners
+
+    // Persistent Device ID for anonymous like tracking
+    function getDeviceId() {
+      let devId = localStorage.getItem("laebs_device_id");
+      if (!devId) {
+        devId = "dev_" + Math.random().toString(36).substring(2, 11);
+        localStorage.setItem("laebs_device_id", devId);
+      }
+      return devId;
+    }
 
     // 1. Stream Teacher Notices
     onSnapshot(query(collection(db, "teacherNotices"), orderBy("createdAt", "desc")), (snapshot) => {
@@ -172,24 +207,171 @@
         return;
       }
 
-      container.innerHTML = filtered.map(item => `
-        <div class="notice-item ${item.isPinned ? 'pinned' : ''} priority-${item.priority}">
-          <div class="notice-item-header">
-            <span class="notice-item-title">${escapeHtml(item.title)}</span>
-            <div>
-              ${item.isPinned ? '📌 ' : ''}
-              <span class="badge" style="background:#cbd5e1; color:#0f172a">${item.targetAudience}</span>
+      const likedNotices = JSON.parse(localStorage.getItem("laebs_liked_notices") || "[]");
+
+      container.innerHTML = filtered.map(item => {
+        const isLiked = likedNotices.includes(item.id);
+        const likesCount = item.likesCount || 0;
+        const commentsCount = item.commentsCount || 0;
+
+        return `
+          <div class="notice-item ${item.isPinned ? 'pinned' : ''} priority-${item.priority || 'Normal'}">
+            <div class="notice-item-header">
+              <span class="notice-item-title">${escapeHtml(item.title)}</span>
+              <div>
+                ${item.isPinned ? '📌 ' : ''}
+                <span class="badge" style="background:#cbd5e1; color:#0f172a">${item.targetAudience}</span>
+              </div>
+            </div>
+            
+            <div class="notice-item-content">${escapeHtml(item.content)}</div>
+            
+            <div class="notice-item-footer">
+              <span>${item.createdAt ? new Date(item.createdAt.toDate()).toLocaleDateString() : 'Just now'}</span>
+              
+              <div class="notice-actions">
+                <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="window.toggleLike('${item.id}')">
+                  <span>${isLiked ? '❤️' : '🤍'}</span>
+                  <span>${likesCount}</span>
+                </button>
+                <button class="action-btn" onclick="window.toggleComments('${item.id}')">
+                  <span>💬</span>
+                  <span id="comment-count-${item.id}">${commentsCount}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Expandable Comments Section -->
+            <div class="comments-wrapper" id="comments-box-${item.id}">
+              <div class="comments-feed" id="comments-feed-${item.id}">
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Loading comments...</div>
+              </div>
+
+              <form class="comment-form" onsubmit="window.postComment(event, '${item.id}')">
+                <div class="comment-inputs">
+                  <input type="text" id="comment-name-${item.id}" placeholder="Your Name *" maxlength="35" required />
+                  <input type="text" id="comment-text-${item.id}" placeholder="Write a comment... *" maxlength="200" required />
+                  <button type="submit" class="btn-post">Post</button>
+                </div>
+              </form>
             </div>
           </div>
-          <div class="notice-item-content">${escapeHtml(item.content)}</div>
-          <div class="notice-item-footer">
-            <span>${item.createdAt ? new Date(item.createdAt.toDate()).toLocaleDateString() : 'Just now'}</span>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
-    // 2. Stream Approved Community Feed (Client-side sorted to bypass missing index error)
+    // 2. Like Toggle Action (Atomic Transaction)
+    window.toggleLike = async (noticeId) => {
+      const deviceId = getDeviceId();
+      const noticeRef = doc(db, "teacherNotices", noticeId);
+      const likeRef = doc(db, "teacherNotices", noticeId, "likes", deviceId);
+
+      const likedNotices = JSON.parse(localStorage.getItem("laebs_liked_notices") || "[]");
+      const isLiked = likedNotices.includes(noticeId);
+
+      try {
+        await runTransaction(db, async (transaction) => {
+          const noticeSnap = await transaction.get(noticeRef);
+          if (!noticeSnap.exists()) return;
+
+          let currentLikes = noticeSnap.data().likesCount || 0;
+
+          if (!isLiked) {
+            transaction.set(likeRef, { created: serverTimestamp() });
+            transaction.update(noticeRef, { likesCount: currentLikes + 1 });
+            localStorage.setItem("laebs_liked_notices", JSON.stringify([...likedNotices, noticeId]));
+          } else {
+            transaction.delete(likeRef);
+            transaction.update(noticeRef, { likesCount: Math.max(0, currentLikes - 1) });
+            localStorage.setItem("laebs_liked_notices", JSON.stringify(likedNotices.filter(id => id !== noticeId)));
+          }
+        });
+      } catch (e) {
+        console.error("Error updating like:", e);
+      }
+    };
+
+    // 3. Toggle Comments Visibility & Stream Feed
+    window.toggleComments = (noticeId) => {
+      const box = document.getElementById(`comments-box-${noticeId}`);
+      const isOpen = box.classList.contains("open");
+
+      if (isOpen) {
+        box.classList.remove("open");
+        if (commentUnsubscribers[noticeId]) {
+          commentUnsubscribers[noticeId](); // Unsubscribe when closed
+          delete commentUnsubscribers[noticeId];
+        }
+      } else {
+        box.classList.add("open");
+        
+        // Listen to live comments for this notice
+        const commentsRef = collection(db, "teacherNotices", noticeId, "comments");
+        const q = query(commentsRef, orderBy("createdAt", "asc"));
+
+        commentUnsubscribers[noticeId] = onSnapshot(q, (snapshot) => {
+          const feed = document.getElementById(`comments-feed-${noticeId}`);
+          
+          if (snapshot.empty) {
+            feed.innerHTML = `<div style="font-size: 0.8rem; color: var(--text-muted);">No comments yet. Be the first to comment!</div>`;
+            return;
+          }
+
+          feed.innerHTML = snapshot.docs.map(doc => {
+            const data = doc.data();
+            const timeStr = data.createdAt ? new Date(data.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now';
+            return `
+              <div class="comment-bubble">
+                <div class="comment-header">
+                  <span>${escapeHtml(data.name)}</span>
+                  <span class="comment-time">${timeStr}</span>
+                </div>
+                <div class="comment-text">${escapeHtml(data.comment)}</div>
+              </div>
+            `;
+          }).join('');
+        });
+      }
+    };
+
+    // 4. Submit Comment
+    window.postComment = async (event, noticeId) => {
+      event.preventDefault();
+      
+      const nameInput = document.getElementById(`comment-name-${noticeId}`);
+      const textInput = document.getElementById(`comment-text-${noticeId}`);
+
+      const name = nameInput.value.trim();
+      const comment = textInput.value.trim();
+
+      if (!name || !comment) return;
+
+      try {
+        const commentsRef = collection(db, "teacherNotices", noticeId, "comments");
+        const noticeRef = doc(db, "teacherNotices", noticeId);
+
+        await addDoc(commentsRef, {
+          name: name,
+          comment: comment,
+          createdAt: serverTimestamp()
+        });
+
+        // Increment total comments count on parent document
+        await runTransaction(db, async (transaction) => {
+          const snap = await transaction.get(noticeRef);
+          if (snap.exists()) {
+            const currentCount = snap.data().commentsCount || 0;
+            transaction.update(noticeRef, { commentsCount: currentCount + 1 });
+          }
+        });
+
+        textInput.value = "";
+      } catch (e) {
+        alert("Failed to post comment: " + e.message);
+      }
+    };
+
+    // 5. Stream Approved Community Feed
     onSnapshot(query(collection(db, "studentMessages"), where("status", "==", "approved")), (snapshot) => {
       const container = document.getElementById("communityFeedContainer");
       if (!container) return;

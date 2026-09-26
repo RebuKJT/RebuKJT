@@ -40,12 +40,22 @@
 
     .card-body { font-size: 0.95rem; color: #334155; line-height: 1.4; margin-bottom: 12px; white-space: pre-line; background: #f8fafc; padding: 10px; border-radius: 6px; }
 
-    .actions { display: flex; gap: 8px; justify-content: flex-end; }
-    .btn { padding: 8px 14px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+    .actions { display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-wrap: wrap; }
+    .btn { padding: 8px 14px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px; }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-approve { background: var(--green); color: #fff; }
     .btn-delete { background: var(--red); color: #fff; }
     .btn-edit { background: #64748b; color: #fff; }
+    .btn-comments { background: #e2e8f0; color: #0f172a; }
+    .btn-comments:hover { background: #cbd5e1; }
+
+    /* Admin Comments Drawer */
+    .admin-comments-drawer { background: #f1f5f9; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-top: 12px; display: none; flex-direction: column; gap: 8px; }
+    .admin-comments-drawer.open { display: flex; }
+    .admin-comment-item { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+    .comment-meta { display: flex; flex-direction: column; gap: 2px; }
+    .comment-user { font-weight: 700; color: var(--text-main); }
+    .comment-body { color: #334155; }
 
     /* Modal */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
@@ -108,7 +118,7 @@
             <label>Priority</label>
             <select id="noticePriority">
               <option value="Normal">Normal</option>
-              <option value="Important"> Important</option>
+              <option value="Important">Important</option>
               <option value="Urgent">🔴 Urgent</option>
             </select>
           </div>
@@ -144,9 +154,12 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { 
+      getFirestore, collection, query, orderBy, onSnapshot, 
+      addDoc, updateDoc, deleteDoc, doc, runTransaction, serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
- const firebaseConfig = {
+  const firebaseConfig = {
     apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
     authDomain: "teacher-resource-hub.firebaseapp.com",
     projectId: "teacher-resource-hub",
@@ -161,6 +174,7 @@
     let rawNotices = [];
     let allMessages = [];
     let currentMsgFilter = "pending";
+    const commentListeners = {};
 
     // 1. Manage Notices Stream
     onSnapshot(query(collection(db, "teacherNotices"), orderBy("createdAt", "desc")), (snapshot) => {
@@ -183,12 +197,86 @@
           </div>
           <div class="card-body">${escapeHtml(item.content)}</div>
           <div class="actions">
+            <button class="btn btn-comments" onclick="toggleAdminComments('${item.id}')">
+              💬 Comments (${item.commentsCount || 0})
+            </button>
             <button class="btn btn-edit" onclick="editNotice('${item.id}')">✏️ Edit</button>
             <button class="btn btn-delete" onclick="deleteNotice('${item.id}')">🗑️ Delete</button>
+          </div>
+
+          <!-- Drawer for Admin Comment Moderation -->
+          <div class="admin-comments-drawer" id="admin-comments-${item.id}">
+            <div style="font-size: 0.8rem; font-weight:700; color: var(--text-muted);">MODERATE COMMENTS</div>
+            <div id="admin-comments-list-${item.id}" style="display:flex; flex-direction:column; gap:6px;">
+              <div style="font-size:0.8rem; color:var(--text-muted);">Loading comments...</div>
+            </div>
           </div>
         </div>
       `).join('');
     }
+
+    // Toggle and Stream Comments for a Notice
+    window.toggleAdminComments = (noticeId) => {
+      const drawer = document.getElementById(`admin-comments-${noticeId}`);
+      const isOpen = drawer.classList.contains("open");
+
+      if (isOpen) {
+        drawer.classList.remove("open");
+        if (commentListeners[noticeId]) {
+          commentListeners[noticeId]();
+          delete commentListeners[noticeId];
+        }
+      } else {
+        drawer.classList.add("open");
+
+        const q = query(collection(db, "teacherNotices", noticeId, "comments"), orderBy("createdAt", "asc"));
+        commentListeners[noticeId] = onSnapshot(q, (snapshot) => {
+          const list = document.getElementById(`admin-comments-list-${noticeId}`);
+
+          if (snapshot.empty) {
+            list.innerHTML = `<div style="font-size: 0.8rem; color: var(--text-muted);">No comments found on this notice.</div>`;
+            return;
+          }
+
+          list.innerHTML = snapshot.docs.map(docSnap => {
+            const data = docSnap.data();
+            return `
+              <div class="admin-comment-item">
+                <div class="comment-meta">
+                  <span class="comment-user">${escapeHtml(data.name)}</span>
+                  <span class="comment-body">${escapeHtml(data.comment)}</span>
+                </div>
+                <button class="btn btn-delete" style="padding: 4px 8px; font-size: 0.75rem;" onclick="deleteComment('${noticeId}', '${docSnap.id}')">
+                  🗑️ Delete
+                </button>
+              </div>
+            `;
+          }).join('');
+        });
+      }
+    };
+
+    // Delete Comment and Atomically Decrement Parent Count
+    window.deleteComment = async (noticeId, commentId) => {
+      if (!confirm("Are you sure you want to delete this comment?")) return;
+
+      try {
+        const commentRef = doc(db, "teacherNotices", noticeId, "comments", commentId);
+        const noticeRef = doc(db, "teacherNotices", noticeId);
+
+        await deleteDoc(commentRef);
+
+        await runTransaction(db, async (transaction) => {
+          const snap = await transaction.get(noticeRef);
+          if (snap.exists()) {
+            const currentCount = snap.data().commentsCount || 0;
+            transaction.update(noticeRef, { commentsCount: Math.max(0, currentCount - 1) });
+          }
+        });
+      } catch (e) {
+        alert("Failed to delete comment: " + e.message);
+      }
+    };
 
     // 2. Manage Student Messages Stream
     onSnapshot(query(collection(db, "studentMessages"), orderBy("createdAt", "desc")), (snapshot) => {
@@ -262,7 +350,7 @@
       if (docId) {
         await updateDoc(doc(db, "teacherNotices", docId), data);
       } else {
-        await addDoc(collection(db, "teacherNotices"), data);
+        await addDoc(collection(db, "teacherNotices"), { ...data, commentsCount: 0, likesCount: 0 });
       }
       closeNoticeModal();
     };

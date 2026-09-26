@@ -71,10 +71,13 @@
 </head>
 <body>
 
-<nav class="main"><span class="brand">📖 Reading Log — Lovely Angels Tuition</span></nav>
+<nav class="main"><span class="brand">Welcome to Lovely Angels "Tuition 📖 Reading Log".   Read honestly with focus. Understand what you read.</span></nav>
 
 <main>
-  <div class="msg-banner">Read honestly. Read with focus. Understand what you read.</div>
+  <div class="msg-banner"> Daily reading logs build long-term study discipline.10 points for every full hour read plus 1 point per 10 minutes. 
+    <br>
+    
+  </div>
 
   <!-- PUBLIC TUITION NOTICE BOARD -->
   <div class="card" id="notice-board">
@@ -83,6 +86,8 @@
       Loading official tuition notices…
     </p>
   </div>
+
+
 
   <!-- PUBLIC LEADERBOARD WITH TIMEFRAME SWITCHER -->
   <div class="card">
@@ -194,19 +199,47 @@ function fmtDuration(mins){
 }
 function timeToMinutes(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
 
+
+
+
+/*-- Testing Leaderboard Fetch --*/
+
+
+
+
 /* ---------- tuition notice board ---------- */
+/* ---------- tuition notice board (teacherNotices integration) ---------- */
 function loadNoticeBoard(){
-  db.collection('publicNotice').doc('latest').get().then(doc => {
-    if(doc.exists && doc.data().text){
-      document.getElementById('notice-text').textContent = doc.data().text;
-    } else {
-      document.getElementById('notice-text').textContent = 
-        "Welcome to Lovely Angels Tuition! Daily reading logs build long-term study discipline. Earn 10 points for every full hour read plus 1 point per 10 minutes.";
-    }
-  }).catch(() => {
-    document.getElementById('notice-text').textContent = 
-      "Welcome to Lovely Angels Tuition! Daily reading logs build long-term study discipline. Earn 10 points for every full hour read plus 1 point per 10 minutes.";
-  });
+  db.collection('teacherNotices')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snapshot => {
+      const container = document.getElementById('notice-text');
+      if (!container) return;
+
+      if (snapshot.empty) {
+        container.innerHTML = "Welcome to Lovely Angels Tuition! Daily reading logs build long-term study discipline.";
+        return;
+      }
+
+      const notices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      // Sort pinned notices to the top
+      notices.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
+
+      container.innerHTML = notices.map(item => `
+        <div class="reading-notice-item" style="margin-bottom: 12px; padding: 10px; background: #f8fafc; border-left: 4px solid ${item.isPinned ? '#f59e0b' : '#0284c7'}; border-radius: 6px;">
+          <div style="font-weight: bold; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span>${item.isPinned ? '📌 ' : ''}${escapeHtml(item.title)}</span>
+            <span style="font-size: 0.75rem; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: normal;">${escapeHtml(item.targetAudience || 'All')}</span>
+          </div>
+          <div style="font-size: 0.85rem; color: #334155; white-space: pre-line;">${escapeHtml(item.content)}</div>
+        </div>
+      `).join('');
+    }, err => {
+      console.error("Notice Board Error:", err);
+      const container = document.getElementById('notice-text');
+      if (container) container.textContent = "Welcome to Lovely Angels Tuition!";
+    });
 }
 loadNoticeBoard();
 

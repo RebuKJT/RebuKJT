@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tuition Results | Lovely Angels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --chalk-green:#1F3B33; --chalk-green-dark:#152A25;
+    --paper:#F4F1E6; --paper-line:#DCD6C2;
+    --margin-red:#C1443B; --ink:#26302C; --ink-soft:#5B6660;
+    --mustard:#C99A1E; --teal:#2C7A73; --radius:10px; --shadow:0 6px 18px rgba(21,42,37,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif;}
+  h1,h2,h3{font-family:'Fraunces',serif; font-weight:700; margin:0 0 8px;}
+  .hand{font-family:'Caveat',cursive; color:var(--margin-red); font-weight:700;}
+  button,input,select,textarea{font-family:inherit;}
+  :focus-visible{outline:3px solid var(--teal); outline-offset:2px;}
+
+  nav.main{background:var(--chalk-green); color:#F4F1E6; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  nav.main .brand{font-family:'Fraunces',serif; font-size:1.1rem; font-weight:700;}
+  .tabs{display:flex; gap:6px; flex-wrap:wrap;}
+  .tabs button{background:transparent; border:1px solid rgba(255,255,255,0.3); color:#DCE6DF; padding:7px 13px; border-radius:6px; cursor:pointer; font-size:0.8rem; font-weight:600;}
+  .tabs button.active{background:#fff; color:var(--chalk-green); border-color:#fff;}
+  .who{font-size:0.8rem; color:#DCE6DF; display:flex; align-items:center; gap:10px;}
+  .who button{background:transparent; border:1px solid #DCE6DF; color:#F4F1E6; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:0.78rem;}
+
+  main{max-width:1150px; margin:0 auto; padding:20px 16px 60px;}
+  .card{background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; margin-bottom:16px;}
+  .card h2{font-size:1.02rem;}
+  .login-wrap{max-width:380px; margin:80px auto; background:#fff; border-radius:var(--radius); box-shadow:var(--shadow); padding:32px 28px; border-top:5px solid var(--margin-red);}
+  .field{margin-bottom:10px;}
+  .field label{display:block; font-size:0.76rem; font-weight:600; color:var(--ink-soft); margin-bottom:3px;}
+  .field input, .field select, .field textarea{width:100%; padding:7px 9px; border:1.5px solid var(--paper-line); border-radius:6px; font-size:0.85rem;}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:end;}
+  .row > *{flex:1; min-width:120px;}
+  .btn{border:none; border-radius:6px; padding:9px 15px; background:var(--chalk-green); color:#fff; font-weight:600; font-size:0.83rem; cursor:pointer;}
+  .btn:hover{background:var(--chalk-green-dark);}
+  .btn.secondary{background:#fff; color:var(--chalk-green); border:1.5px solid var(--chalk-green);}
+  .btn.small{padding:5px 10px; font-size:0.75rem;}
+  .btn:disabled{opacity:0.45; cursor:not-allowed;}
+  .error{color:var(--margin-red); font-size:0.85rem; margin-top:8px; min-height:1em;}
+  .status-msg{font-size:0.82rem; margin-top:8px; min-height:1.1em;}
+  .status-msg.ok{color:var(--teal);} .status-msg.err{color:var(--margin-red);}
+  .hint{font-size:0.78rem; color:var(--ink-soft); margin:4px 0 10px;}
+
+  .table-wrap{overflow-x:auto;}
+  table{width:100%; border-collapse:collapse; font-size:0.82rem;}
+  thead th{text-align:left; font-size:0.68rem; text-transform:uppercase; color:var(--ink-soft); border-bottom:2px solid var(--paper-line); padding:6px; white-space:nowrap;}
+  tbody td{padding:5px 6px; border-bottom:1px solid var(--paper-line); white-space:nowrap;}
+  .mark-input{width:62px; padding:5px 6px; border:1.5px solid var(--paper-line); border-radius:5px; font-size:0.82rem; text-align:center;}
+  .mark-input.low{border-color:var(--margin-red); color:var(--margin-red); background:#FDF1EF;}
+  .pill{font-size:0.68rem; padding:2px 8px; border-radius:999px; font-weight:600; background:#FCEFC7; color:var(--mustard);}
+  .low-text{color:var(--margin-red); font-weight:600;}
+
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin-bottom:14px;}
+  .stat-box{background:var(--paper); border-radius:8px; padding:12px 10px; text-align:center;}
+  .stat-box .num{font-family:'Fraunces',serif; font-weight:700; font-size:1.2rem; color:var(--chalk-green);}
+  .stat-box .label{font-size:0.68rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.03em;}
+
+  .bar-row{display:grid; grid-template-columns:110px 1fr 80px; gap:10px; align-items:center; margin:6px 0; font-size:0.82rem;}
+  .bar-track{background:var(--paper); border-radius:999px; height:14px; overflow:hidden;}
+  .bar-fill{height:100%; background:linear-gradient(90deg,var(--teal),#5BB5AB); border-radius:999px;}
+  .bar-fill.weak{background:linear-gradient(90deg,var(--margin-red),#E8837A);}
+
+  .up{color:var(--teal); font-weight:700;} .down{color:var(--margin-red); font-weight:700;}
+
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+<nav class="main">
+  <span class="brand">📊 Tuition Results</span>
+  <div class="tabs" id="tabs" hidden>
+    <button data-tab="entry" class="active">Enter Results</button>
+    <button data-tab="analysis">Class Analysis</button>
+    <button data-tab="growth">Student Growth</button>
+  </div>
+  <div class="who" id="nav-who" hidden>
+    <span id="who-email"></span>
+    <button id="btn-signout">Sign out</button>
+  </div>
+</nav>
+
+<main>
+  <div class="login-wrap" id="login-wrap">
+    <span class="hand">private — teacher only</span>
+    <h1 style="font-size:1.3rem;">Teacher sign in</h1>
+    <p style="color:var(--ink-soft); font-size:0.86rem; margin-bottom:18px;">Same account as your other admin pages.</p>
+    <div class="field"><label>Email</label><input id="login-email" type="email" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input id="login-pass" type="password" autocomplete="current-password"></div>
+    <button class="btn" id="btn-login" style="width:100%;">Sign in</button>
+    <p class="error" id="login-error"></p>
+  </div>
+
+  <div id="app" hidden>
+
+    <!-- ============ ENTER RESULTS ============ -->
+    <section id="tab-entry">
+      <div class="card">
+        <h2>1. Exam details</h2>
+        <div class="row">
+          <div class="field"><label>Session / group</label><select id="exam-session"><option value="">— none —</option></select></div>
+          <div class="field"><label>Exam name</label><input id="exam-name" value="Second Terminal"></div>
+          <div class="field"><label>Exam date</label><input id="exam-date" type="date"></div>
+          <div class="field"><label>Full marks (each subject)</label><input id="full-marks" type="number" value="100" min="1"></div>
+          <div class="field"><label>Pass marks</label><input id="pass-marks" type="number" value="40" min="0"></div>
+        </div>
+        <div class="field">
+          <label>Subjects (comma separated — these become the columns)</label>
+          <input id="subjects-input" value="English, Nepali, Math, Science, Social, Computer, GK">
+        </div>
+        <button class="btn secondary" id="btn-load-students">Load this session's students</button>
+        <p class="hint">Pick the session, set the exam name, then load students. If marks were already saved for this exact exam, they load back in so you can edit them.</p>
+      </div>
+
+      <div class="card">
+        <h2>2. Bulk upload from Excel (optional)</h2>
+        <p class="hint">
+          Your sheet needs a <b>Name</b> column, then one column per subject (header = subject name). Roll, Class and Section columns are ignored.
+          Names are matched to the loaded students automatically, and the marks land in the grid below for you to check before saving.
+        </p>
+        <div class="row">
+          <div class="field" style="flex:2;"><input type="file" id="file-input" accept=".xlsx,.xls,.csv"></div>
+          <div class="field" style="flex:0 0 auto;"><button class="btn" id="btn-import-file">Import file</button></div>
+          <div class="field" style="flex:0 0 auto;"><button class="btn secondary" id="btn-template">Download template (CSV)</button></div>
+        </div>
+        <p class="status-msg" id="import-status"></p>
+      </div>
+
+      <div class="card">
+        <h2>3. Marks</h2>
+        <p class="hint">Marks below the pass mark turn red. Leave a box empty if the student was absent for that subject — it isn't counted against them.</p>
+        <div class="table-wrap">
+          <table>
+            <thead id="grid-head"></thead>
+            <tbody id="grid-body"><tr><td style="color:var(--ink-soft); padding:16px;">Load a session's students above, or import a file.</td></tr></tbody>
+          </table>
+        </div>
+        <div style="margin-top:12px;">
+          <button class="btn" id="btn-save-results">💾 Save results</button>
+        </div>
+        <p class="status-msg" id="save-status"></p>
+      </div>
+    </section>
+
+    <!-- ============ CLASS ANALYSIS ============ -->
+    <section id="tab-analysis" hidden>
+      <div class="card">
+        <h2>Pick an exam</h2>
+        <select id="analysis-select"></select>
+      </div>
+      <div id="analysis-body"></div>
+    </section>
+
+    <!-- ============ STUDENT GROWTH ============ -->
+    <section id="tab-growth" hidden>
+      <div class="card">
+        <h2>Pick a student</h2>
+        <select id="growth-student"></select>
+      </div>
+      <div id="growth-body"></div>
+    </section>
+
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* PASTE the SAME firebaseConfig used everywhere else */
+ const firebaseConfig = {
+    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+    authDomain: "teacher-resource-hub.firebaseapp.com",
+    projectId: "teacher-resource-hub",
+    storageBucket: "teacher-resource-hub.firebasestorage.app",
+    messagingSenderId: "331374983102",
+    appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+  };
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+function $(id){ return document.getElementById(id); }
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent = (str==null ? '' : String(str)); return d.innerHTML; }
+function escapeAttr(str){ return escapeHtml(str).replace(/"/g,'&quot;'); }
+function slugify(s){ return (s||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'x'; }
+function numOrNull(v){
+  if(v === '' || v === null || v === undefined) return null;
+  const n = parseFloat(v);
+  return isNaN(n) ? null : n;
+}
+function gradeFor(p){
+  if(p >= 90) return 'A+';
+  if(p >= 80) return 'A';
+  if(p >= 70) return 'B+';
+  if(p >= 60) return 'B';
+  if(p >= 50) return 'C';
+  if(p >= 40) return 'D';
+  return 'NG';
+}
+
+/* ---------- auth ---------- */
+$('btn-login').addEventListener('click', function(){
+  const err = $('login-error'); err.textContent = '';
+  auth.signInWithEmailAndPassword($('login-email').value.trim(), $('login-pass').value).catch(function(e){ err.textContent = e.message; });
+});
+$('btn-signout').addEventListener('click', function(){ auth.signOut(); });
+
+auth.onAuthStateChanged(function(user){
+  if(user){
+    $('login-wrap').hidden = true; $('app').hidden = false; $('tabs').hidden = false; $('nav-who').hidden = false;
+    $('who-email').textContent = user.email;
+    $('exam-date').value = new Date().toISOString().slice(0,10);
+    initData();
+  } else {
+    $('login-wrap').hidden = false; $('app').hidden = true; $('tabs').hidden = true; $('nav-who').hidden = true;
+  }
+});
+
+document.querySelectorAll('.tabs button').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.tabs button').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    ['entry','analysis','growth'].forEach(function(t){ $('tab-'+t).hidden = (t !== btn.dataset.tab); });
+    if(btn.dataset.tab === 'analysis') renderAnalysis();
+    if(btn.dataset.tab === 'growth') renderGrowth();
+  });
+});
+
+/* ---------- data ---------- */
+let sessions = [];
+let gridRows = [];     // {name, grade, marks:{subject:value}, inRoster}
+let allResults = [];
+let examGroups = [];
+
+function initData(){
+  db.collection('tuitionSessions').get().then(function(snap){
+    sessions = snap.docs.map(function(d){ return Object.assign({ id:d.id }, d.data()); });
+    sessions.sort(function(a,b){ return (b.startDate||'').localeCompare(a.startDate||''); });
+    $('exam-session').innerHTML = '<option value="">— none —</option>' +
+      sessions.map(function(s){ return '<option value="'+s.id+'">'+escapeHtml(s.label)+'</option>'; }).join('');
+  }).catch(function(err){ $('import-status').textContent = err.message; $('import-status').className = 'status-msg err'; });
+
+  db.collection('tuitionResults').onSnapshot(function(snap){
+    allResults = snap.docs.map(function(d){ return Object.assign({ id:d.id }, d.data()); });
+    buildExamGroups();
+    renderAnalysisSelect();
+    renderGrowthSelect();
+    if(!$('tab-analysis').hidden) renderAnalysis();
+    if(!$('tab-growth').hidden) renderGrowth();
+  }, function(err){ console.error(err); });
+}
+
+function parseSubjects(){
+  const seen = {}; const out = [];
+  $('subjects-input').value.split(',').forEach(function(s){
+    const t = s.trim();
+    if(t && !seen[t.toLowerCase()]){ seen[t.toLowerCase()] = true; out.push(t); }
+  });
+  return out;
+}
+function fullMarks(){ return numOrNull($('full-marks').value) || 100; }
+function passMarks(){ const v = numOrNull($('pass-marks').value); return v === null ? 0 : v; }
+
+function computeRow(marks, subjects, full){
+  let total = 0, count = 0;
+  subjects.forEach(function(s){
+    const v = numOrNull(marks[s]);
+    if(v !== null){ total += v; count++; }
+  });
+  const pct = count ? (total / (full * count)) * 100 : null;
+  return { total: total, count: count, pct: pct };
+}
+
+/* ---------- ENTER RESULTS: grid ---------- */
+$('btn-load-students').addEventListener('click', function(){
+  const sid = $('exam-session').value;
+  const st = $('save-status');
+  if(!sid){ st.textContent = 'Pick a session first.'; st.className = 'status-msg err'; return; }
+  db.collection('tuitionStudents').where('sessionId','==',sid).get().then(function(snap){
+    gridRows = snap.docs.map(function(d){
+      const x = d.data();
+      return { name: x.name, grade: x.grade || '', marks: {}, inRoster: true };
+    }).sort(function(a,b){ return a.name.localeCompare(b.name); });
+    mergeExistingResults();
+    renderGrid();
+    st.textContent = gridRows.length ? 'Loaded ' + gridRows.length + ' student(s).' : 'No students found in that session.';
+    st.className = 'status-msg ' + (gridRows.length ? 'ok' : 'err');
+  }).catch(function(err){ st.textContent = err.message; st.className = 'status-msg err'; });
+});
+
+function mergeExistingResults(){
+  const sid = $('exam-session').value || '';
+  const examSlug = slugify($('exam-name').value);
+  const matches = allResults.filter(function(r){ return (r.sessionId||'') === sid && r.examSlug === examSlug; });
+  if(!matches.length) return;
+  const current = parseSubjects().map(function(s){ return s.toLowerCase(); });
+  const extraSubjects = [];
+  matches.forEach(function(res){
+    let row = gridRows.find(function(g){ return slugify(g.name) === res.nameSlug; });
+    if(!row){
+      row = { name: res.studentName, grade: res.grade || '', marks: {}, inRoster: false };
+      gridRows.push(row);
+    }
+    Object.keys(res.subjects || {}).forEach(function(sub){
+      row.marks[sub] = res.subjects[sub];
+      if(current.indexOf(sub.toLowerCase()) === -1 && extraSubjects.indexOf(sub) === -1) extraSubjects.push(sub);
+    });
+  });
+  if(extraSubjects.length){
+    $('subjects-input').value = parseSubjects().concat(extraSubjects).join(', ');
+  }
+}
+
+function renderGrid(){
+  const subjects = parseSubjects();
+  $('grid-head').innerHTML = '<tr><th>#</th><th>Student</th><th>Class</th>' +
+    subjects.map(function(s){ return '<th>'+escapeHtml(s)+'</th>'; }).join('') +
+    '<th>Total</th><th>%</th><th>Rank</th></tr>';
+  if(!gridRows.length){
+    $('grid-body').innerHTML = '<tr><td style="color:var(--ink-soft); padding:16px;">Load a session\'s students above, or import a file.</td></tr>';
+    return;
+  }
+  $('grid-body').innerHTML = gridRows.map(function(r,i){
+    const cells = subjects.map(function(s){
+      const v = (r.marks[s] !== undefined && r.marks[s] !== null) ? r.marks[s] : '';
+      return '<td><input class="mark-input" type="number" step="0.5" min="0" data-row="'+i+'" data-subject="'+escapeAttr(s)+'" value="'+v+'"></td>';
+    }).join('');
+    return '<tr><td>'+(i+1)+'</td><td>'+escapeHtml(r.name)+(r.inRoster ? '' : ' <span class="pill">not in roster</span>')+'</td><td>'+escapeHtml(r.grade)+'</td>'+
+      cells + '<td id="tot-'+i+'"></td><td id="pct-'+i+'"></td><td id="rank-'+i+'"></td></tr>';
+  }).join('');
+  document.querySelectorAll('.mark-input').forEach(function(inp){
+    inp.addEventListener('input', function(){
+      gridRows[parseInt(inp.dataset.row)].marks[inp.dataset.subject] = inp.value;
+      updateComputed();
+    });
+  });
+  updateComputed();
+}
+
+function updateComputed(){
+  const subjects = parseSubjects(), full = fullMarks(), pass = passMarks();
+  const computed = gridRows.map(function(r){ return computeRow(r.marks, subjects, full); });
+  gridRows.forEach(function(r,i){
+    const c = computed[i];
+    const totEl = $('tot-'+i), pctEl = $('pct-'+i), rankEl = $('rank-'+i);
+    if(!totEl) return;
+    totEl.textContent = c.count ? c.total : '';
+    pctEl.textContent = c.pct !== null ? c.pct.toFixed(1) + '% ' + gradeFor(c.pct) : '';
+    const higher = computed.filter(function(o){ return o.pct !== null && c.pct !== null && o.pct > c.pct; }).length;
+    rankEl.textContent = c.pct !== null ? (higher + 1) : '';
+  });
+  document.querySelectorAll('.mark-input').forEach(function(inp){
+    const v = numOrNull(inp.value);
+    inp.classList.toggle('low', v !== null && v < pass);
+  });
+}
+['full-marks','pass-marks'].forEach(function(id){ $(id).addEventListener('input', updateComputed); });
+$('subjects-input').addEventListener('change', renderGrid);
+
+/* ---------- save ---------- */
+$('btn-save-results').addEventListener('click', function(){
+  const st = $('save-status');
+  const examName = $('exam-name').value.trim();
+  if(!examName){ st.textContent = 'Give the exam a name.'; st.className = 'status-msg err'; return; }
+  if(!gridRows.length){ st.textContent = 'Nothing to save yet.'; st.className = 'status-msg err'; return; }
+
+  const sid = $('exam-session').value || '';
+  const session = sessions.find(function(s){ return s.id === sid; });
+  const examSlug = slugify(examName), subjects = parseSubjects();
+  const full = fullMarks(), pass = passMarks(), examDate = $('exam-date').value || '';
+
+  const batch = db.batch();
+  let count = 0;
+  gridRows.forEach(function(r){
+    const marks = {};
+    subjects.forEach(function(s){
+      const v = numOrNull(r.marks[s]);
+      if(v !== null) marks[s] = v;
+    });
+    if(!Object.keys(marks).length) return;
+    const c = computeRow(marks, subjects, full);
+    const id = (sid || 'nosession') + '__' + examSlug + '__' + slugify(r.name);
+    batch.set(db.collection('tuitionResults').doc(id), {
+      studentName: r.name, nameSlug: slugify(r.name), grade: r.grade || '',
+      sessionId: sid, sessionLabel: session ? session.label : '',
+      examName: examName, examSlug: examSlug, examDate: examDate,
+      fullMarks: full, passMarks: pass,
+      subjects: marks, total: c.total, subjectCount: c.count,
+      percentage: Math.round(c.pct * 10) / 10,
+      updatedAtMs: Date.now()
+    });
+    count++;
+  });
+  if(!count){ st.textContent = 'No marks entered yet.'; st.className = 'status-msg err'; return; }
+  batch.commit().then(function(){
+    st.textContent = 'Saved results for ' + count + ' student(s). Saving again just updates them — no duplicates.';
+    st.className = 'status-msg ok';
+  }).catch(function(err){ st.textContent = err.message; st.className = 'status-msg err'; });
+});
+
+/* ---------- bulk import (Excel / CSV) ---------- */
+$('btn-import-file').addEventListener('click', function(){
+  const st = $('import-status');
+  const file = $('file-input').files[0];
+  if(!file){ st.textContent = 'Choose an Excel or CSV file first.'; st.className = 'status-msg err'; return; }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' })
+        .filter(function(r){ return r.some(function(c){ return String(c).trim() !== ''; }); });
+      if(rows.length < 2){ st.textContent = 'The file needs a header row and at least one student row.'; st.className = 'status-msg err'; return; }
+
+      const headers = rows[0].map(function(h){ return String(h).trim(); });
+      let nameIdx = headers.findIndex(function(h){ return /^(student\s*name|name|student)$/i.test(h); });
+      if(nameIdx === -1) nameIdx = 0;
+      const ignore = /^(roll|roll\s*no\.?|sn|s\.n\.?|class|grade|section|total|percentage|%|rank|gpa|result)$/i;
+      const subjectCols = [];
+      headers.forEach(function(h,i){
+        if(i !== nameIdx && h && !ignore.test(h)) subjectCols.push({ idx:i, name:h });
+      });
+      if(!subjectCols.length){ st.textContent = 'No subject columns found — put subject names in the header row.'; st.className = 'status-msg err'; return; }
+
+      $('subjects-input').value = subjectCols.map(function(c){ return c.name; }).join(', ');
+
+      let matched = 0, extras = 0, ignored = 0;
+      for(let i = 1; i < rows.length; i++){
+        const name = String(rows[i][nameIdx]).trim();
+        if(!name){ ignored++; continue; }
+        const slug = slugify(name);
+        let row = gridRows.find(function(g){ return slugify(g.name) === slug; });
+        if(row){ matched++; }
+        else {
+          row = { name: name, grade: '', marks: {}, inRoster: false };
+          gridRows.push(row);
+          extras++;
+        }
+        subjectCols.forEach(function(c){
+          const v = numOrNull(rows[i][c.idx]);
+          if(v !== null) row.marks[c.name] = v;
+        });
+      }
+      renderGrid();
+      st.textContent = 'Imported ' + (matched + extras) + ' row(s): ' + matched + ' matched the roster' +
+        (extras ? ', ' + extras + ' not in the roster (added as extra rows)' : '') +
+        (ignored ? ', ' + ignored + ' blank skipped' : '') + '. Check the grid, then press Save.';
+      st.className = 'status-msg ok';
+    }catch(err){
+      st.textContent = 'Could not read that file: ' + err.message;
+      st.className = 'status-msg err';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+$('btn-template').addEventListener('click', function(){
+  const subjects = parseSubjects();
+  const lines = [['Name'].concat(subjects)];
+  gridRows.filter(function(r){ return r.inRoster; }).forEach(function(r){ lines.push([r.name].concat(subjects.map(function(){ return ''; }))); });
+  const csv = '\ufeff' + lines.map(function(row){
+    return row.map(function(c){ return '"' + String(c).replace(/"/g,'""') + '"'; }).join(',');
+  }).join('\n');
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'results-template.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+});
+
+/* ---------- analysis helpers ---------- */
+function examKeyOf(r){ return (r.sessionId || '') + '||' + r.examSlug; }
+
+function buildExamGroups(){
+  const groups = {};
+  allResults.forEach(function(r){
+    const k = examKeyOf(r);
+    if(!groups[k]) groups[k] = { key:k, label:(r.sessionLabel ? r.sessionLabel + ' — ' : '') + r.examName, date: r.examDate || '', results: [] };
+    groups[k].results.push(r);
+  });
+  examGroups = Object.keys(groups).map(function(k){ return groups[k]; })
+    .sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+}
+
+function rankInExam(r){
+  const group = examGroups.find(function(g){ return g.key === examKeyOf(r); });
+  if(!group) return '';
+  return group.results.filter(function(o){ return o.percentage > r.percentage; }).length + 1;
+}
+
+function renderAnalysisSelect(){
+  const sel = $('analysis-select');
+  const prev = sel.value;
+  sel.innerHTML = examGroups.length ?
+    examGroups.map(function(g){ return '<option value="'+escapeAttr(g.key)+'">'+escapeHtml(g.label)+(g.date ? ' ('+g.date+')' : '')+'</option>'; }).join('') :
+    '<option value="">No results saved yet</option>';
+  if(examGroups.find(function(g){ return g.key === prev; })) sel.value = prev;
+}
+$('analysis-select').addEventListener('change', renderAnalysis);
+
+function renderAnalysis(){
+  const body = $('analysis-body');
+  const group = examGroups.find(function(g){ return g.key === $('analysis-select').value; });
+  if(!group){ body.innerHTML = ''; return; }
+
+  const results = group.results.slice().sort(function(a,b){ return b.percentage - a.percentage; });
+  const n = results.length;
+  const avg = results.reduce(function(s,r){ return s + r.percentage; }, 0) / n;
+  const passed = results.filter(function(r){
+    return Object.keys(r.subjects).every(function(sub){ return r.subjects[sub] >= r.passMarks; });
+  }).length;
+
+  const subjectSet = [];
+  results.forEach(function(r){ Object.keys(r.subjects).forEach(function(s){ if(subjectSet.indexOf(s) === -1) subjectSet.push(s); }); });
+  const full = results[0].fullMarks || 100;
+  const subjectStats = subjectSet.map(function(sub){
+    const vals = results.filter(function(r){ return r.subjects[sub] !== undefined; });
+    const avgMark = vals.reduce(function(s,r){ return s + r.subjects[sub]; }, 0) / vals.length;
+    const best = vals.slice().sort(function(a,b){ return b.subjects[sub] - a.subjects[sub]; })[0];
+    return { sub: sub, avg: avgMark, pct: (avgMark/full)*100, best: best, count: vals.length };
+  });
+
+  body.innerHTML =
+    '<div class="card"><div class="stat-strip">' +
+      '<div class="stat-box"><div class="num">'+n+'</div><div class="label">Students</div></div>' +
+      '<div class="stat-box"><div class="num">'+avg.toFixed(1)+'%</div><div class="label">Class average</div></div>' +
+      '<div class="stat-box"><div class="num">'+escapeHtml(results[0].studentName)+'</div><div class="label">Top — '+results[0].percentage+'%</div></div>' +
+      '<div class="stat-box"><div class="num">'+results[n-1].percentage+'%</div><div class="label">Lowest — '+escapeHtml(results[n-1].studentName)+'</div></div>' +
+      '<div class="stat-box"><div class="num">'+passed+'/'+n+'</div><div class="label">Passed every subject</div></div>' +
+    '</div></div>' +
+
+    '<div class="card"><h2>Subject averages</h2>' +
+      subjectStats.map(function(s){
+        return '<div class="bar-row"><span>'+escapeHtml(s.sub)+'</span>' +
+          '<div class="bar-track"><div class="bar-fill '+(s.pct < 50 ? 'weak' : '')+'" style="width:'+Math.min(100, s.pct)+'%"></div></div>' +
+          '<span><b>'+s.avg.toFixed(1)+'</b> <span style="color:var(--ink-soft); font-size:0.72rem;">best: '+escapeHtml(s.best.studentName.split(' ')[0])+' '+s.best.subjects[s.sub]+'</span></span></div>';
+      }).join('') +
+    '</div>' +
+
+    '<div class="card"><h2>Ranked results</h2><div class="table-wrap"><table>' +
+      '<thead><tr><th>Rank</th><th>Student</th>' + subjectSet.map(function(s){ return '<th>'+escapeHtml(s)+'</th>'; }).join('') + '<th>Total</th><th>%</th><th>Grade</th></tr></thead><tbody>' +
+      results.map(function(r,i){
+        const rank = results.filter(function(o){ return o.percentage > r.percentage; }).length + 1;
+        return '<tr><td>'+rank+'</td><td><b>'+escapeHtml(r.studentName)+'</b></td>' +
+          subjectSet.map(function(s){
+            const v = r.subjects[s];
+            return '<td class="'+(v !== undefined && v < r.passMarks ? 'low-text' : '')+'">'+(v !== undefined ? v : '—')+'</td>';
+          }).join('') +
+          '<td>'+r.total+'</td><td>'+r.percentage+'%</td><td>'+gradeFor(r.percentage)+'</td></tr>';
+      }).join('') +
+    '</tbody></table></div></div>';
+}
+
+/* ---------- student growth ---------- */
+function renderGrowthSelect(){
+  const sel = $('growth-student');
+  const prev = sel.value;
+  const names = {};
+  allResults.forEach(function(r){ names[r.nameSlug] = r.studentName; });
+  const slugs = Object.keys(names).sort(function(a,b){ return names[a].localeCompare(names[b]); });
+  sel.innerHTML = slugs.length ?
+    slugs.map(function(s){ return '<option value="'+s+'">'+escapeHtml(names[s])+'</option>'; }).join('') :
+    '<option value="">No results saved yet</option>';
+  if(slugs.indexOf(prev) !== -1) sel.value = prev;
+}
+$('growth-student').addEventListener('change', renderGrowth);
+
+function buildChart(list){
+  const W = 620, H = 210, padL = 38, padR = 18, padT = 20, padB = 48;
+  const n = list.length;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+  const xs = function(i){ return n === 1 ? padL + innerW/2 : padL + i * (innerW/(n-1)); };
+  const ys = function(p){ return padT + (100 - p) * (innerH/100); };
+  let svg = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%; max-width:'+W+'px;" role="img" aria-label="Percentage across exams">';
+  [0,25,50,75,100].forEach(function(g){
+    svg += '<line x1="'+padL+'" y1="'+ys(g)+'" x2="'+(W-padR)+'" y2="'+ys(g)+'" stroke="#DCD6C2" stroke-dasharray="3 3"/>' +
+           '<text x="'+(padL-6)+'" y="'+(ys(g)+4)+'" font-size="10" text-anchor="end" fill="#5B6660">'+g+'</text>';
+  });
+  const pts = list.map(function(r,i){ return xs(i)+','+ys(r.percentage); }).join(' ');
+  svg += '<polyline points="'+pts+'" fill="none" stroke="#2C7A73" stroke-width="2.5"/>';
+  list.forEach(function(r,i){
+    const label = r.examName.length > 14 ? r.examName.slice(0,13) + '…' : r.examName;
+    svg += '<circle cx="'+xs(i)+'" cy="'+ys(r.percentage)+'" r="4.5" fill="#1F3B33"/>' +
+           '<text x="'+xs(i)+'" y="'+(ys(r.percentage)-9)+'" font-size="11" font-weight="700" text-anchor="middle" fill="#26302C">'+r.percentage+'%</text>' +
+           '<text x="'+xs(i)+'" y="'+(H-padB+16)+'" font-size="10" text-anchor="middle" fill="#5B6660">'+escapeHtml(label)+'</text>';
+  });
+  return svg + '</svg>';
+}
+
+function renderGrowth(){
+  const body = $('growth-body');
+  const slug = $('growth-student').value;
+  if(!slug){ body.innerHTML = ''; return; }
+  const list = allResults.filter(function(r){ return r.nameSlug === slug; })
+    .sort(function(a,b){ return (a.examDate||'').localeCompare(b.examDate||'') || ((a.updatedAtMs||0) - (b.updatedAtMs||0)); });
+  if(!list.length){ body.innerHTML = ''; return; }
+
+  const first = list[0], latest = list[list.length-1];
+  const best = list.slice().sort(function(a,b){ return b.percentage - a.percentage; })[0];
+  const change = latest.percentage - first.percentage;
+
+  const subjectSet = [];
+  list.forEach(function(r){ Object.keys(r.subjects).forEach(function(s){ if(subjectSet.indexOf(s) === -1) subjectSet.push(s); }); });
+
+  const latestSubs = Object.keys(latest.subjects).map(function(s){ return { s: s, p: (latest.subjects[s]/latest.fullMarks)*100 }; }).sort(function(a,b){ return b.p - a.p; });
+  const strongest = latestSubs[0], weakest = latestSubs[latestSubs.length-1];
+
+  body.innerHTML =
+    '<div class="card"><div class="stat-strip">' +
+      '<div class="stat-box"><div class="num">'+list.length+'</div><div class="label">Exams recorded</div></div>' +
+      '<div class="stat-box"><div class="num">'+latest.percentage+'%</div><div class="label">Latest — '+escapeHtml(latest.examName)+'</div></div>' +
+      '<div class="stat-box"><div class="num">'+best.percentage+'%</div><div class="label">Best — '+escapeHtml(best.examName)+'</div></div>' +
+      '<div class="stat-box"><div class="num '+(change >= 0 ? 'up' : 'down')+'">'+(change >= 0 ? '+' : '')+change.toFixed(1)+'</div><div class="label">Change since first exam</div></div>' +
+      (strongest ? '<div class="stat-box"><div class="num">'+escapeHtml(strongest.s)+'</div><div class="label">Strongest (latest)</div></div>' : '') +
+      (weakest && weakest !== strongest ? '<div class="stat-box"><div class="num">'+escapeHtml(weakest.s)+'</div><div class="label">Needs most work (latest)</div></div>' : '') +
+    '</div></div>' +
+
+    '<div class="card"><h2>Percentage over time</h2>' + buildChart(list) + '</div>' +
+
+    '<div class="card"><h2>Exam by exam</h2><div class="table-wrap"><table>' +
+      '<thead><tr><th>Exam</th><th>Date</th><th>Total</th><th>%</th><th>Grade</th><th>Rank in exam</th><th>Change</th></tr></thead><tbody>' +
+      list.map(function(r,i){
+        const prev = i > 0 ? list[i-1].percentage : null;
+        const d = prev === null ? '—' : ((r.percentage - prev >= 0 ? '<span class="up">▲ +' : '<span class="down">▼ ') + (r.percentage - prev).toFixed(1) + '</span>');
+        return '<tr><td>'+escapeHtml((r.sessionLabel ? r.sessionLabel + ' — ' : '') + r.examName)+'</td><td>'+escapeHtml(r.examDate||'')+'</td><td>'+r.total+'</td><td>'+r.percentage+'%</td><td>'+gradeFor(r.percentage)+'</td><td>'+rankInExam(r)+'</td><td>'+d+'</td></tr>';
+      }).join('') +
+    '</tbody></table></div></div>' +
+
+    '<div class="card"><h2>Subject by subject</h2><div class="table-wrap"><table>' +
+      '<thead><tr><th>Subject</th>' + list.map(function(r){ return '<th>'+escapeHtml(r.examName)+'</th>'; }).join('') + '</tr></thead><tbody>' +
+      subjectSet.map(function(s){
+        return '<tr><td><b>'+escapeHtml(s)+'</b></td>' + list.map(function(r){
+          const v = r.subjects[s];
+          return '<td class="'+(v !== undefined && v < r.passMarks ? 'low-text' : '')+'">'+(v !== undefined ? v : '—')+'</td>';
+        }).join('') + '</tr>';
+      }).join('') +
+    '</tbody></table></div></div>';
+}
+</script>
+</body>
+</html>

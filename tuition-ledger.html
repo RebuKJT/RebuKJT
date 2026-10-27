@@ -300,6 +300,38 @@
     </div>
     <p class="status-msg" id="session-status"></p>
 
+    <h3>Import students from another session</h3>
+    <p style="font-size:0.8rem; color:var(--ink-soft); margin-top:-6px;">
+      Copy students into a different term without changing the original records. Previous payments are not carried over.
+    </p>
+    <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="field" style="margin:0;">
+        <label for="transfer-source">Copy students from</label>
+        <select id="transfer-source"></select>
+      </div>
+      <div class="field" style="margin:0;">
+        <label for="transfer-destination">Import into</label>
+        <select id="transfer-destination"></select>
+      </div>
+      <div class="field" style="margin:0; grid-column:1/-1;">
+        <label for="transfer-arrival-mode">Arrival date for imported students</label>
+        <select id="transfer-arrival-mode">
+          <option value="start">Use destination session start date (recommended)</option>
+          <option value="keep">Keep each student's original arrival date</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:12px;">
+      <button class="btn secondary" id="btn-load-transfer">Load students</button>
+      <button class="btn secondary small" id="btn-select-transfer-all" hidden>Select all</button>
+      <button class="btn secondary small" id="btn-clear-transfer" hidden>Clear selection</button>
+    </div>
+    <div id="transfer-student-list" style="margin-top:12px; max-height:240px; overflow:auto;"></div>
+    <div class="btn-row" style="margin-top:12px;">
+      <button class="btn" id="btn-run-transfer" disabled>Import selected students</button>
+    </div>
+    <p class="status-msg" id="transfer-status"></p>
+
     <h3>Reading Log access</h3>
     <p style="font-size:0.8rem; color:var(--ink-soft); margin-top:-6px;">
       One-click sync so students already in the system show up as options on the
@@ -375,7 +407,7 @@
    already uses (same project, same Auth users).
    ========================================================= */
  const firebaseConfig = {
-    apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+     apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
     authDomain: "teacher-resource-hub.firebaseapp.com",
     projectId: "teacher-resource-hub",
     storageBucket: "teacher-resource-hub.firebasestorage.app",
@@ -593,6 +625,198 @@ document.getElementById('btn-add-session').addEventListener('click', () => {
       settingsOverlay.classList.remove('open');
     })
     .catch(err => { sessionStatus.textContent = err.message; sessionStatus.className = 'status-msg err'; });
+});
+
+
+/* ---------- import students between sessions ---------- */
+const transferSource = document.getElementById('transfer-source');
+const transferDestination = document.getElementById('transfer-destination');
+const transferArrivalMode = document.getElementById('transfer-arrival-mode');
+const transferList = document.getElementById('transfer-student-list');
+const transferStatus = document.getElementById('transfer-status');
+const transferRunBtn = document.getElementById('btn-run-transfer');
+let transferSourceStudents = [];
+
+function populateTransferSessions(){
+  [transferSource, transferDestination].forEach(select => {
+    const previous = select.value;
+    select.innerHTML = '';
+    sessions.forEach(session => {
+      const option = document.createElement('option');
+      option.value = session.id;
+      option.textContent = session.label;
+      select.appendChild(option);
+    });
+    if (sessions.some(session => session.id === previous)) select.value = previous;
+  });
+  if (sessions.length > 1) {
+    if (transferSource.value === transferDestination.value) {
+      transferSource.value = sessions.find(x => x.id !== transferDestination.value)?.id || sessions[0].id;
+    }
+  }
+  transferList.innerHTML = '';
+  transferSourceStudents = [];
+  transferRunBtn.disabled = true;
+  document.getElementById('btn-select-transfer-all').hidden = true;
+  document.getElementById('btn-clear-transfer').hidden = true;
+}
+document.getElementById('btn-settings').addEventListener('click', populateTransferSessions);
+
+document.getElementById('btn-load-transfer').addEventListener('click', async () => {
+  transferStatus.textContent = '';
+  transferStatus.className = 'status-msg';
+  const sourceId = transferSource.value;
+  const destinationId = transferDestination.value;
+  if (!sourceId || !destinationId) {
+    transferStatus.textContent = 'Create at least two sessions first.';
+    transferStatus.className = 'status-msg err';
+    return;
+  }
+  if (sourceId === destinationId) {
+    transferStatus.textContent = 'Choose two different sessions.';
+    transferStatus.className = 'status-msg err';
+    return;
+  }
+  transferList.innerHTML = '<p style="font-size:.85rem;color:var(--ink-soft)">Loading students…</p>';
+  transferRunBtn.disabled = true;
+  try {
+    const snap = await db.collection('tuitionStudents').where('sessionId', '==', sourceId).get();
+    transferSourceStudents = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    if (!transferSourceStudents.length) {
+      transferList.innerHTML = '<p style="font-size:.85rem;color:var(--ink-soft)">No students found in the selected source session.</p>';
+      document.getElementById('btn-select-transfer-all').hidden = true;
+      document.getElementById('btn-clear-transfer').hidden = true;
+      return;
+    }
+    const destinationSnap = await db.collection('tuitionStudents').where('sessionId', '==', destinationId).get();
+    const existingKeys = new Set(destinationSnap.docs.map(doc => {
+      const d = doc.data();
+      return `${String(d.name || '').trim().toLowerCase()}|${String(d.grade || '').trim().toLowerCase()}`;
+    }));
+    transferList.innerHTML = transferSourceStudents.map((student, index) => {
+      const key = `${String(student.name || '').trim().toLowerCase()}|${String(student.grade || '').trim().toLowerCase()}`;
+      const duplicate = existingKeys.has(key);
+      return `<label style="display:flex;align-items:flex-start;gap:9px;padding:9px 8px;border-bottom:1px solid var(--paper-line);font-size:.86rem;${duplicate ? 'opacity:.65;' : ''}">
+        <input type="checkbox" data-transfer-index="${index}" ${duplicate ? 'disabled' : 'checked'} style="margin-top:3px;">
+        <span><strong>${escapeHtml(student.name || 'Unnamed student')}</strong> <span class="grade-pill">${escapeHtml(student.grade || 'No grade')}</span>
+        <br><small style="color:var(--ink-soft)">${duplicate ? 'Already exists in destination — skipped' : `Arrival: ${fmtDate(student.arrivalDate)} · Previous fee: Rs ${Number(student.feeAmount || 0)}`}</small></span>
+      </label>`;
+    }).join('');
+    document.getElementById('btn-select-transfer-all').hidden = false;
+    document.getElementById('btn-clear-transfer').hidden = false;
+    transferRunBtn.disabled = !transferList.querySelector('input[type="checkbox"]:checked');
+    transferList.querySelectorAll('input[type="checkbox"]').forEach(box => {
+      box.addEventListener('change', () => {
+        transferRunBtn.disabled = !transferList.querySelector('input[type="checkbox"]:checked');
+      });
+    });
+    transferStatus.textContent = `Loaded ${transferSourceStudents.length} student(s). Students already in the destination are disabled to prevent duplicates.`;
+    transferStatus.className = 'status-msg ok';
+  } catch (err) {
+    transferList.innerHTML = '';
+    transferStatus.textContent = 'Could not load students: ' + err.message;
+    transferStatus.className = 'status-msg err';
+  }
+});
+
+document.getElementById('btn-select-transfer-all').addEventListener('click', () => {
+  transferList.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach(box => box.checked = true);
+  transferRunBtn.disabled = !transferList.querySelector('input[type="checkbox"]:checked');
+});
+document.getElementById('btn-clear-transfer').addEventListener('click', () => {
+  transferList.querySelectorAll('input[type="checkbox"]').forEach(box => box.checked = false);
+  transferRunBtn.disabled = true;
+});
+
+transferDestination.addEventListener('change', () => {
+  transferList.innerHTML = '';
+  transferSourceStudents = [];
+  transferRunBtn.disabled = true;
+  transferStatus.textContent = 'Destination changed. Load students again to check for duplicates.';
+  transferStatus.className = 'status-msg';
+});
+transferSource.addEventListener('change', () => {
+  transferList.innerHTML = '';
+  transferSourceStudents = [];
+  transferRunBtn.disabled = true;
+});
+
+transferRunBtn.addEventListener('click', async () => {
+  const sourceId = transferSource.value;
+  const destinationId = transferDestination.value;
+  const destination = sessions.find(session => session.id === destinationId);
+  if (!destination || !sourceId || sourceId === destinationId) {
+    transferStatus.textContent = 'Select different source and destination sessions.';
+    transferStatus.className = 'status-msg err';
+    return;
+  }
+  const selectedIndexes = Array.from(transferList.querySelectorAll('input[type="checkbox"]:checked'))
+    .map(box => Number(box.dataset.transferIndex));
+  const selected = selectedIndexes.map(index => transferSourceStudents[index]).filter(Boolean);
+  if (!selected.length) {
+    transferStatus.textContent = 'Select at least one student.';
+    transferStatus.className = 'status-msg err';
+    return;
+  }
+  if (selected.length > 240) {
+    transferStatus.textContent = 'Please import fewer students at a time (maximum 240 per import).';
+    transferStatus.className = 'status-msg err';
+    return;
+  }
+  if (!confirm(`Import ${selected.length} student(s) into "${destination.label}"? Previous payments will not be copied, and source records will remain unchanged.`)) return;
+
+  transferRunBtn.disabled = true;
+  transferStatus.textContent = 'Importing students…';
+  transferStatus.className = 'status-msg';
+  try {
+    // Recheck destination for duplicates immediately before writing.
+    const destinationSnap = await db.collection('tuitionStudents').where('sessionId', '==', destinationId).get();
+    const existingKeys = new Set(destinationSnap.docs.map(doc => {
+      const d = doc.data();
+      return `${String(d.name || '').trim().toLowerCase()}|${String(d.grade || '').trim().toLowerCase()}`;
+    }));
+    const batch = db.batch();
+    let imported = 0, skipped = 0;
+    selected.forEach(student => {
+      const key = `${String(student.name || '').trim().toLowerCase()}|${String(student.grade || '').trim().toLowerCase()}`;
+      if (existingKeys.has(key)) { skipped++; return; }
+      existingKeys.add(key);
+      const arrivalDate = transferArrivalMode.value === 'start'
+        ? (destination.startDate || student.arrivalDate || '')
+        : (student.arrivalDate || destination.startDate || '');
+      const days = daysBetween(arrivalDate, destination.endDate || arrivalDate);
+      const feeAmount = calcFee(student.grade || '', days);
+      const newRef = db.collection('tuitionStudents').doc();
+      const newStudent = {
+        name: student.name || '',
+        grade: student.grade || '',
+        arrivalDate,
+        sessionId: destinationId,
+        days,
+        feeAmount,
+        phone: student.phone || '',
+        discount: Number(student.discount || 0),
+        paidAmount: 0,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdBy: auth.currentUser?.email || '',
+        importedFromSessionId: sourceId
+      };
+      // Deliberately omit payments and source document ID: new term starts with no recorded payments.
+      batch.set(newRef, newStudent);
+      batch.set(db.collection('publicStudents').doc(newRef.id), { name: newStudent.name, sessionId: destinationId });
+      imported++;
+    });
+    if (imported) await batch.commit();
+    transferStatus.textContent = `Import complete: ${imported} imported, ${skipped} duplicate(s) skipped. Source records were not changed.`;
+    transferStatus.className = 'status-msg ' + (skipped ? '' : 'ok');
+    if (skipped) transferStatus.className = 'status-msg ok';
+    transferList.innerHTML = '';
+    transferRunBtn.disabled = true;
+  } catch (err) {
+    transferStatus.textContent = 'Import failed: ' + err.message;
+    transferStatus.className = 'status-msg err';
+    transferRunBtn.disabled = false;
+  }
 });
 
 /* ---------- fee calculation ---------- */

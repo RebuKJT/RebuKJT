@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Class 5 Fine Tracker — Cloud Database</title>
+  <style>
+    :root {
+      --navy: #17365d;
+      --blue: #2457a7;
+      --bg: #f3f6fb;
+      --line: #dbe3ef;
+      --muted: #64748b;
+      --red: #b42318;
+      --green: #16803c
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: #1f2937;
+      font: 14px Arial, sans-serif
+    }
+
+    header {
+      background: var(--navy);
+      color: white;
+      padding: 20px
+    }
+
+    header>div,
+    main {
+      max-width: 1500px;
+      margin: auto
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 27px
+    }
+
+    header p {
+      margin: 6px 0 0;
+      color: #dbeafe
+    }
+
+    main {
+      padding: 16px
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 15px;
+      margin-bottom: 14px
+    }
+
+    h2 {
+      font-size: 17px;
+      color: var(--navy);
+      margin: 0 0 12px
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      align-items: end
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 150px
+    }
+
+    .field label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: bold
+    }
+
+    input,
+    select,
+    button {
+      font: inherit
+    }
+
+    input,
+    select {
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      padding: 9px;
+      background: #fff;
+      max-width: 100%
+    }
+
+    button,
+    .filebtn {
+      border: 0;
+      border-radius: 7px;
+      padding: 10px 13px;
+      background: var(--blue);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-block
+    }
+
+    button.secondary,
+    .filebtn.secondary {
+      background: #e8eef8;
+      color: #17365d
+    }
+
+    button.danger {
+      background: var(--red)
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed
+    }
+
+    #status {
+      padding: 10px;
+      border-radius: 7px;
+      background: #e8eef8;
+      color: #17365d;
+      margin-bottom: 12px
+    }
+
+    #status.error {
+      background: #fee2e2;
+      color: #991b1b
+    }
+
+    #status.good {
+      background: #dcfce7;
+      color: #166534
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(110px, 1fr));
+      gap: 9px;
+      margin-bottom: 14px
+    }
+
+    .stat {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 12px
+    }
+
+    .stat small {
+      display: block;
+      color: var(--muted);
+      font-weight: bold
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 20px;
+      margin-top: 6px;
+      overflow-wrap: anywhere
+    }
+
+    .green {
+      color: var(--green)
+    }
+
+    .red {
+      color: var(--red)
+    }
+
+    .catlist {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      margin-top: 10px
+    }
+
+    .chip {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 6px
+    }
+
+    .chip button {
+      padding: 5px 7px;
+      font-size: 11px
+    }
+
+    .tablewrap {
+      overflow: auto;
+      max-height: 65vh;
+      border: 1px solid var(--line);
+      border-radius: 8px
+    }
+
+    table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+      background: #fff;
+      white-space: nowrap
+    }
+
+    th,
+    td {
+      padding: 8px;
+      border-bottom: 1px solid #e7edf5;
+      border-right: 1px solid #edf1f6;
+      text-align: left
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #edf3fb;
+      color: #17365d;
+      z-index: 2;
+      font-size: 12px
+    }
+
+    th button {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      border-radius: 0
+    }
+
+    td input {
+      width: 85px;
+      padding: 6px
+    }
+
+    td .name {
+      width: 175px
+    }
+
+    tfoot td {
+      position: sticky;
+      bottom: 0;
+      background: #f2f6fc;
+      font-weight: bold;
+      z-index: 1
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5
+    }
+
+    .badge {
+      padding: 3px 7px;
+      border-radius: 20px;
+      background: #fee2e2;
+      color: #991b1b;
+      font-size: 11px;
+      font-weight: bold
+    }
+
+    .badge.paid {
+      background: #dcfce7;
+      color: #166534
+    }
+
+    .badge.partial {
+      background: #fef3c7;
+      color: #92400e
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 25px
+    }
+
+    #file {
+      display: none
+    }
+
+    @media(max-width:900px) {
+      .stats {
+        grid-template-columns: repeat(3, 1fr)
+      }
+    }
+
+    @media(max-width:550px) {
+      main {
+        padding: 8px
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      header {
+        padding: 16px
+      }
+
+      .panel {
+        padding: 11px
+      }
+    }
+
+    @media print {
+      header {
+        background: white;
+        color: black
+      }
+
+      header p,
+      .no-print,
+      #status {
+        display: none !important
+      }
+
+      main {
+        padding: 0
+      }
+
+      .panel,
+      .stat {
+        box-shadow: none
+      }
+
+      .tablewrap {
+        max-height: none;
+        overflow: visible
+      }
+
+      th {
+        position: static
+      }
+
+      td input {
+        border: 0;
+        padding: 0
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div>
+      <h1>Class 5 Fine Tracker</h1>
+      <p>Manang & Mustang · Cloud-saved student fines and payments</p>
+    </div>
+  </header>
+  <main>
+    <div id="status">Setup required: add your Firebase web app configuration in the code, then sign in.</div>
+    <section class="panel no-print" id="authPanel">
+      <h2>Firebase sign in</h2>
+      <div class="row">
+        <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"
+            placeholder="Teacher email"></div>
+        <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"
+            placeholder="Password"></div>
+        <button id="signInBtn">Sign in</button><button id="signOutBtn" class="secondary" hidden>Sign out</button>
+      </div>
+      <p class="hint">Sign in with an account enabled in your Firebase project's Authentication → Email/Password. This
+        app stores records in Firestore, not just in this device's browser.</p>
+    </section>
+    <section class="panel no-print">
+      <h2>Section and students</h2>
+      <div class="row">
+        <div class="field"><label>Section</label><select id="section">
+            <option>Manang</option>
+            <option>Mustang</option>
+          </select></div>
+        <div class="field" style="flex:1"><label>Search</label><input id="search" type="text"
+            placeholder="Name or roll number"></div>
+        <div class="field"><label>Payment status</label><select id="filter">
+            <option value="all">All</option>
+            <option value="pending">Pending</option>
+            <option value="partial">Partially paid</option>
+            <option value="paid">Paid / no fine</option>
+          </select></div>
+        <button id="addStudent">+ Add student</button>
+        <label class="filebtn secondary" for="file">Upload students CSV</label><input id="file" type="file"
+          accept=".csv,text/csv">
+        <button id="export" class="secondary">Export CSV</button><button id="backup" class="secondary">Download
+          backup</button><button id="print" class="secondary">Print</button>
+      </div>
+      <p class="hint">CSV headers: <b>Roll No, Student Name</b> (or Name), and optional <b>Section</b>. Without a
+        Section column, students go to the currently selected section. Uploading skips matching duplicate names/rolls.
+      </p>
+    </section>
+    <section class="panel no-print">
+      <h2>Fine categories / columns</h2>
+      <div class="row">
+        <div class="field" style="min-width:220px;flex:1"><label>New category name</label><input id="newCategory"
+            type="text" placeholder="e.g. Futsal, Homework, Hygiene"></div><button id="addCategory">+ Add
+          column</button>
+      </div>
+      <div id="categories" class="catlist"></div>
+      <p class="hint">Fine amount: Rs. 0 or a whole amount from Rs. 5 to Rs. 20. Renaming/deleting a category affects
+        both sections. Deleting a category removes its recorded amounts.</p>
+    </section>
+    <div class="stats">
+      <div class="stat"><small>Students</small><strong id="sStudents">0</strong></div>
+      <div class="stat"><small>Total fines</small><strong id="sFine">Rs. 0</strong></div>
+      <div class="stat"><small>Received</small><strong id="sReceived" class="green">Rs. 0</strong></div>
+      <div class="stat"><small>Pending</small><strong id="sPending" class="red">Rs. 0</strong></div>
+      <div class="stat"><small>Settled students</small><strong id="sPaid">0</strong></div>
+      <div class="stat"><small>Students with pending</small><strong id="sOwing">0</strong></div>
+    </div>
+    <section class="panel">
+      <div class="row" style="justify-content:space-between">
+        <h2 id="tableTitle">Manang — ledger</h2><button id="clearFilters" class="secondary no-print">Clear
+          filters</button>
+      </div>
+      <div class="tablewrap" id="table">
+        <div class="empty">Sign in to load your cloud records.</div>
+      </div>
+    </section>
+    <section class="panel no-print">
+      <h2>Database and backup</h2>
+      <p class="hint">Cloud data is stored in Firestore at <code>class5FineTracker/main</code>. Download a JSON backup
+        regularly. If you already used an earlier local-only version, use “Import local browser data” on this device to
+        migrate it once the database is connected.</p>
+      <div class="row"><button id="importLocal" class="secondary">Import local browser data</button><input id="restore"
+          type="file" accept=".json,application/json" style="display:none"><button id="restoreBtn"
+          class="secondary">Restore JSON backup</button></div>
+    </section>
+  </main>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // IMPORTANT: Replace the values below with the Web app config from Firebase Console → Project settings → Your apps.
+    const firebaseConfig = {
+      apiKey: "AIzaSyDXmSQtFw9REVME-WEZvD4hxucxC1HNoFo",
+      authDomain: "teacher-resource-hub.firebaseapp.com",
+      projectId: "teacher-resource-hub",
+      storageBucket: "teacher-resource-hub.firebasestorage.app",
+      messagingSenderId: "331374983102",
+      appId: "1:331374983102:web:af6c4fa75eece69cb66bef"
+    };
+
+    const KEY = 'class5FineTracker/main';
+    const LOCAL_KEY = 'class5FineTracker_v1';
+    const DEFAULT_CATS = [{ id: 'futsal', name: 'Futsal' }, { id: 'applications', name: 'Applications' }, { id: 'information', name: 'Information' }, { id: 'hygiene', name: 'Personal Hygiene' }];
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const norm = s => String(s ?? '').trim().toLocaleLowerCase().replace(/\s+/g, ' ');
+    const money = n => 'Rs. ' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+    let app, auth, db, unsubscribe = null, user = null, dirtyTimer = null, sort = { key: 'roll', dir: 1 }, data = { version: 1, categories: DEFAULT_CATS.map(x => ({ ...x })), students: { Manang: [], Mustang: [] } }, ready = false, saveInFlight = false;
+    function msg(t, type = '') { const e = $('status'); e.textContent = t; e.className = type; if (type === '') e.id = 'status' }
+    function fresh() { return { version: 1, categories: DEFAULT_CATS.map(x => ({ ...x })), students: { Manang: [], Mustang: [] } } }
+    function section() { return $('section').value }
+    function list(sec = section()) { return data.students[sec] || [] }
+    function fine(s) { return data.categories.reduce((a, c) => a + (Number(s.fines?.[c.id]) || 0), 0) }
+    function received(s) { return Number(s.received) || 0 }
+    function pending(s) { return Math.max(0, fine(s) - received(s)) }
+    function status(s) { if (fine(s) === 0 || pending(s) === 0) return 'paid'; return received(s) > 0 ? 'partial' : 'pending' }
+    function newStudent(name = '', roll = '', sec = section()) { return { id: 'stu_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8), name: String(name).trim(), roll: String(roll || ''), section: sec, fines: {}, received: 0 } }
+    function requireReady() { if (!user || !ready) { msg('Please sign in and wait for the Firestore records to load.', 'error'); return false } return true }
+    function renderCategories() { $('categories').innerHTML = data.categories.map(c => `<div class="chip"><b>${esc(c.name)}</b><button class="secondary" data-rename="${esc(c.id)}">Rename</button><button class="danger" data-deletecat="${esc(c.id)}">Delete</button></div>`).join('') || '<span class="hint">No categories yet.</span>' }
+    function renderStats() { const a = list(); let f = 0, r = 0, p = 0, owing = 0; for (const s of a) { f += fine(s); r += received(s); p += pending(s); if (pending(s) > 0) owing++ } $('sStudents').textContent = a.length; $('sFine').textContent = money(f); $('sReceived').textContent = money(r); $('sPending').textContent = money(p); $('sPaid').textContent = a.length - owing; $('sOwing').textContent = owing; $('tableTitle').textContent = section() + ' — ledger' }
+    function val(s, k) { if (k === 'roll') return Number(s.roll) || 0; if (k === 'name') return norm(s.name); if (k === 'fine') return fine(s); if (k === 'received') return received(s); if (k === 'pending') return pending(s); if (k === 'status') return status(s); if (k.startsWith('cat:')) return Number(s.fines?.[k.slice(4)]) || 0; return '' }
+    function renderTable() {
+      renderStats(); if (!ready) { $('table').innerHTML = '<div class="empty">Sign in to load your cloud records.</div>'; return }
+      const q = norm($('search').value), filt = $('filter').value; let arr = list().filter(s => (!q || norm(s.name).includes(q) || norm(s.roll).includes(q)) && (filt === 'all' || (filt === 'pending' ? pending(s) > 0 : filt === 'partial' ? status(s) === 'partial' : status(s) === 'paid')));
+      arr.sort((a, b) => { const x = val(a, sort.key), y = val(b, sort.key); return (typeof x === 'string' ? x.localeCompare(y) : x - y) * sort.dir });
+      if (!arr.length) { $('table').innerHTML = '<div class="empty">No students in this view. Add students or upload a CSV.</div>'; return }
+      const th = (k, t) => `<th><button data-sort="${esc(k)}">${esc(t)} ${sort.key === k ? (sort.dir === 1 ? '↑' : '↓') : ''}</button></th>`;
+      let h = '<table><thead><tr>' + th('roll', 'Roll No') + th('name', 'Student Name') + data.categories.map(c => th('cat:' + c.id, c.name + ' (Rs.)')).join('') + th('fine', 'Total Fine') + th('received', 'Received') + th('pending', 'Pending') + th('status', 'Status') + '<th>Action</th></tr></thead><tbody>';
+      for (const s of arr) {
+        // FIXED: Wrapped roll value in Number()
+        const rollVal = Number(s.roll) || '';
+        h += `<tr><td><input data-field="roll" data-id="${esc(s.id)}" type="number" min="1" value="${rollVal}" aria-label="Roll number"></td><td><input class="name" data-field="name" data-id="${esc(s.id)}" value="${esc(s.name)}" aria-label="Student name"></td>`;
+        
+        // FIXED: Wrapped each fine amount in Number()
+        for (const c of data.categories) {
+          const fineVal = Number(s.fines?.[c.id]) || '';
+          h += `<td><input data-cat="${esc(c.id)}" data-id="${esc(s.id)}" type="number" min="0" max="20" step="1" value="${fineVal}" placeholder="0" aria-label="${esc(c.name)}"></td>`;
+        }
+        
+        const st = status(s); 
+        // FIXED: Wrapped received amount in Number()
+        const recVal = Number(received(s)) || '';
+        h += `<td><b>${money(fine(s))}</b></td><td><input data-field="received" data-id="${esc(s.id)}" type="number" min="0" max="${fine(s)}" step="1" value="${recVal}" placeholder="0" aria-label="Received amount"></td><td class="${pending(s) > 0 ? 'red' : 'green'}"><b>${money(pending(s))}</b></td><td><span class="badge ${st === 'paid' ? 'paid' : st === 'partial' ? 'partial' : ''}">${st === 'paid' ? 'Paid' : st === 'partial' ? 'Partial' : 'Unpaid'}</span></td><td><button class="danger" data-delstudent="${esc(s.id)}">Delete</button></td></tr>`
+      }
+      h += '</tbody><tfoot><tr><td colspan="2">SECTION TOTAL</td>' + data.categories.map(c => `<td>${money(arr.reduce((a, s) => a + (Number(s.fines?.[c.id]) || 0), 0))}</td>`).join('') + `<td>${money(arr.reduce((a, s) => a + fine(s), 0))}</td><td>${money(arr.reduce((a, s) => a + received(s), 0))}</td><td>${money(arr.reduce((a, s) => a + pending(s), 0))}</td><td colspan="2"></td></tr></tfoot></table>`; $('table').innerHTML = h
+    }
+    function queueSave() { if (!requireReady()) return; clearTimeout(dirtyTimer); msg('Saving changes to Firestore…'); dirtyTimer = setTimeout(saveCloud, 450) }
+    async function saveCloud() { if (!user || !ready) return; saveInFlight = true; try { await setDoc(doc(db, KEY), { ...data, updatedAt: new Date().toISOString(), updatedBy: user.uid }); msg('All changes saved to Firestore.', 'good') } catch (e) { msg('Save failed: ' + e.message + ' — check Firestore rules and internet.', 'error') } finally { saveInFlight = false } }
+    function csvParse(text) { const rows = []; let row = [], field = '', quoted = false; for (let i = 0; i < text.length; i++) { const c = text[i]; if (c === '"') { if (quoted && text[i + 1] === '"') { field += '"'; i++ } else quoted = !quoted } else if (c === ',' && !quoted) { row.push(field); field = '' } else if ((c === '\n' || c === '\r') && !quoted) { if (c === '\r' && text[i + 1] === '\n') i++; row.push(field); if (row.some(v => v.trim())) rows.push(row); row = []; field = '' } else field += c } row.push(field); if (row.some(v => v.trim())) rows.push(row); return rows }
+    function download(name, content, type) { const b = new Blob([content], { type }); const u = URL.createObjectURL(b), a = document.createElement('a'); a.href = u; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1200) }
+    function cell(v) { v = String(v ?? ''); return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v }
+    async function startCloud() {
+      if (firebaseConfig.apiKey.startsWith('PASTE_') || firebaseConfig.projectId.startsWith('PASTE_')) { msg('Firebase config is not filled in yet. Edit firebaseConfig inside this HTML file first.', 'error'); return }
+      try {
+        app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app);
+        onAuthStateChanged(auth, async u => {
+          user = u; $('signOutBtn').hidden = !u; if (unsubscribe) { unsubscribe(); unsubscribe = null } ready = false; renderTable(); if (!u) { msg('Sign in to access the cloud database.'); return }
+          msg('Signed in. Connecting to Firestore…');
+          try {
+            const ref = doc(db, KEY), snap = await getDoc(ref); if (!snap.exists()) { let initial = fresh(); try { const old = JSON.parse(localStorage.getItem(LOCAL_KEY) || 'null'); if (old?.categories && old?.students?.Manang && old?.students?.Mustang) initial = old } catch { } await setDoc(ref, { ...initial, updatedAt: new Date().toISOString(), updatedBy: u.uid }); }
+            unsubscribe = onSnapshot(ref, s => { if (s.exists()) { const d = s.data(); if (d.categories && d.students) { data = { version: 1, categories: d.categories, students: { Manang: Array.isArray(d.students.Manang) ? d.students.Manang : [], Mustang: Array.isArray(d.students.Mustang) ? d.students.Mustang : [] } }; ready = true; renderCategories(); renderTable(); msg('Connected — data is saved in Firebase Firestore.', 'good') } } }, e => msg('Firestore read error: ' + e.message, 'error'));
+          } catch (e) { msg('Could not open Firestore: ' + e.message, 'error') }
+        });
+      } catch (e) { msg('Firebase initialization failed: ' + e.message, 'error') }
+    }
+    $('signInBtn').onclick = async () => { if (!auth) { await startCloud(); if (!auth) return } try { await signInWithEmailAndPassword(auth, $('email').value.trim(), $('password').value); $('password').value = '' } catch (e) { msg('Sign-in failed: ' + e.message, 'error') } };
+    $('signOutBtn').onclick = () => signOut(auth);
+    $('section').onchange = renderTable; $('search').oninput = renderTable; $('filter').onchange = renderTable;
+    $('addStudent').onclick = () => { if (!requireReady()) return; const name = prompt('Student name:'); if (name === null) return; if (!name.trim()) return msg('Name cannot be blank.', 'error'); const roll = prompt('Roll number (optional):', String(Math.max(0, ...list().map(s => Number(s.roll) || 0)) + 1)); if (roll === null) return; list().push(newStudent(name, roll)); renderTable(); queueSave() };
+    $('addCategory').onclick = () => { if (!requireReady()) return; const name = $('newCategory').value.trim(); if (!name) return msg('Enter a category name.', 'error'); if (data.categories.some(c => norm(c.name) === norm(name))) return msg('That category already exists.', 'error'); data.categories.push({ id: 'cat_' + Date.now().toString(36), name }); $('newCategory').value = ''; renderCategories(); renderTable(); queueSave() };
+    $('newCategory').onkeydown = e => { if (e.key === 'Enter') $('addCategory').click() };
+    $('categories').onclick = e => { const rn = e.target.closest('[data-rename]'), del = e.target.closest('[data-deletecat]'); if (rn) { const c = data.categories.find(x => x.id === rn.dataset.rename); const n = prompt('Rename category:', c?.name || ''); if (n === null) return; if (!n.trim()) return msg('Category name cannot be blank.', 'error'); if (data.categories.some(x => x.id !== c.id && norm(x.name) === norm(n))) return msg('That category already exists.', 'error'); c.name = n.trim(); renderCategories(); renderTable(); queueSave() } if (del) { const c = data.categories.find(x => x.id === del.dataset.deletecat); if (!c || !confirm(`Delete ${c.name} and all its amounts from both sections?`)) return; data.categories = data.categories.filter(x => x.id !== c.id); Object.values(data.students).flat().forEach(s => { if (s.fines) delete s.fines[c.id] }); renderCategories(); renderTable(); queueSave() } };
+    $('table').onclick = e => { const so = e.target.closest('[data-sort]'); if (so) { if (sort.key === so.dataset.sort) sort.dir *= -1; else { sort.key = so.dataset.sort; sort.dir = 1 } renderTable() } const de = e.target.closest('[data-delstudent]'); if (de) { const s = list().find(x => x.id === de.dataset.delstudent); if (s && confirm('Delete ' + s.name + ' and all their records?')) { data.students[section()] = list().filter(x => x.id !== s.id); renderTable(); queueSave() } } };
+    $('table').onchange = e => { const el = e.target, id = el.dataset.id; if (!id || !requireReady()) return; const s = list().find(x => x.id === id); if (!s) return; if (el.dataset.field === 'name') { if (!el.value.trim()) return msg('Student name cannot be blank.', 'error'); s.name = el.value.trim() } else if (el.dataset.field === 'roll') { if (el.value !== '' && (!Number.isInteger(Number(el.value)) || Number(el.value) < 1)) return msg('Roll number must be a positive whole number.', 'error'); s.roll = el.value } else if (el.dataset.field === 'received') { const n = el.value === '' ? 0 : Number(el.value); if (!Number.isFinite(n) || n < 0 || n > fine(s)) return msg('Received must be between Rs. 0 and the total fine.', 'error'); s.received = n } else if (el.dataset.cat) { const n = el.value === '' ? 0 : Number(el.value); if (!Number.isInteger(n) || n < 0 || (n > 0 && (n < 5 || n > 20))) return msg('Enter Rs. 0 or a whole amount from Rs. 5 to Rs. 20.', 'error'); s.fines = s.fines || {}; if (n === 0) delete s.fines[el.dataset.cat]; else s.fines[el.dataset.cat] = n; if (s.received > fine(s)) s.received = fine(s) } renderTable(); queueSave() };
+    $('file').onchange = async e => { const f = e.target.files[0]; if (!f) return; if (!requireReady()) return; try { const rows = csvParse(await f.text()); if (rows.length < 2) throw Error('CSV needs a header and at least one student.'); const headers = rows[0].map(x => norm(x).replace(/[_-]/g, ' ')); const ni = headers.findIndex(x => ['student name', 'name', 'full name'].includes(x)), ri = headers.findIndex(x => ['roll no', 'roll number', 'roll', 'roll no.'].includes(x)), si = headers.findIndex(x => ['section', 'house', 'class section'].includes(x)); if (ni < 0) throw Error('No Name or Student Name column found.'); let added = 0, skipped = 0; for (const r of rows.slice(1)) { const name = (r[ni] || '').trim(); if (!name) continue; const raw = si >= 0 ? norm(r[si]) : norm(section()); const sec = raw === 'mustang' ? 'Mustang' : raw === 'manang' ? 'Manang' : section(); const roll = ri >= 0 ? (r[ri] || '').trim() : ''; if (data.students[sec].some(s => norm(s.name) === norm(name) && (roll ? String(s.roll) === roll : true))) { skipped++; continue } data.students[sec].push(newStudent(name, roll || String(Math.max(0, ...data.students[sec].map(s => Number(s.roll) || 0)) + 1), sec)); added++ } renderTable(); queueSave(); msg(`Upload complete: ${added} added, ${skipped} duplicates skipped. Saving to Firestore…`) } catch (err) { msg(err.message, 'error') } finally { $('file').value = '' } };
+    $('export').onclick = () => { if (!requireReady()) return; const rows = [['Section', 'Roll No', 'Student Name', ...data.categories.map(c => c.name), 'Total Fine', 'Received', 'Pending', 'Status']]; list().forEach(s => rows.push([section(), s.roll, s.name, ...data.categories.map(c => Number(s.fines?.[c.id]) || 0), fine(s), received(s), pending(s), status(s)])); download('Class5_Fine_Tracker_' + section() + '.csv', '\ufeff' + rows.map(r => r.map(cell).join(',')).join('\r\n'), 'text/csv;charset=utf-8') };
+    $('backup').onclick = () => download('Class5_Fine_Tracker_Backup.json', JSON.stringify(data, null, 2), 'application/json');
+    $('print').onclick = () => window.print(); $('clearFilters').onclick = () => { $('search').value = ''; $('filter').value = 'all'; renderTable() };
+    $('importLocal').onclick = () => { if (!requireReady()) return; let old; try { old = JSON.parse(localStorage.getItem(LOCAL_KEY) || 'null') } catch { } if (!old?.categories || !old?.students?.Manang || !old?.students?.Mustang) return msg('No earlier local Fine Tracker data found in this browser.', 'error'); if (!confirm('Import local data into the cloud database? Existing matching names are skipped.')) return; for (const sec of ['Manang', 'Mustang']) for (const s of old.students[sec]) if (!data.students[sec].some(x => norm(x.name) === norm(s.name) && String(x.roll) === String(s.roll))) data.students[sec].push(s); for (const c of old.categories) if (!data.categories.some(x => x.id === c.id)) data.categories.push(c); renderCategories(); renderTable(); queueSave(); msg('Local records imported; saving to Firestore…') };
+    $('restoreBtn').onclick = () => { if (!requireReady()) return; $('restore').click() };
+    $('restore').onchange = async e => { const f = e.target.files[0]; if (!f) return; try { const b = JSON.parse(await f.text()); if (!Array.isArray(b.categories) || !b.students?.Manang || !b.students?.Mustang) throw Error('Invalid backup format'); if (!confirm('Replace all cloud data with this backup?')) return; data = { version: 1, categories: b.categories, students: b.students }; renderCategories(); renderTable(); queueSave() } catch (err) { msg('Could not restore backup: ' + err.message, 'error') } finally { $('restore').value = '' } };
+    startCloud();
+  </script>
+</body>
+
+</html>
